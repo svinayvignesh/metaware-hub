@@ -17,7 +17,7 @@
  */
 
 import { useState } from "react";
-import { useQuery } from '@apollo/client/react';
+import { useQuery } from '@apollo/client';
 import { DataTable, Column, TableData } from "@/components/table/DataTable";
 import {
   Select,

@@ -16,7 +16,7 @@
  * @version 1.0.0
  */
 
-import { useQuery } from '@apollo/client/react';
+import { useQuery } from '@apollo/client';
 import { DataTable, Column, TableData } from "@/components/table/DataTable";
 import { GET_ENTITIES, type GetEntitiesResponse } from "@/graphql/queries";
 
