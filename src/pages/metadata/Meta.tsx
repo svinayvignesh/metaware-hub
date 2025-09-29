@@ -306,37 +306,108 @@ export default function Meta() {
         ns_type: 'staging',
       };
 
-      const metaFields = data.map(item => ({
-        id: item.id.startsWith('new_') ? `meta_${Date.now()}_${Math.random()}` : item.id,
-        type: item.type || '',
-        subtype: '',
-        name: item.name || '',
-        description: item.description || '',
-        order: Number(item.order) || 0,
-        alias: item.alias || '',
-        length: 0,
-        default: item.default || '',
-        nullable: item.nullable === 'Yes',
-        format: '',
-        is_primary_grain: item.grain_info?.includes('Primary') || false,
-        is_secondary_grain: item.grain_info?.includes('Secondary') || false,
-        is_tertiary_grain: item.grain_info?.includes('Tertiary') || false,
-        tags: '',
-        custom_props: [],
-        entity_id: selectedEntity,
-        ns: selectedEntityData.subjectarea.namespace.name,
-        sa: selectedEntityData.subjectarea.name,
-        en: selectedEntityData.name,
-        entity_core: {
-          ns: selectedEntityData.subjectarea.namespace.name,
-          sa: selectedEntityData.subjectarea.name,
-          en: selectedEntityData.name,
-          ns_type: 'staging',
-          ns_id: '',
-          sa_id: selectedEntityData.sa_id,
-          en_id: selectedEntity,
-        }
-      }));
+      const metaFields = data
+        .map(item => {
+          const isNewRecord = item._status === 'draft';
+          
+          if (isNewRecord) {
+            // For new records, include all fields
+            return {
+              id: `meta_${Date.now()}_${Math.random()}`,
+              type: item.type || '',
+              subtype: '',
+              name: item.name || '',
+              description: item.description || '',
+              order: Number(item.order) || 0,
+              alias: item.alias || '',
+              length: 0,
+              default: item.default || '',
+              nullable: item.nullable === 'Yes',
+              format: '',
+              is_primary_grain: item.grain_info?.includes('Primary') || false,
+              is_secondary_grain: item.grain_info?.includes('Secondary') || false,
+              is_tertiary_grain: item.grain_info?.includes('Tertiary') || false,
+              tags: '',
+              custom_props: [],
+              entity_id: selectedEntity,
+              ns: selectedEntityData.subjectarea.namespace.name,
+              sa: selectedEntityData.subjectarea.name,
+              en: selectedEntityData.name,
+              entity_core: {
+                ns: selectedEntityData.subjectarea.namespace.name,
+                sa: selectedEntityData.subjectarea.name,
+                en: selectedEntityData.name,
+                ns_type: 'staging',
+                ns_id: '',
+                sa_id: selectedEntityData.sa_id,
+                en_id: selectedEntity,
+              }
+            };
+          } else {
+            // For edited records, check for actual changes
+            const originalRow = tableData.find(row => row.id === item.id);
+            if (!originalRow) return null;
+            
+            let hasChanges = false;
+            if (
+              item.name !== originalRow.name ||
+              item.type !== originalRow.type ||
+              item.nullable !== originalRow.nullable ||
+              item.default !== originalRow.default ||
+              item.description !== originalRow.description ||
+              item.alias !== originalRow.alias ||
+              item.order !== originalRow.order ||
+              item.grain_info !== originalRow.grain_info
+            ) {
+              hasChanges = true;
+            }
+            
+            // Only return if there are actual changes
+            if (!hasChanges) return null;
+            
+            return {
+              id: item.id,
+              type: item.type || '',
+              subtype: '',
+              name: item.name || '',
+              description: item.description || '',
+              order: Number(item.order) || 0,
+              alias: item.alias || '',
+              length: 0,
+              default: item.default || '',
+              nullable: item.nullable === 'Yes',
+              format: '',
+              is_primary_grain: item.grain_info?.includes('Primary') || false,
+              is_secondary_grain: item.grain_info?.includes('Secondary') || false,
+              is_tertiary_grain: item.grain_info?.includes('Tertiary') || false,
+              tags: '',
+              custom_props: [],
+              entity_id: selectedEntity,
+              ns: selectedEntityData.subjectarea.namespace.name,
+              sa: selectedEntityData.subjectarea.name,
+              en: selectedEntityData.name,
+              entity_core: {
+                ns: selectedEntityData.subjectarea.namespace.name,
+                sa: selectedEntityData.subjectarea.namespace.name,
+                en: selectedEntityData.name,
+                ns_type: 'staging',
+                ns_id: '',
+                sa_id: selectedEntityData.sa_id,
+                en_id: selectedEntity,
+              }
+            };
+          }
+        })
+        .filter((item): item is NonNullable<typeof item> => item !== null);
+
+      // Only proceed if there are meta fields to save
+      if (metaFields.length === 0) {
+        toast({
+          title: "No changes",
+          description: "No changes to save",
+        });
+        return;
+      }
 
       await entityAPI.createWithMeta(entityData, metaFields);
       

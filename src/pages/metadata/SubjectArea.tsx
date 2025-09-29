@@ -174,41 +174,64 @@ export default function SubjectArea() {
    */
   const handleSave = async (data: TableData[]) => {
     try {
-      const subjectAreasToSave = data.map(item => {
-        const isNewRecord = item._status === 'draft';
-        
-        if (isNewRecord) {
-          // For new records, send all required fields
-          return {
-            type: item.type || '',
-            name: item.name || '',
-            tags: item.tags || '',
-            custom_props: '',
-            ns_id: item.ns_id || '',
-            update_strategy_: 'I',
-            ns: item.namespace_name || '',
-          };
-        } else {
-          // For edited records, only send changed fields
-          const originalRow = tableData.find(row => row.id === item.id);
-          const changes: any = {
-            id: item.id,
-            update_strategy_: 'U',
-          };
+      const subjectAreasToSave = data
+        .map(item => {
+          const isNewRecord = item._status === 'draft';
           
-          if (originalRow) {
-            if (item.name !== originalRow.name) changes.name = item.name;
-            if (item.type !== originalRow.type) changes.type = item.type;
-            if (item.tags !== originalRow.tags) changes.tags = item.tags;
-            if (item.ns_id !== originalRow.ns_id) {
-              changes.ns_id = item.ns_id;
-              changes.ns = item.namespace_name;
+          if (isNewRecord) {
+            // For new records, send all required fields
+            return {
+              type: item.type || '',
+              name: item.name || '',
+              tags: item.tags || '',
+              custom_props: '',
+              ns_id: item.ns_id || '',
+              update_strategy_: 'I',
+              ns: item.namespace_name || '',
+            };
+          } else {
+            // For edited records, only send changed fields
+            const originalRow = tableData.find(row => row.id === item.id);
+            const changes: any = {
+              id: item.id,
+              update_strategy_: 'U',
+            };
+            
+            let hasChanges = false;
+            if (originalRow) {
+              if (item.name !== originalRow.name) {
+                changes.name = item.name;
+                hasChanges = true;
+              }
+              if (item.type !== originalRow.type) {
+                changes.type = item.type;
+                hasChanges = true;
+              }
+              if (item.tags !== originalRow.tags) {
+                changes.tags = item.tags;
+                hasChanges = true;
+              }
+              if (item.ns_id !== originalRow.ns_id) {
+                changes.ns_id = item.ns_id;
+                changes.ns = item.namespace_name;
+                hasChanges = true;
+              }
             }
+            
+            // Only return if there are actual changes
+            return hasChanges ? changes : null;
           }
-          
-          return changes;
-        }
-      });
+        })
+        .filter((item): item is NonNullable<typeof item> => item !== null);
+
+      // Only proceed if there are records to save
+      if (subjectAreasToSave.length === 0) {
+        toast({
+          title: "No changes",
+          description: "No changes to save",
+        });
+        return;
+      }
 
       await subjectAreaAPI.create(subjectAreasToSave);
       await refetch();

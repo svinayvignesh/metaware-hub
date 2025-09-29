@@ -155,40 +155,65 @@ export default function NameSpace() {
    */
   const handleSave = async (data: TableData[]) => {
     try {
-      const namespacesToSave = data.map(item => {
-        const isNewRecord = item._status === 'draft';
-        
-        if (isNewRecord) {
-          // For new records, send all required fields
-          return {
-            type: item.type || '',
-            name: item.name || '',
-            runtime: '',
-            privilege: '',
-            tags: item.tags || '',
-            custom_props: '',
-            github_repo: '',
-            status: item.status || 'Active',
-            update_strategy_: 'I',
-          };
-        } else {
-          // For edited records, only send changed fields
-          const originalRow = tableData.find(row => row.id === item.id);
-          const changes: any = {
-            id: item.id,
-            update_strategy_: 'U',
-          };
+      const namespacesToSave = data
+        .map(item => {
+          const isNewRecord = item._status === 'draft';
           
-          if (originalRow) {
-            if (item.name !== originalRow.name) changes.name = item.name;
-            if (item.type !== originalRow.type) changes.type = item.type;
-            if (item.status !== originalRow.status) changes.status = item.status;
-            if (item.tags !== originalRow.tags) changes.tags = item.tags;
+          if (isNewRecord) {
+            // For new records, send all required fields
+            return {
+              type: item.type || '',
+              name: item.name || '',
+              runtime: '',
+              privilege: '',
+              tags: item.tags || '',
+              custom_props: '',
+              github_repo: '',
+              status: item.status || 'Active',
+              update_strategy_: 'I',
+            };
+          } else {
+            // For edited records, only send changed fields
+            const originalRow = tableData.find(row => row.id === item.id);
+            const changes: any = {
+              id: item.id,
+              update_strategy_: 'U',
+            };
+            
+            let hasChanges = false;
+            if (originalRow) {
+              if (item.name !== originalRow.name) {
+                changes.name = item.name;
+                hasChanges = true;
+              }
+              if (item.type !== originalRow.type) {
+                changes.type = item.type;
+                hasChanges = true;
+              }
+              if (item.status !== originalRow.status) {
+                changes.status = item.status;
+                hasChanges = true;
+              }
+              if (item.tags !== originalRow.tags) {
+                changes.tags = item.tags;
+                hasChanges = true;
+              }
+            }
+            
+            // Only return if there are actual changes
+            return hasChanges ? changes : null;
           }
-          
-          return changes;
-        }
-      });
+        })
+        .filter((item): item is NonNullable<typeof item> => item !== null);
+
+      // Only proceed if there are records to save
+      if (namespacesToSave.length === 0) {
+        toast({
+          title: "No changes",
+          description: "No changes to save",
+        });
+        return;
+      }
 
       await namespaceAPI.create(namespacesToSave);
       await refetch();

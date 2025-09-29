@@ -244,57 +244,90 @@ export default function Entity() {
    */
   const handleSave = async (data: TableData[]) => {
     try {
-      const entitiesToSave = data.map(item => {
-        const isNewRecord = item._status === 'draft';
-        
-        if (isNewRecord) {
-          // For new records, send all required fields
-          return {
-            type: item.type || '',
-            subtype: item.subtype || '',
-            name: item.name || '',
-            description: item.description || '',
-            is_delta: item.is_delta === 'Yes',
-            runtime: '',
-            tags: item.tags || '',
-            custom_props: [],
-            dependency: '',
-            primary_grain: item.primary_grain || '',
-            secondary_grain: '',
-            tertiary_grain: '',
-            sa_id: item.sa_id || '',
-            update_strategy_: 'I',
-            ns: item.namespace_name || '',
-            sa: item.subjectarea_name || '',
-            ns_type: 'staging',
-          };
-        } else {
-          // For edited records, only send changed fields
-          const originalRow = tableData.find(row => row.id === item.id);
-          const changes: any = {
-            id: item.id,
-            update_strategy_: 'U',
-          };
+      const entitiesToSave = data
+        .map(item => {
+          const isNewRecord = item._status === 'draft';
           
-          if (originalRow) {
-            if (item.name !== originalRow.name) changes.name = item.name;
-            if (item.type !== originalRow.type) changes.type = item.type;
-            if (item.subtype !== originalRow.subtype) changes.subtype = item.subtype;
-            if (item.description !== originalRow.description) changes.description = item.description;
-            if (item.is_delta !== originalRow.is_delta) changes.is_delta = item.is_delta === 'Yes';
-            if (item.primary_grain !== originalRow.primary_grain) changes.primary_grain = item.primary_grain;
-            if (item.sa_id !== originalRow.sa_id) {
-              changes.sa_id = item.sa_id;
-              changes.sa = item.subjectarea_name;
+          if (isNewRecord) {
+            // For new records, send all required fields
+            return {
+              type: item.type || '',
+              subtype: item.subtype || '',
+              name: item.name || '',
+              description: item.description || '',
+              is_delta: item.is_delta === 'Yes',
+              runtime: '',
+              tags: item.tags || '',
+              custom_props: [],
+              dependency: '',
+              primary_grain: item.primary_grain || '',
+              secondary_grain: '',
+              tertiary_grain: '',
+              sa_id: item.sa_id || '',
+              update_strategy_: 'I',
+              ns: item.namespace_name || '',
+              sa: item.subjectarea_name || '',
+              ns_type: 'staging',
+            };
+          } else {
+            // For edited records, only send changed fields
+            const originalRow = tableData.find(row => row.id === item.id);
+            const changes: any = {
+              id: item.id,
+              update_strategy_: 'U',
+            };
+            
+            let hasChanges = false;
+            if (originalRow) {
+              if (item.name !== originalRow.name) {
+                changes.name = item.name;
+                hasChanges = true;
+              }
+              if (item.type !== originalRow.type) {
+                changes.type = item.type;
+                hasChanges = true;
+              }
+              if (item.subtype !== originalRow.subtype) {
+                changes.subtype = item.subtype;
+                hasChanges = true;
+              }
+              if (item.description !== originalRow.description) {
+                changes.description = item.description;
+                hasChanges = true;
+              }
+              if (item.is_delta !== originalRow.is_delta) {
+                changes.is_delta = item.is_delta === 'Yes';
+                hasChanges = true;
+              }
+              if (item.primary_grain !== originalRow.primary_grain) {
+                changes.primary_grain = item.primary_grain;
+                hasChanges = true;
+              }
+              if (item.sa_id !== originalRow.sa_id) {
+                changes.sa_id = item.sa_id;
+                changes.sa = item.subjectarea_name;
+                hasChanges = true;
+              }
+              if (item.ns_id !== originalRow.ns_id) {
+                changes.ns = item.namespace_name;
+                hasChanges = true;
+              }
             }
-            if (item.ns_id !== originalRow.ns_id) {
-              changes.ns = item.namespace_name;
-            }
+            
+            // Only return if there are actual changes
+            return hasChanges ? changes : null;
           }
-          
-          return changes;
-        }
-      });
+        })
+        .filter((item): item is NonNullable<typeof item> => item !== null);
+
+      // Only proceed if there are records to save
+      if (entitiesToSave.length === 0) {
+        toast({
+          title: "No changes",
+          description: "No changes to save",
+        });
+        return;
+      }
 
       await entityAPI.create(entitiesToSave);
       await refetch();
