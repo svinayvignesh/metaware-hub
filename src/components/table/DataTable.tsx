@@ -325,6 +325,7 @@ export const DataTable = ({
                       e.target.checked ? filteredData.map(row => row.id) : []
                     )
                   }
+                  className="w-5 h-5 cursor-pointer rounded-md"
                 />
               </TableHead>
               {columns.map((column) => (
@@ -349,6 +350,7 @@ export const DataTable = ({
                           : prev.filter(id => id !== row.id)
                       )
                     }
+                    className="w-5 h-5 cursor-pointer rounded-md"
                   />
                 </TableCell>
                 {columns.map((column) => (
