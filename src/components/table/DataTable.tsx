@@ -337,7 +337,6 @@ export const DataTable = ({
               {columns.map((column) => (
                 <TableHead key={column.key}>{column.title}</TableHead>
               ))}
-              <TableHead className="w-20">Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -402,18 +401,6 @@ export const DataTable = ({
                     )}
                   </TableCell>
                 ))}
-                <TableCell>
-                  {row._status && (
-                    <Badge
-                      variant={
-                        row._status === 'draft' ? 'secondary' :
-                        row._status === 'edited' ? 'default' : 'outline'
-                      }
-                    >
-                      {row._status}
-                    </Badge>
-                  )}
-                </TableCell>
               </TableRow>
             ))}
           </TableBody>
