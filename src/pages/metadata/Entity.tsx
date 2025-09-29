@@ -71,46 +71,6 @@ export default function Entity() {
     sa_id: entity.sa_id,
   })) || [];
 
-  /**
-   * Handle adding new entity
-   */
-  const handleAdd = async (newRow: Partial<TableData>) => {
-    try {
-      const entityData = {
-        id: newRow.id || '',
-        type: newRow.type || '',
-        subtype: newRow.subtype || '',
-        name: newRow.name || '',
-        description: newRow.description || '',
-        is_delta: newRow.is_delta === 'Yes',
-        runtime: '',
-        tags: '',
-        custom_props: [],
-        dependency: '',
-        primary_grain: newRow.primary_grain || '',
-        secondary_grain: '',
-        tertiary_grain: '',
-        sa_id: newRow.sa_id || '',
-        update_strategy_: 'I',
-        ns: newRow.namespace_name || '',
-        sa: newRow.subjectarea_name || '',
-        ns_type: 'staging',
-      };
-
-      await entityAPI.create([entityData]);
-      await refetch();
-      toast({
-        title: "Success",
-        description: "Entity created successfully",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: `Failed to create entity: ${error}`,
-        variant: "destructive",
-      });
-    }
-  };
 
   /**
    * Handle editing existing entity
@@ -168,21 +128,21 @@ export default function Entity() {
   const handleSave = async (data: TableData[]) => {
     try {
       const entitiesToSave = data.map(item => ({
-        id: item.id,
+        id: item.id.startsWith('new_') ? item.name || `en_${Date.now()}` : item.id,
         type: item.type || '',
         subtype: item.subtype || '',
         name: item.name || '',
         description: item.description || '',
         is_delta: item.is_delta === 'Yes',
         runtime: '',
-        tags: '',
+        tags: item.tags || '',
         custom_props: [],
         dependency: '',
         primary_grain: item.primary_grain || '',
         secondary_grain: '',
         tertiary_grain: '',
         sa_id: item.sa_id || '',
-        update_strategy_: 'U',
+        update_strategy_: item._status === 'draft' ? 'I' : 'U',
         ns: item.namespace_name || '',
         sa: item.subjectarea_name || '',
         ns_type: 'staging',
@@ -253,7 +213,6 @@ export default function Entity() {
       <DataTable
         columns={entityColumns}
         data={tableData}
-        onAdd={handleAdd}
         onEdit={handleEdit}
         onDelete={handleDelete}
         onSave={handleSave}

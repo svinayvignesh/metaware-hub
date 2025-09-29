@@ -65,36 +65,6 @@ export default function SubjectArea() {
     ns_id: subjectArea.ns_id,
   })) || [];
 
-  /**
-   * Handle adding new subject area
-   */
-  const handleAdd = async (newRow: Partial<TableData>) => {
-    try {
-      const subjectAreaData = {
-        id: newRow.id || '',
-        type: newRow.type || '',
-        name: newRow.name || '',
-        tags: newRow.tags || '',
-        custom_props: '',
-        ns_id: newRow.ns_id || '',
-        update_strategy_: 'I',
-        ns: newRow.namespace_name || '',
-      };
-
-      await subjectAreaAPI.create([subjectAreaData]);
-      await refetch();
-      toast({
-        title: "Success",
-        description: "Subject area created successfully",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: `Failed to create subject area: ${error}`,
-        variant: "destructive",
-      });
-    }
-  };
 
   /**
    * Handle editing existing subject area
@@ -151,13 +121,13 @@ export default function SubjectArea() {
   const handleSave = async (data: TableData[]) => {
     try {
       const subjectAreasToSave = data.map(item => ({
-        id: item.id,
+        id: item.id.startsWith('new_') ? item.name || `sa_${Date.now()}` : item.id,
         type: item.type || '',
         name: item.name || '',
         tags: item.tags || '',
         custom_props: '',
         ns_id: item.ns_id || '',
-        update_strategy_: 'U',
+        update_strategy_: item._status === 'draft' ? 'I' : 'U',
         ns: item.namespace_name || '',
       }));
 
@@ -226,7 +196,6 @@ export default function SubjectArea() {
       <DataTable
         columns={subjectAreaColumns}
         data={tableData}
-        onAdd={handleAdd}
         onEdit={handleEdit}
         onDelete={handleDelete}
         onSave={handleSave}

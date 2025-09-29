@@ -272,13 +272,86 @@ export default function Meta() {
   };
 
   const handleSave = async (data: TableData[]) => {
-    console.log('Save meta fields:', data);
-    // Note: API doesn't provide batch update for meta fields
-    // Would need to update entire entity with meta fields
-    toast({
-      title: "Info",
-      description: "Bulk meta field updates not yet supported via API",
-    });
+    if (!selectedEntity) {
+      toast({
+        title: "Error", 
+        description: "Please select an entity first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const selectedEntityData = availableEntities.find(e => e.id === selectedEntity);
+      if (!selectedEntityData) return;
+
+      const entityData = {
+        id: selectedEntityData.id,
+        type: selectedEntityData.type,
+        subtype: selectedEntityData.subtype || '',
+        name: selectedEntityData.name,
+        description: selectedEntityData.description || '',
+        is_delta: selectedEntityData.is_delta || false,
+        runtime: '',
+        tags: '',
+        custom_props: [],
+        dependency: '',
+        primary_grain: selectedEntityData.primary_grain || '',
+        secondary_grain: '',
+        tertiary_grain: '',
+        sa_id: selectedEntityData.sa_id,
+        update_strategy_: 'U',
+        ns: selectedEntityData.subjectarea.namespace.name,
+        sa: selectedEntityData.subjectarea.name,
+        ns_type: 'staging',
+      };
+
+      const metaFields = data.map(item => ({
+        id: item.id.startsWith('new_') ? `meta_${Date.now()}_${Math.random()}` : item.id,
+        type: item.type || '',
+        subtype: '',
+        name: item.name || '',
+        description: item.description || '',
+        order: Number(item.order) || 0,
+        alias: item.alias || '',
+        length: 0,
+        default: item.default || '',
+        nullable: item.nullable === 'Yes',
+        format: '',
+        is_primary_grain: item.grain_info?.includes('Primary') || false,
+        is_secondary_grain: item.grain_info?.includes('Secondary') || false,
+        is_tertiary_grain: item.grain_info?.includes('Tertiary') || false,
+        tags: '',
+        custom_props: [],
+        entity_id: selectedEntity,
+        ns: selectedEntityData.subjectarea.namespace.name,
+        sa: selectedEntityData.subjectarea.name,
+        en: selectedEntityData.name,
+        entity_core: {
+          ns: selectedEntityData.subjectarea.namespace.name,
+          sa: selectedEntityData.subjectarea.name,
+          en: selectedEntityData.name,
+          ns_type: 'staging',
+          ns_id: '',
+          sa_id: selectedEntityData.sa_id,
+          en_id: selectedEntity,
+        }
+      }));
+
+      await entityAPI.createWithMeta(entityData, metaFields);
+      
+      await refetch();
+      toast({
+        title: "Success",
+        description: "Changes saved successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: `Failed to save changes: ${error}`,
+        variant: "destructive",
+      });
+    }
   };
 
   /**
@@ -391,7 +464,6 @@ export default function Meta() {
             <DataTable
               columns={metaColumns}
               data={tableData}
-              onAdd={handleAdd}
               onEdit={handleEdit}
               onDelete={handleDelete}
               onSave={handleSave}

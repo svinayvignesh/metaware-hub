@@ -103,11 +103,12 @@ export const DataTable = ({
       ...columns.reduce((acc, col) => ({ ...acc, [col.key]: '' }), {}),
     };
     
-    if (editMode) {
-      setEditedData(prev => [...prev, newRow]);
-    } else {
-      onAdd?.(newRow);
+    // Always add to local state, don't call API immediately
+    if (!editMode) {
+      setEditedData([...data]);
+      setEditMode(true);
     }
+    setEditedData(prev => [...prev, newRow]);
   };
 
   const handleCellEdit = (id: string, key: string, value: string) => {

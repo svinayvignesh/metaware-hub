@@ -150,7 +150,7 @@ export default function NameSpace() {
   const handleSave = async (data: TableData[]) => {
     try {
       const namespacesToSave = data.map(item => ({
-        id: item.id,
+        id: item.id.startsWith('new_') ? item.name || `ns_${Date.now()}` : item.id,
         type: item.type || '',
         name: item.name || '',
         runtime: '',
@@ -159,8 +159,8 @@ export default function NameSpace() {
         custom_props: '',
         github_repo: '',
         status: item.status || 'Active',
-        update_strategy_: 'U',
-        namespace_id: item.id,
+        update_strategy_: item._status === 'draft' ? 'I' : 'U',
+        namespace_id: item.id.startsWith('new_') ? item.name || `ns_${Date.now()}` : item.id,
       }));
 
       await namespaceAPI.create(namespacesToSave);
@@ -228,7 +228,6 @@ export default function NameSpace() {
       <DataTable
         columns={namespaceColumns}
         data={tableData}
-        onAdd={handleAdd}
         onEdit={handleEdit}
         onDelete={handleDelete}
         onSave={handleSave}
