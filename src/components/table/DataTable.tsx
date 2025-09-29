@@ -237,7 +237,11 @@ export const DataTable = ({
             onClick={handleEditMode}
           >
             <Edit className="h-4 w-4 mr-2" />
-            {editingRows.length > 0 ? "Exit Edit" : "Edit"}
+            {editingRows.length > 0 
+              ? "Exit Edit" 
+              : selectedRows.length > 0 
+                ? `Edit ${selectedRows.length} row${selectedRows.length > 1 ? 's' : ''}` 
+                : "Edit All"}
           </Button>
           
           {hasChanges && (
