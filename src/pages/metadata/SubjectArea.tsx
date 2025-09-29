@@ -174,16 +174,19 @@ export default function SubjectArea() {
    */
   const handleSave = async (data: TableData[]) => {
     try {
-      const subjectAreasToSave = data.map(item => ({
-        id: item.id.startsWith('new_') ? item.name || `sa_${Date.now()}` : item.id,
-        type: item.type || '',
-        name: item.name || '',
-        tags: item.tags || '',
-        custom_props: '',
-        ns_id: item.ns_id || '',
-        update_strategy_: item._status === 'draft' ? 'I' : 'U',
-        ns: item.namespace_name || '',
-      }));
+      const subjectAreasToSave = data.map(item => {
+        const isNewRecord = item._status === 'draft';
+        return {
+          ...(isNewRecord ? {} : { id: item.id }),
+          type: item.type || '',
+          name: item.name || '',
+          tags: item.tags || '',
+          custom_props: '',
+          ns_id: item.ns_id || '',
+          update_strategy_: isNewRecord ? 'I' : 'U',
+          ns: item.namespace_name || '',
+        };
+      });
 
       await subjectAreaAPI.create(subjectAreasToSave);
       await refetch();

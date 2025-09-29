@@ -244,26 +244,29 @@ export default function Entity() {
    */
   const handleSave = async (data: TableData[]) => {
     try {
-      const entitiesToSave = data.map(item => ({
-        id: item.id.startsWith('new_') ? item.name || `en_${Date.now()}` : item.id,
-        type: item.type || '',
-        subtype: item.subtype || '',
-        name: item.name || '',
-        description: item.description || '',
-        is_delta: item.is_delta === 'Yes',
-        runtime: '',
-        tags: item.tags || '',
-        custom_props: [],
-        dependency: '',
-        primary_grain: item.primary_grain || '',
-        secondary_grain: '',
-        tertiary_grain: '',
-        sa_id: item.sa_id || '',
-        update_strategy_: item._status === 'draft' ? 'I' : 'U',
-        ns: item.namespace_name || '',
-        sa: item.subjectarea_name || '',
-        ns_type: 'staging',
-      }));
+      const entitiesToSave = data.map(item => {
+        const isNewRecord = item._status === 'draft';
+        return {
+          ...(isNewRecord ? {} : { id: item.id }),
+          type: item.type || '',
+          subtype: item.subtype || '',
+          name: item.name || '',
+          description: item.description || '',
+          is_delta: item.is_delta === 'Yes',
+          runtime: '',
+          tags: item.tags || '',
+          custom_props: [],
+          dependency: '',
+          primary_grain: item.primary_grain || '',
+          secondary_grain: '',
+          tertiary_grain: '',
+          sa_id: item.sa_id || '',
+          update_strategy_: isNewRecord ? 'I' : 'U',
+          ns: item.namespace_name || '',
+          sa: item.subjectarea_name || '',
+          ns_type: 'staging',
+        };
+      });
 
       await entityAPI.create(entitiesToSave);
       await refetch();
