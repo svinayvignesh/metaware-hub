@@ -1,4 +1,5 @@
-import { Settings, User } from "lucide-react";
+import { Settings, User, Sun, Moon } from "lucide-react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,8 +10,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export const Header = () => {
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    // Check initial theme
+    setIsDark(document.documentElement.classList.contains('dark'));
+  }, []);
+
   const toggleTheme = () => {
     document.documentElement.classList.toggle('dark');
+    setIsDark(!isDark);
   };
 
   return (
@@ -34,8 +43,9 @@ export const Header = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem onClick={toggleTheme}>
-                Toggle Theme
+              <DropdownMenuItem onClick={toggleTheme} className="flex items-center gap-2">
+                {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                {isDark ? 'Light Mode' : 'Dark Mode'}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>

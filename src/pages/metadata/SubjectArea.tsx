@@ -172,6 +172,7 @@ export default function SubjectArea() {
         onEdit={handleEdit}
         onDelete={handleDelete}
         onSave={handleSave}
+        entityType="Subject Area"
       />
     </div>
   );

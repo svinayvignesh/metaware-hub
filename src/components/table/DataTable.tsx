@@ -42,6 +42,7 @@ interface DataTableProps {
   onDelete?: (ids: string[]) => void;
   onSave?: (data: TableData[]) => void;
   className?: string;
+  entityType?: string; // e.g., "Namespace", "Subject Area", "Entity"
 }
 
 export const DataTable = ({
@@ -52,6 +53,7 @@ export const DataTable = ({
   onDelete,
   onSave,
   className,
+  entityType = "Row",
 }: DataTableProps) => {
   const [editMode, setEditMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -71,6 +73,13 @@ export const DataTable = ({
       )
     );
   }, [data, editedData, searchTerm, editMode, columns]);
+
+  const hasChanges = useMemo(() => {
+    return editedData.length > 0 && (
+      editedData.length !== data.length ||
+      editedData.some(row => row._status === 'draft' || row._status === 'edited')
+    );
+  }, [editedData, data]);
 
   const handleEditMode = () => {
     if (editMode) {
@@ -121,11 +130,11 @@ export const DataTable = ({
   const getRowClassName = (row: TableData) => {
     switch (row._status) {
       case 'draft':
-        return 'bg-table-row-draft border-warning/30';
+        return 'bg-table-row-draft border-l-4 border-l-warning/70 transition-all duration-200';
       case 'edited':
-        return 'bg-table-row-edited border-primary/30';
+        return 'bg-table-row-edited border-l-4 border-l-primary/70 transition-all duration-200';
       default:
-        return 'hover:bg-table-row-hover';
+        return 'hover:bg-table-row-hover transition-all duration-200';
     }
   };
 
@@ -147,16 +156,26 @@ export const DataTable = ({
             {editMode ? "Exit Edit" : "Edit"}
           </Button>
           
-          {editMode && (
-            <Button variant="default" size="sm" onClick={handleSave}>
+          {(editMode || hasChanges) && (
+            <Button 
+              variant="default" 
+              size="sm" 
+              onClick={handleSave}
+              className="animate-fade-in"
+            >
               <Save className="h-4 w-4 mr-2" />
-              Save
+              Save Changes
             </Button>
           )}
           
-          <Button variant="outline" size="sm" onClick={handleAddRow}>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleAddRow}
+            className="transition-all duration-200 hover:scale-105"
+          >
             <Plus className="h-4 w-4 mr-2" />
-            Add Row
+            Add {entityType}
           </Button>
           
           {selectedRows.length > 0 && (

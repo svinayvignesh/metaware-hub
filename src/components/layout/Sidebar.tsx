@@ -98,31 +98,35 @@ export const Sidebar = () => {
                 >
                   <item.icon className="h-4 w-4" />
                   <span className="flex-1 text-left">{item.title}</span>
-                  {expandedItems.includes(item.title) ? (
-                    <ChevronDown className="h-4 w-4" />
-                  ) : (
+                  <div className={cn(
+                    "transition-transform duration-200",
+                    expandedItems.includes(item.title) ? "rotate-90" : "rotate-0"
+                  )}>
                     <ChevronRight className="h-4 w-4" />
-                  )}
+                  </div>
                 </Button>
                 
-                {expandedItems.includes(item.title) && (
-                  <div className="ml-6 mt-1 space-y-1">
-                    {item.children.map((child) => (
-                      <NavLink
-                        key={child.href}
-                        to={child.href}
-                        className={({ isActive }) =>
-                          cn(
-                            "block px-3 py-2 rounded-md text-sm transition-colors hover:bg-sidebar-item-hover",
-                            isActive && "bg-sidebar-item-active text-primary font-medium"
-                          )
-                        }
-                      >
-                        {child.title}
-                      </NavLink>
-                    ))}
-                  </div>
-                )}
+                <div className={cn(
+                  "ml-6 mt-1 space-y-1 overflow-hidden transition-all duration-300 ease-in-out",
+                  expandedItems.includes(item.title) 
+                    ? "max-h-96 opacity-100" 
+                    : "max-h-0 opacity-0"
+                )}>
+                  {item.children.map((child) => (
+                    <NavLink
+                      key={child.href}
+                      to={child.href}
+                      className={({ isActive }) =>
+                        cn(
+                          "block px-3 py-2 rounded-md text-sm transition-all duration-200 hover:bg-sidebar-item-hover transform hover:translate-x-1",
+                          isActive && "bg-sidebar-item-active text-primary font-medium"
+                        )
+                      }
+                    >
+                      {child.title}
+                    </NavLink>
+                  ))}
+                </div>
               </div>
             ) : (
               <NavLink

@@ -178,6 +178,7 @@ export default function Entity() {
         onEdit={handleEdit}
         onDelete={handleDelete}
         onSave={handleSave}
+        entityType="Entity"
       />
     </div>
   );

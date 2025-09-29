@@ -167,6 +167,7 @@ export default function NameSpace() {
         onEdit={handleEdit}
         onDelete={handleDelete}
         onSave={handleSave}
+        entityType="Namespace"
       />
     </div>
   );

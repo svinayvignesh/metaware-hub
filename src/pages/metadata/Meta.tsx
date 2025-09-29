@@ -295,6 +295,7 @@ export default function Meta() {
               onEdit={handleEdit}
               onDelete={handleDelete}
               onSave={handleSave}
+              entityType="Metadata"
             />
           )}
         </div>
