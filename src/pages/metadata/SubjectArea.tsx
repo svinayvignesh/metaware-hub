@@ -176,16 +176,38 @@ export default function SubjectArea() {
     try {
       const subjectAreasToSave = data.map(item => {
         const isNewRecord = item._status === 'draft';
-        return {
-          ...(isNewRecord ? {} : { id: item.id }),
-          type: item.type || '',
-          name: item.name || '',
-          tags: item.tags || '',
-          custom_props: '',
-          ns_id: item.ns_id || '',
-          update_strategy_: isNewRecord ? 'I' : 'U',
-          ns: item.namespace_name || '',
-        };
+        
+        if (isNewRecord) {
+          // For new records, send all required fields
+          return {
+            type: item.type || '',
+            name: item.name || '',
+            tags: item.tags || '',
+            custom_props: '',
+            ns_id: item.ns_id || '',
+            update_strategy_: 'I',
+            ns: item.namespace_name || '',
+          };
+        } else {
+          // For edited records, only send changed fields
+          const originalRow = tableData.find(row => row.id === item.id);
+          const changes: any = {
+            id: item.id,
+            update_strategy_: 'U',
+          };
+          
+          if (originalRow) {
+            if (item.name !== originalRow.name) changes.name = item.name;
+            if (item.type !== originalRow.type) changes.type = item.type;
+            if (item.tags !== originalRow.tags) changes.tags = item.tags;
+            if (item.ns_id !== originalRow.ns_id) {
+              changes.ns_id = item.ns_id;
+              changes.ns = item.namespace_name;
+            }
+          }
+          
+          return changes;
+        }
       });
 
       await subjectAreaAPI.create(subjectAreasToSave);

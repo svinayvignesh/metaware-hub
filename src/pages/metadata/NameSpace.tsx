@@ -157,19 +157,37 @@ export default function NameSpace() {
     try {
       const namespacesToSave = data.map(item => {
         const isNewRecord = item._status === 'draft';
-        return {
-          ...(isNewRecord ? {} : { id: item.id }),
-          type: item.type || '',
-          name: item.name || '',
-          runtime: '',
-          privilege: '',
-          tags: item.tags || '',
-          custom_props: '',
-          github_repo: '',
-          status: item.status || 'Active',
-          update_strategy_: isNewRecord ? 'I' : 'U',
-          ...(isNewRecord ? {} : { namespace_id: item.id }),
-        };
+        
+        if (isNewRecord) {
+          // For new records, send all required fields
+          return {
+            type: item.type || '',
+            name: item.name || '',
+            runtime: '',
+            privilege: '',
+            tags: item.tags || '',
+            custom_props: '',
+            github_repo: '',
+            status: item.status || 'Active',
+            update_strategy_: 'I',
+          };
+        } else {
+          // For edited records, only send changed fields
+          const originalRow = tableData.find(row => row.id === item.id);
+          const changes: any = {
+            id: item.id,
+            update_strategy_: 'U',
+          };
+          
+          if (originalRow) {
+            if (item.name !== originalRow.name) changes.name = item.name;
+            if (item.type !== originalRow.type) changes.type = item.type;
+            if (item.status !== originalRow.status) changes.status = item.status;
+            if (item.tags !== originalRow.tags) changes.tags = item.tags;
+          }
+          
+          return changes;
+        }
       });
 
       await namespaceAPI.create(namespacesToSave);

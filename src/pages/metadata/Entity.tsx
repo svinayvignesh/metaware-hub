@@ -246,26 +246,54 @@ export default function Entity() {
     try {
       const entitiesToSave = data.map(item => {
         const isNewRecord = item._status === 'draft';
-        return {
-          ...(isNewRecord ? {} : { id: item.id }),
-          type: item.type || '',
-          subtype: item.subtype || '',
-          name: item.name || '',
-          description: item.description || '',
-          is_delta: item.is_delta === 'Yes',
-          runtime: '',
-          tags: item.tags || '',
-          custom_props: [],
-          dependency: '',
-          primary_grain: item.primary_grain || '',
-          secondary_grain: '',
-          tertiary_grain: '',
-          sa_id: item.sa_id || '',
-          update_strategy_: isNewRecord ? 'I' : 'U',
-          ns: item.namespace_name || '',
-          sa: item.subjectarea_name || '',
-          ns_type: 'staging',
-        };
+        
+        if (isNewRecord) {
+          // For new records, send all required fields
+          return {
+            type: item.type || '',
+            subtype: item.subtype || '',
+            name: item.name || '',
+            description: item.description || '',
+            is_delta: item.is_delta === 'Yes',
+            runtime: '',
+            tags: item.tags || '',
+            custom_props: [],
+            dependency: '',
+            primary_grain: item.primary_grain || '',
+            secondary_grain: '',
+            tertiary_grain: '',
+            sa_id: item.sa_id || '',
+            update_strategy_: 'I',
+            ns: item.namespace_name || '',
+            sa: item.subjectarea_name || '',
+            ns_type: 'staging',
+          };
+        } else {
+          // For edited records, only send changed fields
+          const originalRow = tableData.find(row => row.id === item.id);
+          const changes: any = {
+            id: item.id,
+            update_strategy_: 'U',
+          };
+          
+          if (originalRow) {
+            if (item.name !== originalRow.name) changes.name = item.name;
+            if (item.type !== originalRow.type) changes.type = item.type;
+            if (item.subtype !== originalRow.subtype) changes.subtype = item.subtype;
+            if (item.description !== originalRow.description) changes.description = item.description;
+            if (item.is_delta !== originalRow.is_delta) changes.is_delta = item.is_delta === 'Yes';
+            if (item.primary_grain !== originalRow.primary_grain) changes.primary_grain = item.primary_grain;
+            if (item.sa_id !== originalRow.sa_id) {
+              changes.sa_id = item.sa_id;
+              changes.sa = item.subjectarea_name;
+            }
+            if (item.ns_id !== originalRow.ns_id) {
+              changes.ns = item.namespace_name;
+            }
+          }
+          
+          return changes;
+        }
       });
 
       await entityAPI.create(entitiesToSave);
