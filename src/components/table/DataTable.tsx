@@ -115,7 +115,18 @@ export const DataTable = ({
       // Toggle editing for selected rows
       const hasSelectedInEdit = selectedRows.some(id => editingRows.includes(id));
       if (hasSelectedInEdit) {
+        // Exiting edit mode for selected rows - revert their changes
         setEditingRows(prev => prev.filter(id => !selectedRows.includes(id)));
+        setEditedData(prev => {
+          // Revert selected rows to original data
+          return prev.map(row => {
+            if (selectedRows.includes(row.id) && row._status !== 'draft') {
+              const original = data.find(d => d.id === row.id);
+              return original ? { ...original } : row;
+            }
+            return row;
+          });
+        });
       } else {
         setEditingRows(prev => [...prev, ...selectedRows.filter(id => !prev.includes(id))]);
         if (editedData.length === 0) setEditedData([...data]);
