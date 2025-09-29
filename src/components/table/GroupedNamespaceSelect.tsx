@@ -58,7 +58,7 @@ export const GroupedNamespaceSelect = ({
         <SelectValue placeholder={placeholder}>
           {selectedNamespace && showTypePrefix && (
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-xs">
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0">
                 {selectedNamespace.type}
               </Badge>
               <span>{selectedNamespace.name}</span>
@@ -81,7 +81,7 @@ export const GroupedNamespaceSelect = ({
               >
                 {showTypePrefix ? (
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0">
                       {namespace.type}
                     </Badge>
                     <span>{namespace.name}</span>

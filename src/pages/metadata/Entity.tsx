@@ -144,7 +144,7 @@ export default function Entity() {
           }
           return (
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-xs">
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0">
                 {row.namespace_type}
               </Badge>
               <span>{row.namespace_name}</span>
