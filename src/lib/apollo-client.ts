@@ -19,8 +19,8 @@ import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
  * Enhanced with error handling and connection management
  */
 const httpLink = createHttpLink({
-  uri: 'http://localhost:4000/graphql',
-  credentials: 'include',
+  uri: 'http://localhost:8000/graphql',
+  // credentials: 'include',
 });
 
 /**

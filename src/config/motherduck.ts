@@ -4,6 +4,3 @@
  * DO NOT use in production.
  */
 export const MOTHERDUCK_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNhYmFyaXNtaXRoYThAZ21haWwuY29tIiwic2Vzc2lvbiI6InNhYmFyaXNtaXRoYTguZ21haWwuY29tIiwicGF0Ijoicm9wSEJWMWZYRHprRkhjNjlaU3U0b0tMbV8wSXRlM0xzRWN6cW1QN3QxbyIsInVzZXJJZCI6ImQwMDhkYjBiLTBhOGQtNDg2YS04MzdjLWJiOTNiMDFjODhiYiIsImlzcyI6Im1kX3BhdCIsInJlYWRPbmx5IjpmYWxzZSwidG9rZW5UeXBlIjoicmVhZF93cml0ZSIsImlhdCI6MTc0MjU4OTUyOH0.AmjbSQp_H80y2xgdRtHNESRTCXRwCusT7Jt-ra9X1RA";
-
-export const MOTHERDUCK_DATABASE = "my_database";
-export const MOTHERDUCK_SCHEMA = "public";

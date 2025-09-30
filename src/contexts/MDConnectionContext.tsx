@@ -1,6 +1,6 @@
 import { createContext, useContext, useCallback, useState, useEffect, ReactNode } from 'react';
 import { MDConnection } from '@motherduck/wasm-client';
-import { MOTHERDUCK_TOKEN, MOTHERDUCK_DATABASE, MOTHERDUCK_SCHEMA } from '@/config/motherduck';
+import { MOTHERDUCK_TOKEN } from '@/config/motherduck';
 
 interface MDConnectionContextType {
   connection: MDConnection | null;
@@ -44,12 +44,6 @@ export const MDConnectionProvider = ({ children }: MDConnectionProviderProps) =>
       
       await conn.isInitialized();
       console.log('MotherDuck initialized');
-      
-      await conn.evaluateQuery(`USE ${MOTHERDUCK_DATABASE};`);
-      console.log(`Using database: ${MOTHERDUCK_DATABASE}`);
-      
-      await conn.evaluateQuery(`SET schema='${MOTHERDUCK_SCHEMA}';`);
-      console.log(`Schema set to: ${MOTHERDUCK_SCHEMA}`);
       
       setConnection(conn);
       setReady(true);

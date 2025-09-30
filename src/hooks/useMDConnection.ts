@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { MDConnection } from '@motherduck/wasm-client';
-import { MOTHERDUCK_TOKEN, MOTHERDUCK_DATABASE, MOTHERDUCK_SCHEMA } from '@/config/motherduck';
+import { MOTHERDUCK_TOKEN } from '@/config/motherduck';
 import { toast } from '@/hooks/use-toast';
 
 interface UseMDConnectionReturn {
@@ -53,10 +53,6 @@ export function useMDConnection(): UseMDConnectionReturn {
 
       // Wait for initialization to complete
       await conn.isInitialized();
-
-      // Set default database and schema
-      await conn.evaluateQuery(`USE ${MOTHERDUCK_DATABASE};`);
-      await conn.evaluateQuery(`SET schema='${MOTHERDUCK_SCHEMA}';`);
 
       // Store globally
       globalConnection = conn;
