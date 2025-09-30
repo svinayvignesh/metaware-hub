@@ -64,7 +64,7 @@ export function RuleEditor({ open, onClose, columnName, entityContext }: RuleEdi
         console.log("All rules:", allRules);
         console.log("Filtering for column:", columnName);
         // Filter rules for this specific column
-        const columnRules = allRules.filter((rule: Rule) => rule.meta === columnName);
+        const columnRules = allRules.filter((rule: Rule) => rule.meta?.name === columnName);
         console.log("Filtered column rules:", columnRules);
         setExistingRules(columnRules);
       } else {
@@ -226,7 +226,7 @@ export function RuleEditor({ open, onClose, columnName, entityContext }: RuleEdi
           is_shared: rule.is_shared,
           language: rule.language,
           meta_id: rule.meta_id,
-          meta: rule.meta,
+          meta: rule.meta?.name,
         })),
         ...localRules.map((rule) => ({
           type: "dq",

@@ -25,6 +25,11 @@ export const GET_META_RULESETS = gql`
         rule_status
         subtype
         type
+        meta {
+          name
+          alias
+          id
+        }
       }
       id
       source_id
@@ -59,7 +64,11 @@ export interface Rule {
   fn_package?: string;
   fn_imports?: string;
   meta_id?: string;
-  meta?: string;
+  meta?: {
+    name: string;
+    alias?: string;
+    id: string;
+  };
 }
 
 export interface Ruleset {
