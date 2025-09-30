@@ -79,7 +79,7 @@ export default function Meta() {
   const [selectedSubjectArea, setSelectedSubjectArea] = useState<string>('');
   const [selectedEntity, setSelectedEntity] = useState<string>('');
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
-  const [draftRowsFromUpload, setDraftRowsFromUpload] = useState<TableData[]>([]);
+  const [editedData, setEditedData] = useState<TableData[]>([]);
   const { toast } = useToast();
 
   // GraphQL queries for dropdown data
@@ -142,8 +142,8 @@ export default function Meta() {
     };
   }) || [];
 
-  // Combine existing data with draft rows from upload
-  const tableData: TableData[] = [...draftRowsFromUpload, ...existingTableData];
+  // Use existing data as base table data
+  const tableData: TableData[] = existingTableData;
 
   /**
    * Handle namespace selection change
@@ -170,7 +170,7 @@ export default function Meta() {
    */
   const handleEntityChange = (value: string) => {
     setSelectedEntity(value);
-    setDraftRowsFromUpload([]); // Clear draft rows when entity changes
+    setEditedData([]); // Clear draft rows when entity changes
   };
 
   /**
@@ -429,7 +429,7 @@ export default function Meta() {
       await entityAPI.createWithMeta(entityData, metaFields);
       
       // Clear draft rows after successful save
-      setDraftRowsFromUpload([]);
+      setEditedData([]);
       
       await refetch();
       toast({
@@ -481,7 +481,8 @@ export default function Meta() {
           order: row.order || index,
           _status: 'draft',
         }));
-        setDraftRowsFromUpload(formattedDraftRows);
+        // Combine existing data with draft rows and set as edited data
+        setEditedData([...formattedDraftRows, ...existingTableData]);
       }
     } else {
       // If data was persisted, refetch from server
@@ -639,6 +640,8 @@ export default function Meta() {
               onDelete={handleDelete}
               onSave={handleSave}
               entityType="Metadata"
+              externalEditedData={editedData}
+              onEditedDataChange={setEditedData}
             />
           )}
         </div>
