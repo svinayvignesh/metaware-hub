@@ -16,7 +16,7 @@
  * @version 1.0.0
  */
 
-import { useQuery } from '@apollo/client';
+import { useQuery } from '@apollo/client/react/hooks';
 import { DataTable, Column, TableData } from "@/components/table/DataTable";
 import { GET_NAMESPACES, type GetNamespacesResponse } from "@/graphql/queries";
 import { namespaceAPI } from "@/services/api";

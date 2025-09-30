@@ -17,7 +17,7 @@
  */
 
 import { useState } from "react";
-import { useQuery } from '@apollo/client';
+import { useQuery } from '@apollo/client/react/hooks';
 import { Upload } from "lucide-react";
 import { DataTable, Column, TableData } from "@/components/table/DataTable";
 import {
@@ -106,7 +106,7 @@ export default function Meta() {
     }
     groups[type].push(namespace);
     return groups;
-  }, {} as Record<string, typeof namespacesData.meta_namespace>) || {};
+  }, {} as Record<string, Array<{ id: string; name: string; type: string; status: string; tags?: string[] }>>) || {};
 
   /**
    * Filter subject areas based on selected namespace

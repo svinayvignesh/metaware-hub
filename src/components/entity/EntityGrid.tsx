@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client/react/hooks";
 import { Database } from "lucide-react";
 import { GET_ENTITIES, type GetEntitiesResponse } from "@/graphql/queries";
 import { Card, CardContent } from "@/components/ui/card";

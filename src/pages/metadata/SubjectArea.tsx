@@ -17,7 +17,7 @@
  */
 
 import { useState } from 'react';
-import { useQuery } from '@apollo/client';
+import { useQuery } from '@apollo/client/react/hooks';
 import { DataTable, Column, TableData } from "@/components/table/DataTable";
 import { GET_SUBJECTAREAS, GET_NAMESPACES, type GetSubjectAreasResponse, type GetNamespacesResponse } from "@/graphql/queries";
 import { subjectAreaAPI } from "@/services/api";

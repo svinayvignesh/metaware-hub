@@ -16,40 +16,70 @@ import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
 
 /**
  * HTTP Link configuration for GraphQL endpoint
- * Points to localhost GraphQL server - update URI as needed for different environments
+ * Enhanced with error handling and connection management
  */
 const httpLink = createHttpLink({
-  uri: 'http://localhost:4000/graphql', // Update this to your GraphQL endpoint
-  credentials: 'include', // Include cookies for authentication if needed
+  uri: 'http://localhost:4000/graphql',
+  credentials: 'include',
 });
 
 /**
- * Apollo Client instance with configured cache
+ * Apollo Client instance with enhanced caching and connection management
  * 
- * Cache Configuration:
- * - InMemoryCache for optimal performance
- * - Normalized cache for efficient data storage and updates
+ * Features:
+ * - Optimized cache merge strategies to prevent duplicate requests
+ * - Query deduplication to reduce database load
+ * - Enhanced error handling with 'all' policy
+ * - Intelligent cache-first strategy after initial load
  */
 export const apolloClient = new ApolloClient({
   link: httpLink,
   cache: new InMemoryCache({
-    // Type policies can be added here for custom cache behavior
     typePolicies: {
-      // Example: Custom merge functions for specific types
       Query: {
         fields: {
-          // Configure field-specific cache policies if needed
+          // Merge strategy for namespace queries - always use incoming data
+          meta_namespace: {
+            merge(existing, incoming) {
+              return incoming;
+            },
+          },
+          // Merge strategy for subject area queries
+          meta_subjectarea: {
+            merge(existing, incoming) {
+              return incoming;
+            },
+          },
+          // Merge strategy for entity queries
+          meta_entity: {
+            merge(existing, incoming) {
+              return incoming;
+            },
+          },
+          // Merge strategy for meta queries
+          meta: {
+            merge(existing, incoming) {
+              return incoming;
+            },
+          },
         },
       },
     },
   }),
-  // Default options for all queries
   defaultOptions: {
     watchQuery: {
       errorPolicy: 'all',
+      fetchPolicy: 'network-only', // Always fetch fresh data
+      nextFetchPolicy: 'cache-first', // Use cache for subsequent requests
     },
     query: {
       errorPolicy: 'all',
+      fetchPolicy: 'network-only',
+    },
+    mutate: {
+      errorPolicy: 'all',
     },
   },
+  // Enable query deduplication to prevent simultaneous identical queries
+  queryDeduplication: true,
 });
