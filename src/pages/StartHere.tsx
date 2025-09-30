@@ -4,7 +4,7 @@ import { ArrowRight, BookOpen, BarChart3, Database } from "lucide-react";
 
 export default function StartHere() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       <div>
         <h1 className="text-3xl font-bold text-foreground mb-2">Welcome to MetaWare</h1>
         <p className="text-lg text-muted-foreground">

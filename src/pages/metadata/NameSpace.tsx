@@ -276,7 +276,7 @@ export default function NameSpace() {
   // Handle loading state
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 p-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground">NameSpace Management</h1>
           <p className="text-muted-foreground">
@@ -293,7 +293,7 @@ export default function NameSpace() {
   // Handle error state
   if (error) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 p-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground">NameSpace Management</h1>
           <p className="text-muted-foreground">
@@ -310,7 +310,7 @@ export default function NameSpace() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       {/* Page Header */}
       <div>
         <h1 className="text-2xl font-bold text-foreground">NameSpace Management</h1>

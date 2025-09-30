@@ -389,7 +389,7 @@ export default function Entity() {
   // Handle loading state
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 p-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Entity Management</h1>
           <p className="text-muted-foreground">
@@ -406,7 +406,7 @@ export default function Entity() {
   // Handle error state
   if (error) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 p-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Entity Management</h1>
           <p className="text-muted-foreground">
@@ -423,7 +423,7 @@ export default function Entity() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       {/* Page Header */}
       <div>
         <h1 className="text-2xl font-bold text-foreground">Entity Management</h1>
