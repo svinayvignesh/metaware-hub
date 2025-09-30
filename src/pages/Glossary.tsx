@@ -60,9 +60,9 @@ export default function Glossary() {
         selectedSubjectAreaId={selectedSubjectAreaId || undefined}
       />
       
-      <div className="flex-1 flex gap-4 overflow-hidden">
-        <div className="w-96 overflow-y-auto border-r">
-          <div className="p-6 space-y-6">
+      <div className="flex-1 overflow-hidden">
+        {!selectedEntity ? (
+          <div className="p-6 space-y-6 h-full overflow-y-auto">
             <div>
               <h1 className="text-2xl font-bold text-foreground">Business Glossary</h1>
               <p className="text-muted-foreground">
@@ -87,7 +87,6 @@ export default function Glossary() {
                 onClick={() => {
                   setSearchQuery("");
                   setSelectedSubjectAreaId(null);
-                  setSelectedEntity(null);
                 }}
                 title="Reset search and filters"
               >
@@ -102,33 +101,31 @@ export default function Glossary() {
               onEntityClick={setSelectedEntity}
             />
           </div>
-        </div>
-
-        <div className="flex-1 overflow-hidden p-6">
-          {!selectedEntity ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center space-y-2">
-                <Database className="h-16 w-16 mx-auto text-muted-foreground opacity-50" />
-                <p className="text-muted-foreground">Select an entity to view its data</p>
-              </div>
+        ) : !ready ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center space-y-2">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">Connecting to database...</p>
             </div>
-          ) : !ready ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center space-y-2">
-                <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">Connecting to database...</p>
-              </div>
+          </div>
+        ) : loading ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center space-y-2">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">Loading data...</p>
             </div>
-          ) : loading ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center space-y-2">
-                <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">Loading data...</p>
-              </div>
-            </div>
-          ) : (
-            <div className="h-full flex flex-col">
-              <div className="mb-4">
+          </div>
+        ) : (
+          <div className="h-full flex flex-col p-6">
+            <div className="mb-4 flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedEntity(null)}
+              >
+                ← Back to list
+              </Button>
+              <div className="flex-1">
                 <h2 className="text-xl font-semibold flex items-center gap-2">
                   <Database className="h-5 w-5 text-primary" />
                   {selectedEntity.name}
@@ -137,25 +134,25 @@ export default function Glossary() {
                   {selectedEntity.subjectarea.namespace.name}.{selectedEntity.subjectarea.name}
                 </p>
               </div>
-              
-              {data.rows.length === 0 ? (
-                <div className="flex items-center justify-center flex-1">
-                  <div className="text-center space-y-2">
-                    <Database className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
-                    <p className="text-muted-foreground">No data found</p>
-                    <Button variant="outline" size="sm" onClick={fetchData}>
-                      Retry
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex-1 overflow-hidden">
-                  <DataTable columns={columns} data={data.rows} />
-                </div>
-              )}
             </div>
-          )}
-        </div>
+            
+            {data.rows.length === 0 ? (
+              <div className="flex items-center justify-center flex-1">
+                <div className="text-center space-y-2">
+                  <Database className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
+                  <p className="text-muted-foreground">No data found</p>
+                  <Button variant="outline" size="sm" onClick={fetchData}>
+                    Retry
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex-1 overflow-hidden">
+                <DataTable columns={columns} data={data.rows} />
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
