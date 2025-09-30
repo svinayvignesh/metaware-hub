@@ -34,8 +34,8 @@ import { gql } from '@apollo/client';
  * ```
  */
 export const GET_NAMESPACES = gql`
-  query GET_NAMESPACES {
-    meta_namespace(status: "", type: "") {
+  query GET_NAMESPACES($status: String, $type: String) {
+    namespaces: meta_namespace(status: $status, type: $type) {
       id
       name
       status
