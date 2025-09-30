@@ -26,6 +26,9 @@ import {
   Search,
   Filter,
   Maximize,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -77,6 +80,8 @@ export const DataTable = ({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [newlyAddedIds, setNewlyAddedIds] = useState<string[]>([]);
+  const [sortColumn, setSortColumn] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   // Use external edited data if provided, otherwise use internal state
   const editedData = externalEditedData !== undefined ? externalEditedData : internalEditedData;
@@ -96,13 +101,38 @@ export const DataTable = ({
       );
     }
     
-    // Sort to show draft rows at the top
+    // Sort data
     return filtered.sort((a, b) => {
+      // Always show draft rows at the top regardless of sorting
       if (a._status === 'draft' && b._status !== 'draft') return -1;
       if (a._status !== 'draft' && b._status === 'draft') return 1;
+      
+      // Apply column sorting if a column is selected
+      if (sortColumn) {
+        const aValue = a[sortColumn];
+        const bValue = b[sortColumn];
+        
+        // Handle null/undefined values
+        if (aValue == null && bValue == null) return 0;
+        if (aValue == null) return 1;
+        if (bValue == null) return -1;
+        
+        // Compare values
+        let comparison = 0;
+        if (typeof aValue === 'number' && typeof bValue === 'number') {
+          comparison = aValue - bValue;
+        } else if (typeof aValue === 'boolean' && typeof bValue === 'boolean') {
+          comparison = aValue === bValue ? 0 : aValue ? -1 : 1;
+        } else {
+          comparison = String(aValue).localeCompare(String(bValue));
+        }
+        
+        return sortDirection === 'asc' ? comparison : -comparison;
+      }
+      
       return 0;
     });
-  }, [data, editedData, searchTerm, columns]);
+  }, [data, editedData, searchTerm, columns, sortColumn, sortDirection]);
 
   const hasChanges = useMemo(() => {
     return editedData.length > 0 && (
@@ -211,6 +241,31 @@ export const DataTable = ({
       onDelete?.(selectedRows);
       setSelectedRows([]);
     }
+  };
+
+  const handleSort = (columnKey: string) => {
+    if (sortColumn === columnKey) {
+      // Toggle direction or clear sort
+      if (sortDirection === 'asc') {
+        setSortDirection('desc');
+      } else {
+        setSortColumn(null);
+        setSortDirection('asc');
+      }
+    } else {
+      // Sort by new column
+      setSortColumn(columnKey);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (columnKey: string) => {
+    if (sortColumn !== columnKey) {
+      return <ArrowUpDown className="h-4 w-4 ml-2 opacity-50" />;
+    }
+    return sortDirection === 'asc' 
+      ? <ArrowUp className="h-4 w-4 ml-2" />
+      : <ArrowDown className="h-4 w-4 ml-2" />;
   };
 
   const getRowClassName = (row: TableData) => {
@@ -333,7 +388,16 @@ export const DataTable = ({
                 />
               </TableHead>
               {columns.map((column) => (
-                <TableHead key={column.key}>{column.title}</TableHead>
+                <TableHead 
+                  key={column.key}
+                  className="cursor-pointer select-none hover:bg-muted/50"
+                  onClick={() => handleSort(column.key)}
+                >
+                  <div className="flex items-center">
+                    {column.title}
+                    {getSortIcon(column.key)}
+                  </div>
+                </TableHead>
               ))}
             </TableRow>
           </TableHeader>
