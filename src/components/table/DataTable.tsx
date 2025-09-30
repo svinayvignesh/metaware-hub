@@ -415,18 +415,19 @@ export const DataTable = ({
           <TableHeader className="bg-table-header sticky top-0 z-20 shadow-sm">
             <TableRow>
               <TableHead className="w-12">
-                <input
-                  type="checkbox"
-                  checked={selectedRows.length === filteredData.length && filteredData.length > 0}
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    setSelectedRows(
-                      e.target.checked ? filteredData.map(row => row.id) : []
-                    );
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                  className="w-5 h-5 cursor-pointer rounded-md"
-                />
+                <div onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    checked={selectedRows.length === filteredData.length && filteredData.length > 0}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      setSelectedRows(
+                        e.target.checked ? filteredData.map(row => row.id) : []
+                      );
+                    }}
+                    className="w-5 h-5 cursor-pointer rounded-md"
+                  />
+                </div>
               </TableHead>
               {columns.map((column) => (
                 <TableHead 
@@ -456,20 +457,21 @@ export const DataTable = ({
                   row._status === 'draft' && "pl-2",
                   row._status === 'edited' && "pl-2"
                 )}>
-                  <input
-                    type="checkbox"
-                    checked={selectedRows.includes(row.id)}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      setSelectedRows(prev =>
-                        e.target.checked
-                          ? [...prev, row.id]
-                          : prev.filter(id => id !== row.id)
-                      );
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                    className="w-5 h-5 cursor-pointer rounded-md"
-                  />
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={selectedRows.includes(row.id)}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        setSelectedRows(prev =>
+                          e.target.checked
+                            ? [...prev, row.id]
+                            : prev.filter(id => id !== row.id)
+                        );
+                      }}
+                      className="w-5 h-5 cursor-pointer rounded-md"
+                    />
+                  </div>
                 </TableCell>
                 {columns.map((column) => (
                   <TableCell key={column.key}>
