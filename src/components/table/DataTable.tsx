@@ -41,6 +41,7 @@ export interface Column {
   options?: string[] | { value: string; label: string }[];
   renderCell?: (row: TableData, isEditing: boolean, onChange: (value: string) => void) => React.ReactNode;
   required?: boolean;
+  onHeaderClick?: (columnKey: string) => void;
 }
 
 export interface TableData {
@@ -433,11 +434,17 @@ export const DataTable = ({
                 <TableHead 
                   key={column.key}
                   className="cursor-pointer select-none hover:bg-muted/50"
-                  onClick={() => handleSort(column.key)}
+                  onClick={(e) => {
+                    if (column.onHeaderClick) {
+                      column.onHeaderClick(column.key);
+                    } else {
+                      handleSort(column.key);
+                    }
+                  }}
                 >
                   <div className="flex items-center">
                     {column.title}
-                    {getSortIcon(column.key)}
+                    {!column.onHeaderClick && getSortIcon(column.key)}
                   </div>
                 </TableHead>
               ))}

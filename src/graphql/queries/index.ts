@@ -48,3 +48,12 @@ export {
   type GetMetaForEntityResponse,
   type GetMetaForEntityVariables,
 } from './meta';
+
+// Ruleset-related queries and types
+export {
+  GET_META_RULESETS,
+  type Rule,
+  type Ruleset,
+  type GetMetaRulesetsResponse,
+  type GetMetaRulesetsVariables,
+} from './ruleset';

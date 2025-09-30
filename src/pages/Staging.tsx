@@ -7,6 +7,7 @@ import { queryMDTable } from "@/hooks/useMDConnection";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, X, Database, Loader2 } from "lucide-react";
+import { RuleEditor } from "@/components/rules/RuleEditor";
 
 export default function Staging() {
   const [selectedSubjectAreaId, setSelectedSubjectAreaId] = useState<string | null>(null);
@@ -15,6 +16,8 @@ export default function Staging() {
   const { connection, connect, ready } = useMDConnectionContext();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<{ columns: string[]; rows: any[] }>({ columns: [], rows: [] });
+  const [ruleEditorOpen, setRuleEditorOpen] = useState(false);
+  const [selectedColumn, setSelectedColumn] = useState<string>("");
 
   // Connect to database on mount
   useEffect(() => {
@@ -58,11 +61,26 @@ export default function Staging() {
     }
   };
 
+  const handleColumnClick = (columnKey: string) => {
+    setSelectedColumn(columnKey);
+    setRuleEditorOpen(true);
+  };
+
   const columns = data.columns.map((col) => ({
     key: col,
     title: col,
     type: "text" as const,
+    onHeaderClick: handleColumnClick,
   }));
+
+  const entityContext = selectedEntity ? {
+    ns: selectedEntity.subjectarea.namespace.name,
+    sa: selectedEntity.subjectarea.name,
+    en: selectedEntity.name,
+    ns_id: selectedEntity.subjectarea.namespace.id,
+    sa_id: selectedEntity.subjectarea.id,
+    en_id: selectedEntity.id,
+  } : null;
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] fixed left-64 right-0 top-14">
@@ -166,6 +184,15 @@ export default function Staging() {
           </div>
         )}
       </div>
+
+      {entityContext && (
+        <RuleEditor
+          open={ruleEditorOpen}
+          onClose={() => setRuleEditorOpen(false)}
+          columnName={selectedColumn}
+          entityContext={entityContext}
+        />
+      )}
     </div>
   );
 }
