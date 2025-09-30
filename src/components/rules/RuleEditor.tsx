@@ -58,12 +58,17 @@ export function RuleEditor({ open, onClose, columnName, entityContext }: RuleEdi
   const [fetchRulesets, { loading: loadingRulesets }] = useLazyQuery(GET_META_RULESETS, {
     fetchPolicy: "network-only",
     onCompleted: (data) => {
+      console.log("Rulesets query response:", data);
       if (data?.meta_ruleset && data.meta_ruleset.length > 0) {
         const allRules = data.meta_ruleset.flatMap((rs: Ruleset) => rs.rules || []);
+        console.log("All rules:", allRules);
+        console.log("Filtering for column:", columnName);
         // Filter rules for this specific column
         const columnRules = allRules.filter((rule: Rule) => rule.meta === columnName);
+        console.log("Filtered column rules:", columnRules);
         setExistingRules(columnRules);
       } else {
+        console.log("No rulesets found in response");
         setExistingRules([]);
       }
     },
@@ -253,7 +258,7 @@ export function RuleEditor({ open, onClose, columnName, entityContext }: RuleEdi
         },
       };
 
-      const response = await fetch(`${API_CONFIG.REST_ENDPOINT}/api/v1/ruleset`, {
+      const response = await fetch(`${API_CONFIG.REST_ENDPOINT}/mwn/create_ruleset`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
