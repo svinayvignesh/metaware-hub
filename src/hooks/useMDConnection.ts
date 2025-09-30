@@ -1,33 +1,28 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import * as duckdb from '@duckdb/duckdb-wasm';
-import { AsyncDuckDB, AsyncDuckDBConnection } from '@duckdb/duckdb-wasm';
+import { MDConnection } from '@motherduck/wasm-client';
 import { MOTHERDUCK_TOKEN, MOTHERDUCK_DATABASE, MOTHERDUCK_SCHEMA } from '@/config/motherduck';
 import { toast } from '@/hooks/use-toast';
 
 interface UseMDConnectionReturn {
-  connection: AsyncDuckDBConnection | null;
-  db: AsyncDuckDB | null;
+  connection: MDConnection | null;
   connect: () => Promise<void>;
   disconnect: () => Promise<void>;
   ready: boolean;
   error: string | null;
 }
 
-let globalDB: AsyncDuckDB | null = null;
-let globalConnection: AsyncDuckDBConnection | null = null;
+let globalConnection: MDConnection | null = null;
 let isInitializing = false;
 
 export function useMDConnection(): UseMDConnectionReturn {
-  const [db, setDb] = useState<AsyncDuckDB | null>(globalDB);
-  const [connection, setConnection] = useState<AsyncDuckDBConnection | null>(globalConnection);
+  const [connection, setConnection] = useState<MDConnection | null>(globalConnection);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const initRef = useRef(false);
 
   const connect = useCallback(async () => {
     // Idempotent: return early if already connected
-    if (globalDB && globalConnection) {
-      setDb(globalDB);
+    if (globalConnection) {
       setConnection(globalConnection);
       setReady(true);
       return;
@@ -51,41 +46,21 @@ export function useMDConnection(): UseMDConnectionReturn {
         throw new Error('MOTHERDUCK_TOKEN is not configured');
       }
 
-      // Select bundle with correct paths
-      // WASM from CDN, worker served locally with proper COEP headers
-      const bundle = await duckdb.selectBundle({
-        mvp: {
-          mainModule: 'https://unpkg.com/@duckdb/duckdb-wasm@1.28.0/dist/duckdb-mvp.wasm',
-          mainWorker: '/duckdb/duckdb-browser-mvp.worker.js',
-        },
+      // Create MotherDuck WASM connection
+      const conn = MDConnection.create({
+        mdToken: MOTHERDUCK_TOKEN,
       });
 
-      const worker = new Worker(bundle.mainWorker!);
-      const logger = new duckdb.ConsoleLogger();
-      const duckDB = new duckdb.AsyncDuckDB(logger, worker);
-      await duckDB.instantiate(bundle.mainModule);
+      // Wait for initialization to complete
+      await conn.isInitialized();
 
-      // Get connection
-      const conn = await duckDB.connect();
-
-      // Install and load motherduck extension
-      await conn.query(`INSTALL motherduck;`);
-      await conn.query(`LOAD motherduck;`);
-
-      // Set token
-      await conn.query(`SET motherduck_token='${MOTHERDUCK_TOKEN}';`);
-
-      // Attach database
-      await conn.query(`ATTACH 'md:${MOTHERDUCK_DATABASE}' AS md;`);
-      
-      // Set schema
-      await conn.query(`SET schema='md.${MOTHERDUCK_SCHEMA}';`);
+      // Set default database and schema
+      await conn.evaluateQuery(`USE ${MOTHERDUCK_DATABASE};`);
+      await conn.evaluateQuery(`SET schema='${MOTHERDUCK_SCHEMA}';`);
 
       // Store globally
-      globalDB = duckDB;
       globalConnection = conn;
 
-      setDb(duckDB);
       setConnection(conn);
       setReady(true);
       setError(null);
@@ -117,12 +92,7 @@ export function useMDConnection(): UseMDConnectionReturn {
         await globalConnection.close();
         globalConnection = null;
       }
-      if (globalDB) {
-        await globalDB.terminate();
-        globalDB = null;
-      }
       setConnection(null);
-      setDb(null);
       setReady(false);
       initRef.current = false;
     } catch (err) {
@@ -138,7 +108,6 @@ export function useMDConnection(): UseMDConnectionReturn {
 
   return {
     connection,
-    db,
     connect,
     disconnect,
     ready,
@@ -147,22 +116,22 @@ export function useMDConnection(): UseMDConnectionReturn {
 }
 
 export async function queryMDTable(
-  connection: AsyncDuckDBConnection,
+  connection: MDConnection,
   namespace: string,
   subjectarea: string,
   entity: string
 ): Promise<{ columns: string[]; rows: any[] }> {
   try {
     const query = `SELECT * FROM ${namespace}.${subjectarea}.${entity};`;
-    const result = await connection.query(query);
+    const result = await connection.evaluateQuery(query);
     
-    const rows = result.toArray().map(row => {
-      const obj: any = {};
-      result.schema.fields.forEach((field, idx) => {
-        obj[field.name] = row[idx];
-      });
-      return obj;
-    });
+    // Check if result is materialized
+    if (result.type !== 'materialized') {
+      throw new Error('Expected materialized result');
+    }
+
+    // Convert to rows using the data.toRows() method
+    const rows = Array.from(result.data.toRows());
 
     if (rows.length === 0) {
       return { columns: [], rows: [] };

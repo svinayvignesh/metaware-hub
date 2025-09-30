@@ -19,11 +19,13 @@ export default function DuckDBDemo() {
 
     setTesting(true);
     try {
-      const result = await connection.query("SELECT 1 AS ok, 'Hello from MotherDuck' AS message;");
-      const rows = result.toArray().map(row => ({
-        ok: row[0],
-        message: row[1]
-      }));
+      const result = await connection.evaluateQuery("SELECT 1 AS ok, 'Hello from MotherDuck' AS message;");
+      
+      if (result.type !== 'materialized') {
+        throw new Error('Expected materialized result');
+      }
+      
+      const rows = result.data.toRows();
       setTestResult(rows[0]);
     } catch (err) {
       console.error('Test query failed:', err);
@@ -119,20 +121,16 @@ export default function DuckDBDemo() {
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Bundle:</span>
-              <span className="font-mono">mvp</span>
+              <span className="text-muted-foreground">Client:</span>
+              <span className="font-mono">@motherduck/wasm-client</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">WASM Path:</span>
-              <span className="font-mono">/duckdb/duckdb-mvp.wasm</span>
+              <span className="text-muted-foreground">WASM Assets:</span>
+              <span className="font-mono">app.motherduck.com</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Worker Path:</span>
-              <span className="font-mono">/duckdb/duckdb-browser-mvp.worker.js</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Database:</span>
-              <span className="font-mono">md:my_database</span>
+              <span className="text-muted-foreground">Mode:</span>
+              <span className="font-mono">Browser WASM + MotherDuck Cloud</span>
             </div>
           </CardContent>
         </Card>
