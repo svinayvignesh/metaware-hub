@@ -221,35 +221,30 @@ export default function NameSpace() {
               update_strategy_: 'I',
             };
           } else {
-            // For edited records, only send changed fields
+            // For edited records, send all required fields plus changed fields
             const originalRow = tableData.find(row => row.id === item.id);
-            const changes: any = {
-              id: item.id,
-              update_strategy_: 'U',
-            };
-            
             let hasChanges = false;
+            
             if (originalRow) {
-              if (item.name !== originalRow.name) {
-                changes.name = item.name;
-                hasChanges = true;
-              }
-              if (item.type !== originalRow.type) {
-                changes.type = item.type;
-                hasChanges = true;
-              }
-              if (item.status !== originalRow.status) {
-                changes.status = item.status;
-                hasChanges = true;
-              }
-              if (item.tags !== originalRow.tags) {
-                changes.tags = item.tags;
+              if (item.name !== originalRow.name ||
+                  item.type !== originalRow.type ||
+                  item.status !== originalRow.status ||
+                  item.tags !== originalRow.tags) {
                 hasChanges = true;
               }
             }
             
             // Only return if there are actual changes
-            return hasChanges ? changes : null;
+            if (!hasChanges) return null;
+            
+            return {
+              id: item.id,
+              type: item.type || '',
+              name: item.name || '',
+              status: item.status || 'Active',
+              tags: item.tags || '',
+              update_strategy_: 'U',
+            };
           }
         })
         .filter((item): item is NonNullable<typeof item> => item !== null);

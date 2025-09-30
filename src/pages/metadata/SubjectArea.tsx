@@ -211,36 +211,32 @@ export default function SubjectArea() {
               ns: item.namespace_name || '',
             };
           } else {
-            // For edited records, only send changed fields
+            // For edited records, send all required fields plus changed fields
             const originalRow = tableData.find(row => row.id === item.id);
-            const changes: any = {
-              id: item.id,
-              update_strategy_: 'U',
-            };
-            
             let hasChanges = false;
+            
             if (originalRow) {
-              if (item.name !== originalRow.name) {
-                changes.name = item.name;
-                hasChanges = true;
-              }
-              if (item.type !== originalRow.type) {
-                changes.type = item.type;
-                hasChanges = true;
-              }
-              if (item.tags !== originalRow.tags) {
-                changes.tags = item.tags;
-                hasChanges = true;
-              }
-              if (item.ns_id !== originalRow.ns_id) {
-                changes.ns_id = item.ns_id;
-                changes.ns = item.namespace_name;
+              if (item.name !== originalRow.name ||
+                  item.type !== originalRow.type ||
+                  item.tags !== originalRow.tags ||
+                  item.ns_id !== originalRow.ns_id) {
                 hasChanges = true;
               }
             }
             
             // Only return if there are actual changes
-            return hasChanges ? changes : null;
+            if (!hasChanges) return null;
+            
+            return {
+              id: item.id,
+              type: item.type || '',
+              name: item.name || '',
+              tags: item.tags || '',
+              ns_id: item.ns_id || '',
+              ns: item.namespace_name || '',
+              custom_props: '',
+              update_strategy_: 'U',
+            };
           }
         })
         .filter((item): item is NonNullable<typeof item> => item !== null);

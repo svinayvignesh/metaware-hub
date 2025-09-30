@@ -301,64 +301,48 @@ export default function Entity() {
               ns_type: 'staging',
             };
           } else {
-            // For edited records, only send changed fields
+            // For edited records, send all required fields plus changed fields
             const originalRow = tableData.find(row => row.id === item.id);
-            const changes: any = {
-              id: item.id,
-              update_strategy_: 'U',
-            };
-            
             let hasChanges = false;
+            
             if (originalRow) {
-              if (item.name !== originalRow.name) {
-                changes.name = item.name;
-                hasChanges = true;
-              }
-              if (item.type !== originalRow.type) {
-                changes.type = item.type;
-                hasChanges = true;
-              }
-              if (item.subtype !== originalRow.subtype) {
-                changes.subtype = item.subtype;
-                hasChanges = true;
-              }
-              if (item.description !== originalRow.description) {
-                changes.description = item.description;
-                hasChanges = true;
-              }
-              if (item.is_delta_bool !== originalRow.is_delta_bool) {
-                changes.is_delta = Boolean(item.is_delta_bool);
-                hasChanges = true;
-              }
-              if (item.primary_grain !== originalRow.primary_grain) {
-                changes.primary_grain = item.primary_grain;
-                hasChanges = true;
-              }
-              if (item.secondary_grain !== originalRow.secondary_grain) {
-                changes.secondary_grain = item.secondary_grain;
-                hasChanges = true;
-              }
-              if (item.tertiary_grain !== originalRow.tertiary_grain) {
-                changes.tertiary_grain = item.tertiary_grain;
-                hasChanges = true;
-              }
-              if (item.runtime !== originalRow.runtime) {
-                changes.runtime = item.runtime;
-                hasChanges = true;
-              }
-              if (item.sa_id !== originalRow.sa_id) {
-                changes.sa_id = item.sa_id;
-                changes.sa = item.subjectarea_name;
-                hasChanges = true;
-              }
-              if (item.ns_id !== originalRow.ns_id) {
-                changes.ns = item.namespace_name;
+              if (item.name !== originalRow.name ||
+                  item.type !== originalRow.type ||
+                  item.subtype !== originalRow.subtype ||
+                  item.description !== originalRow.description ||
+                  item.is_delta_bool !== originalRow.is_delta_bool ||
+                  item.primary_grain !== originalRow.primary_grain ||
+                  item.secondary_grain !== originalRow.secondary_grain ||
+                  item.tertiary_grain !== originalRow.tertiary_grain ||
+                  item.runtime !== originalRow.runtime ||
+                  item.sa_id !== originalRow.sa_id ||
+                  item.ns_id !== originalRow.ns_id) {
                 hasChanges = true;
               }
             }
             
             // Only return if there are actual changes
-            return hasChanges ? changes : null;
+            if (!hasChanges) return null;
+            
+            return {
+              id: item.id,
+              type: item.type || '',
+              subtype: item.subtype || '',
+              name: item.name || '',
+              description: item.description || '',
+              is_delta: Boolean(item.is_delta_bool),
+              runtime: item.runtime || '',
+              tags: item.tags || '',
+              custom_props: [],
+              dependency: '',
+              primary_grain: item.primary_grain || '',
+              secondary_grain: item.secondary_grain || '',
+              tertiary_grain: item.tertiary_grain || '',
+              sa_id: item.sa_id || '',
+              ns: item.namespace_name || '',
+              sa: item.subjectarea_name || '',
+              update_strategy_: 'U',
+            };
           }
         })
         .filter((item): item is NonNullable<typeof item> => item !== null);
