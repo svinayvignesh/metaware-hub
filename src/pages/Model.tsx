@@ -42,7 +42,14 @@ export default function Model() {
       const entityName = selectedEntity.name;
 
       const result = await queryMDTable(connection, namespace, subjectarea, entityName);
-      setData(result);
+      
+      // Add unique IDs to rows if they don't have them
+      const rowsWithIds = result.rows.map((row, index) => ({
+        ...row,
+        id: row.id || `row_${index}`
+      }));
+      
+      setData({ ...result, rows: rowsWithIds });
     } catch (error) {
       console.error("Error fetching entity data:", error);
       setData({ columns: [], rows: [] });
