@@ -61,7 +61,21 @@ export const RelationshipGraph = ({ entityId, entityName }: RelationshipGraphPro
   }, []);
 
   useEffect(() => {
-    if (!data?.entity_relation) return;
+    console.log("🔍 RelationshipGraph data:", data);
+    console.log("🔍 Entity ID:", entityId);
+    console.log("🔍 Entity Name:", entityName);
+
+    if (!data?.entity_relation) {
+      console.warn("⚠️ No entity_relation data");
+      return;
+    }
+
+    if (data.entity_relation.length === 0) {
+      console.warn("⚠️ Empty entity_relation array");
+      return;
+    }
+
+    console.log("✅ Found relations:", data.entity_relation.length);
 
     const newNodes: Node[] = [];
     const newEdges: Edge[] = [];
@@ -95,33 +109,84 @@ export const RelationshipGraph = ({ entityId, entityName }: RelationshipGraphPro
     let modelY = 0;
 
     data.entity_relation.forEach((relation) => {
-      // Add staging entities (source)
-      relation.related_entity.conceptual_models.forEach((cm) => {
-        cm.associated_source_entities.forEach((sourceEntity, idx) => {
-          const sourceId = `staging-${sourceEntity.id}`;
-          if (!nodeMap.has(sourceId)) {
-            newNodes.push({
-              id: sourceId,
-              type: "default",
-              position: { x: 50, y: stagingY },
-              data: {
-                label: sourceEntity.name,
-                type: "staging",
-                entity: sourceEntity,
-              },
-              style: {
-                background: "hsl(var(--secondary))",
-                color: "hsl(var(--secondary-foreground))",
-                border: "2px solid hsl(var(--border))",
-                borderRadius: "8px",
-                padding: "12px",
-                fontSize: "12px",
-                width: 180,
-              },
+      console.log("🔗 Processing relation:", relation);
+
+      // Add staging entities (source) from conceptual models
+      if (relation.related_entity?.conceptual_models) {
+        relation.related_entity.conceptual_models.forEach((cm) => {
+          console.log("📦 Conceptual model:", cm);
+          if (cm.associated_source_entities) {
+            cm.associated_source_entities.forEach((sourceEntity) => {
+              const sourceId = `staging-${sourceEntity.id}`;
+              if (!nodeMap.has(sourceId)) {
+                console.log("➕ Adding staging node:", sourceEntity.name);
+                newNodes.push({
+                  id: sourceId,
+                  type: "default",
+                  position: { x: 50, y: stagingY },
+                  data: {
+                    label: sourceEntity.name,
+                    type: "staging",
+                    entity: sourceEntity,
+                  },
+                  style: {
+                    background: "hsl(var(--secondary))",
+                    color: "hsl(var(--secondary-foreground))",
+                    border: "2px solid hsl(var(--border))",
+                    borderRadius: "8px",
+                    padding: "12px",
+                    fontSize: "12px",
+                    width: 180,
+                  },
+                });
+                nodeMap.set(sourceId, true);
+                stagingY += 120;
+              }
+
+              // Edge from staging to glossary
+              newEdges.push({
+                id: `e-${sourceId}-${entityId}`,
+                source: sourceId,
+                target: entityId,
+                type: ConnectionLineType.SmoothStep,
+                animated: true,
+                markerEnd: {
+                  type: MarkerType.ArrowClosed,
+                  color: "hsl(var(--primary))",
+                },
+                style: { stroke: "hsl(var(--primary))", strokeWidth: 2 },
+              });
             });
-            nodeMap.set(sourceId, true);
-            stagingY += 120;
           }
+        });
+      }
+
+      // If no conceptual models, use the related_entity itself as staging
+      if (!relation.related_entity?.conceptual_models || relation.related_entity.conceptual_models.length === 0) {
+        const sourceId = `staging-${relation.related_entity.id}`;
+        if (!nodeMap.has(sourceId)) {
+          console.log("➕ Adding staging node (from related_entity):", relation.related_entity.name);
+          newNodes.push({
+            id: sourceId,
+            type: "default",
+            position: { x: 50, y: stagingY },
+            data: {
+              label: relation.related_entity.name,
+              type: "staging",
+              entity: relation.related_entity,
+            },
+            style: {
+              background: "hsl(var(--secondary))",
+              color: "hsl(var(--secondary-foreground))",
+              border: "2px solid hsl(var(--border))",
+              borderRadius: "8px",
+              padding: "12px",
+              fontSize: "12px",
+              width: 180,
+            },
+          });
+          nodeMap.set(sourceId, true);
+          stagingY += 120;
 
           // Edge from staging to glossary
           newEdges.push({
@@ -136,50 +201,12 @@ export const RelationshipGraph = ({ entityId, entityName }: RelationshipGraphPro
             },
             style: { stroke: "hsl(var(--primary))", strokeWidth: 2 },
           });
-        });
-      });
-
-      // Add model entities (target)
-      const targetId = `model-${relation.target_entity.id}`;
-      if (!nodeMap.has(targetId)) {
-        newNodes.push({
-          id: targetId,
-          type: "default",
-          position: { x: 750, y: modelY },
-          data: {
-            label: relation.target_entity.name,
-            type: "model",
-            entity: relation.target_entity,
-          },
-          style: {
-            background: "hsl(var(--accent))",
-            color: "hsl(var(--accent-foreground))",
-            border: "2px solid hsl(var(--border))",
-            borderRadius: "8px",
-            padding: "12px",
-            fontSize: "12px",
-            width: 180,
-          },
-        });
-        nodeMap.set(targetId, true);
-        modelY += 120;
+        }
       }
-
-      // Edge from glossary to model
-      newEdges.push({
-        id: `e-${entityId}-${targetId}`,
-        source: entityId,
-        target: targetId,
-        type: ConnectionLineType.SmoothStep,
-        animated: true,
-        label: relation.relation_type,
-        markerEnd: {
-          type: MarkerType.ArrowClosed,
-          color: "hsl(var(--primary))",
-        },
-        style: { stroke: "hsl(var(--primary))", strokeWidth: 2 },
-      });
     });
+
+    console.log("📊 Final nodes:", newNodes);
+    console.log("📊 Final edges:", newEdges);
 
     setNodes(newNodes);
     setEdges(newEdges);

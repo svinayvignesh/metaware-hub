@@ -56,19 +56,6 @@ export const GET_ENTITY_RELATIONS = gql`
           projectCode
         }
       }
-      target_entity {
-        description
-        id
-        is_delta
-        name
-        primary_grain
-        runtime
-        sa_id
-        secondary_grain
-        subtype
-        tertiary_grain
-        type
-      }
     }
   }
 `;
