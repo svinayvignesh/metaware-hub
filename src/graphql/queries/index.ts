@@ -57,3 +57,17 @@ export {
   type GetMetaRulesetsResponse,
   type GetMetaRulesetsVariables,
 } from './ruleset';
+
+// Conceptual Model-related queries and types
+export {
+  GET_CONCEPTUAL_MODEL,
+  GET_META_CONCEPTUAL,
+  type ConceptualModel,
+  type ConceptualModelMeta,
+  type AssociatedSourceEntity,
+  type MetaConceptualField,
+  type GetConceptualModelResponse,
+  type GetConceptualModelVariables,
+  type GetMetaConceptualResponse,
+  type GetMetaConceptualVariables,
+} from './conceptualmodel';

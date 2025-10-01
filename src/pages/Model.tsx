@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { SubSidebar } from "@/components/layout/SubSidebar";
 import { EntityGrid } from "@/components/entity/EntityGrid";
 import { DataTable } from "@/components/table/DataTable";
@@ -6,9 +7,10 @@ import { useMDConnectionContext } from "@/contexts/MDConnectionContext";
 import { queryMDTable } from "@/hooks/useMDConnection";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, X, Database, Loader2 } from "lucide-react";
+import { Search, X, Database, Loader2, Hammer } from "lucide-react";
 
 export default function Model() {
+  const navigate = useNavigate();
   const [selectedSubjectAreaId, setSelectedSubjectAreaId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedEntity, setSelectedEntity] = useState<any>(null);
@@ -75,11 +77,17 @@ export default function Model() {
       <div className="flex-1 overflow-hidden">
         {!selectedEntity ? (
           <div className="p-6 space-y-6 h-full overflow-y-auto">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Data Model</h1>
-              <p className="text-muted-foreground">
-                Manage and explore data models and schemas
-              </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">Data Model</h1>
+                <p className="text-muted-foreground">
+                  Manage and explore data models and schemas
+                </p>
+              </div>
+              <Button onClick={() => navigate("/build-models")} className="flex items-center gap-2">
+                <Hammer className="h-4 w-4" />
+                Build Models
+              </Button>
             </div>
 
             <div className="flex gap-2">

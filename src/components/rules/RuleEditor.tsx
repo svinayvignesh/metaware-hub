@@ -136,6 +136,11 @@ export function RuleEditor({ open, onClose, columnName, entityContext }: RuleEdi
     setRuleName("");
     setRuleExpression("");
     setRuleType("check");
+    
+    toast({
+      title: "Rule Added",
+      description: `Rule "${newRule.name}" has been added locally`,
+    });
   };
 
   const handleEditLocalRule = (index: number) => {

@@ -57,6 +57,7 @@ export const GET_ENTITIES = gql`
       subjectarea {
         name
         namespace {
+          id
           name
           type
         }
@@ -74,6 +75,8 @@ export const GET_ENTITIES = gql`
  * Nested namespace information within entity's subject area
  */
 export interface EntityNamespace {
+  /** Unique identifier for the namespace */
+  id: string;
   /** Name of the namespace */
   name: string;
   /** Type of the namespace */

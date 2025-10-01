@@ -42,6 +42,7 @@ export const GET_SUBJECTAREAS = gql`
       tags
       type
       namespace {
+        id
         name
         type
       }
@@ -58,6 +59,8 @@ export const GET_SUBJECTAREAS = gql`
  * Nested namespace information within subject area
  */
 export interface SubjectAreaNamespace {
+  /** Unique identifier for the namespace */
+  id: string;
   /** Name of the parent namespace */
   name: string;
   /** Type of the parent namespace */
