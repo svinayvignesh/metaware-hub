@@ -55,7 +55,8 @@ export function AddGlossaryMetaModal({
 
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen) {
-      setSelectedMetas(new Set());
+      // Initialize with already selected IDs so they show as checked
+      setSelectedMetas(new Set(alreadySelectedIds));
       setMetaFields([]);
       console.log("Opening modal, fetching meta for entity:", entityId);
       fetchMeta({ variables: { enid: entityId } });
@@ -76,23 +77,21 @@ export function AddGlossaryMetaModal({
   };
 
   const handleSave = () => {
-    const selected = metaFields.filter((meta) => selectedMetas.has(meta.id));
-    onSave(selected);
+    // Only save newly added items (not already selected ones)
+    const newlySelected = metaFields.filter(
+      (meta) => selectedMetas.has(meta.id) && !alreadySelectedIds.has(meta.id)
+    );
+    onSave(newlySelected);
     onOpenChange(false);
   };
-
-  const availableFields = metaFields.filter(
-    (meta) => !alreadySelectedIds.has(meta.id)
-  );
 
   console.log("AddGlossaryMetaModal render:", {
     open,
     loading,
     metaFieldsCount: metaFields.length,
     alreadySelectedIdsCount: alreadySelectedIds.size,
-    availableFieldsCount: availableFields.length,
+    selectedMetasCount: selectedMetas.size,
     metaFields,
-    availableFields
   });
 
   return (
@@ -106,14 +105,14 @@ export function AddGlossaryMetaModal({
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
-        ) : availableFields.length === 0 ? (
+        ) : metaFields.length === 0 ? (
           <div className="py-8 text-center text-muted-foreground">
-            No additional metadata fields available
+            No metadata fields available
           </div>
         ) : (
           <ScrollArea className="max-h-[400px] pr-4">
             <div className="space-y-3">
-              {availableFields.map((meta) => (
+              {metaFields.map((meta) => (
                 <div
                   key={meta.id}
                   className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors"
@@ -122,6 +121,7 @@ export function AddGlossaryMetaModal({
                     checked={selectedMetas.has(meta.id)}
                     onCheckedChange={() => handleToggle(meta.id)}
                     className="mt-1"
+                    disabled={alreadySelectedIds.has(meta.id)}
                   />
                   <div className="flex-1">
                     <div className="font-medium">{meta.name}</div>
@@ -146,9 +146,9 @@ export function AddGlossaryMetaModal({
           </Button>
           <Button
             onClick={handleSave}
-            disabled={selectedMetas.size === 0 || loading}
+            disabled={selectedMetas.size === alreadySelectedIds.size || loading}
           >
-            Add Selected ({selectedMetas.size})
+            Add Selected ({selectedMetas.size - alreadySelectedIds.size} new)
           </Button>
         </DialogFooter>
       </DialogContent>
