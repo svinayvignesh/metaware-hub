@@ -16,7 +16,7 @@ import type {
   GetEntityRelationsResponse,
   GetEntityRelationsVariables,
   EntityRelation,
-  AssociatedSourceEntity,
+  RelatedEntity,
   EntityMeta,
 } from "@/graphql/queries/entityrelation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,7 +40,7 @@ interface RelationshipGraphProps {
 type NodeData = {
   label: string;
   type: "staging" | "glossary" | "model";
-  entity: AssociatedSourceEntity | EntityRelation["related_entity"] | EntityRelation["target_entity"];
+  entity: RelatedEntity;
 };
 
 export const RelationshipGraph = ({ entityId, entityName }: RelationshipGraphProps) => {
@@ -51,7 +51,7 @@ export const RelationshipGraph = ({ entityId, entityName }: RelationshipGraphPro
   const { data, loading } = useQuery<GetEntityRelationsResponse, GetEntityRelationsVariables>(
     GET_ENTITY_RELATIONS,
     {
-      variables: { relatedEnId: entityId },
+      variables: { targetEnId: entityId },
       fetchPolicy: "network-only",
     }
   );
@@ -83,118 +83,126 @@ export const RelationshipGraph = ({ entityId, entityName }: RelationshipGraphPro
 
     // Center glossary entity
     const glossaryNode: Node = {
-      id: entityId,
+      id: `glossary-${entityId}`,
       type: "default",
-      position: { x: 400, y: 200 },
+      position: { x: 400, y: 300 },
       data: {
         label: entityName,
         type: "glossary",
-        entity: { id: entityId, name: entityName, type: "glossary" },
+        entity: { 
+          id: entityId, 
+          name: entityName, 
+          type: "glossary",
+          description: "Glossary Entity",
+          is_delta: false,
+          primary_grain: null,
+          runtime: null,
+          sa_id: "",
+          secondary_grain: null,
+          subtype: null,
+          tertiary_grain: null
+        } as RelatedEntity,
       },
       style: {
         background: "hsl(var(--primary))",
         color: "hsl(var(--primary-foreground))",
-        border: "2px solid hsl(var(--primary))",
+        border: "3px solid hsl(var(--primary))",
         borderRadius: "8px",
         padding: "16px",
         fontSize: "14px",
         fontWeight: "600",
-        width: 200,
+        width: 220,
       },
     };
     newNodes.push(glossaryNode);
-    nodeMap.set(entityId, true);
+    nodeMap.set(`glossary-${entityId}`, true);
 
-    let stagingY = 0;
-    let modelY = 0;
+    let stagingY = 50;
+    let modelY = 50;
 
     data.entity_relation.forEach((relation) => {
       console.log("🔗 Processing relation:", relation);
 
-      // Add staging entities (source) from conceptual models
-      if (relation.related_entity?.conceptual_models) {
-        relation.related_entity.conceptual_models.forEach((cm) => {
-          console.log("📦 Conceptual model:", cm);
-          if (cm.associated_source_entities) {
-            cm.associated_source_entities.forEach((sourceEntity) => {
-              const sourceId = `staging-${sourceEntity.id}`;
-              if (!nodeMap.has(sourceId)) {
-                console.log("➕ Adding staging node:", sourceEntity.name);
-                newNodes.push({
-                  id: sourceId,
-                  type: "default",
-                  position: { x: 50, y: stagingY },
-                  data: {
-                    label: sourceEntity.name,
-                    type: "staging",
-                    entity: sourceEntity,
-                  },
-                  style: {
-                    background: "hsl(var(--secondary))",
-                    color: "hsl(var(--secondary-foreground))",
-                    border: "2px solid hsl(var(--border))",
-                    borderRadius: "8px",
-                    padding: "12px",
-                    fontSize: "12px",
-                    width: 180,
-                  },
-                });
-                nodeMap.set(sourceId, true);
-                stagingY += 120;
-              }
-
-              // Edge from staging to glossary
-              newEdges.push({
-                id: `e-${sourceId}-${entityId}`,
-                source: sourceId,
-                target: entityId,
-                type: ConnectionLineType.SmoothStep,
-                animated: true,
-                markerEnd: {
-                  type: MarkerType.ArrowClosed,
-                  color: "hsl(var(--primary))",
-                },
-                style: { stroke: "hsl(var(--primary))", strokeWidth: 2 },
-              });
+      // related_entity is an array
+      relation.related_entity.forEach((entity) => {
+        if (relation.relation_type === "GLOSSARY-SOURCE") {
+          // Staging entity (left side)
+          const sourceId = `staging-${entity.id}`;
+          if (!nodeMap.has(sourceId)) {
+            console.log("➕ Adding staging node:", entity.name);
+            newNodes.push({
+              id: sourceId,
+              type: "default",
+              position: { x: 50, y: stagingY },
+              data: {
+                label: entity.name,
+                type: "staging",
+                entity: entity,
+              },
+              style: {
+                background: "hsl(var(--secondary))",
+                color: "hsl(var(--secondary-foreground))",
+                border: "2px solid hsl(var(--border))",
+                borderRadius: "8px",
+                padding: "12px",
+                fontSize: "13px",
+                width: 200,
+              },
             });
+            nodeMap.set(sourceId, true);
+            stagingY += 150;
           }
-        });
-      }
-
-      // If no conceptual models, use the related_entity itself as staging
-      if (!relation.related_entity?.conceptual_models || relation.related_entity.conceptual_models.length === 0) {
-        const sourceId = `staging-${relation.related_entity.id}`;
-        if (!nodeMap.has(sourceId)) {
-          console.log("➕ Adding staging node (from related_entity):", relation.related_entity.name);
-          newNodes.push({
-            id: sourceId,
-            type: "default",
-            position: { x: 50, y: stagingY },
-            data: {
-              label: relation.related_entity.name,
-              type: "staging",
-              entity: relation.related_entity,
-            },
-            style: {
-              background: "hsl(var(--secondary))",
-              color: "hsl(var(--secondary-foreground))",
-              border: "2px solid hsl(var(--border))",
-              borderRadius: "8px",
-              padding: "12px",
-              fontSize: "12px",
-              width: 180,
-            },
-          });
-          nodeMap.set(sourceId, true);
-          stagingY += 120;
 
           // Edge from staging to glossary
           newEdges.push({
-            id: `e-${sourceId}-${entityId}`,
+            id: `e-${sourceId}-glossary-${entityId}`,
             source: sourceId,
-            target: entityId,
+            target: `glossary-${entityId}`,
             type: ConnectionLineType.SmoothStep,
             animated: true,
+            label: "source",
+            markerEnd: {
+              type: MarkerType.ArrowClosed,
+              color: "hsl(var(--primary))",
+            },
+            style: { stroke: "hsl(var(--primary))", strokeWidth: 2 },
+          });
+        } else if (relation.relation_type === "GLOSSARY-MODEL") {
+          // Model entity (right side)
+          const modelId = `model-${entity.id}`;
+          if (!nodeMap.has(modelId)) {
+            console.log("➕ Adding model node:", entity.name);
+            newNodes.push({
+              id: modelId,
+              type: "default",
+              position: { x: 750, y: modelY },
+              data: {
+                label: entity.name,
+                type: "model",
+                entity: entity,
+              },
+              style: {
+                background: "hsl(var(--accent))",
+                color: "hsl(var(--accent-foreground))",
+                border: "2px solid hsl(var(--border))",
+                borderRadius: "8px",
+                padding: "12px",
+                fontSize: "13px",
+                width: 200,
+              },
+            });
+            nodeMap.set(modelId, true);
+            modelY += 150;
+          }
+
+          // Edge from glossary to model
+          newEdges.push({
+            id: `e-glossary-${entityId}-${modelId}`,
+            source: `glossary-${entityId}`,
+            target: modelId,
+            type: ConnectionLineType.SmoothStep,
+            animated: true,
+            label: "model",
             markerEnd: {
               type: MarkerType.ArrowClosed,
               color: "hsl(var(--primary))",
@@ -202,7 +210,7 @@ export const RelationshipGraph = ({ entityId, entityName }: RelationshipGraphPro
             style: { stroke: "hsl(var(--primary))", strokeWidth: 2 },
           });
         }
-      }
+      });
     });
 
     console.log("📊 Final nodes:", newNodes);
@@ -279,7 +287,7 @@ export const RelationshipGraph = ({ entityId, entityName }: RelationshipGraphPro
                   </div>
                 </div>
 
-                {selectedNode.type === "staging" && "metas" in selectedNode.entity && (
+                {selectedNode.type === "staging" && selectedNode.entity.metas && selectedNode.entity.metas.length > 0 && (
                   <div>
                     <p className="text-sm font-medium mb-2">Meta Fields</p>
                     <Table>
@@ -291,7 +299,7 @@ export const RelationshipGraph = ({ entityId, entityName }: RelationshipGraphPro
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {selectedNode.entity.metas.map((meta: EntityMeta) => (
+                        {selectedNode.entity.metas!.map((meta: EntityMeta) => (
                           <TableRow key={meta.id}>
                             <TableCell className="font-medium">{meta.name}</TableCell>
                             <TableCell>{meta.type}</TableCell>
