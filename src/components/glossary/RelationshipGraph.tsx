@@ -19,6 +19,7 @@ import type {
   RelatedEntity,
   EntityMeta,
 } from "@/graphql/queries/entityrelation";
+import { GET_META_FOR_ENTITY, type MetaField, type GetMetaForEntityResponse } from "@/graphql/queries/meta";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Database, Layers, Target } from "lucide-react";
@@ -47,6 +48,7 @@ export const RelationshipGraph = ({ entityId, entityName }: RelationshipGraphPro
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNode, setSelectedNode] = useState<NodeData | null>(null);
+  const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
 
   const { data, loading } = useQuery<GetEntityRelationsResponse, GetEntityRelationsVariables>(
     GET_ENTITY_RELATIONS,
@@ -56,11 +58,21 @@ export const RelationshipGraph = ({ entityId, entityName }: RelationshipGraphPro
     }
   );
 
+  const { data: metaData, loading: metaLoading } = useQuery<GetMetaForEntityResponse>(
+    GET_META_FOR_ENTITY,
+    {
+      variables: { enid: selectedEntityId || "" },
+      skip: !selectedEntityId,
+      fetchPolicy: "network-only",
+    }
+  );
+
   const onNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
     const nodeData = node.data as NodeData;
     console.log("🖱️ Node clicked:", nodeData);
-    console.log("🖱️ Entity metas:", nodeData.entity.metas);
+    console.log("🖱️ Entity ID:", nodeData.entity.id);
     setSelectedNode(nodeData);
+    setSelectedEntityId(nodeData.entity.id);
   }, []);
 
   useEffect(() => {
@@ -296,13 +308,11 @@ export const RelationshipGraph = ({ entityId, entityName }: RelationshipGraphPro
                   </div>
                 </div>
 
-                <div className="p-2 bg-muted rounded text-xs">
-                  <p className="font-medium mb-1">Debug Info:</p>
-                  <p>Metas exists: {selectedNode.entity.metas ? "Yes" : "No"}</p>
-                  <p>Metas count: {selectedNode.entity.metas?.length || 0}</p>
-                </div>
-
-                {selectedNode.entity.metas && selectedNode.entity.metas.length > 0 && (
+                {metaLoading ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  </div>
+                ) : metaData?.meta_meta && metaData.meta_meta.length > 0 ? (
                   <div>
                     <p className="text-sm font-medium mb-2">Meta Fields</p>
                     <Table>
@@ -314,11 +324,11 @@ export const RelationshipGraph = ({ entityId, entityName }: RelationshipGraphPro
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {selectedNode.entity.metas!.map((meta: EntityMeta) => (
+                        {metaData.meta_meta.map((meta: MetaField) => (
                           <TableRow key={meta.id}>
                             <TableCell className="font-medium">{meta.name}</TableCell>
                             <TableCell>{meta.type}</TableCell>
-                            <TableCell>
+                            <TableCell className="flex gap-1">
                               {meta.is_primary_grain && <Badge variant="default">P</Badge>}
                               {meta.is_secondary_grain && <Badge variant="secondary">S</Badge>}
                               {meta.is_tertiary_grain && <Badge variant="outline">T</Badge>}
@@ -328,6 +338,8 @@ export const RelationshipGraph = ({ entityId, entityName }: RelationshipGraphPro
                       </TableBody>
                     </Table>
                   </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No meta fields available</p>
                 )}
               </div>
             </ScrollArea>
