@@ -57,7 +57,10 @@ export const RelationshipGraph = ({ entityId, entityName }: RelationshipGraphPro
   );
 
   const onNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
-    setSelectedNode(node.data as NodeData);
+    const nodeData = node.data as NodeData;
+    console.log("🖱️ Node clicked:", nodeData);
+    console.log("🖱️ Entity metas:", nodeData.entity.metas);
+    setSelectedNode(nodeData);
   }, []);
 
   useEffect(() => {
@@ -291,6 +294,12 @@ export const RelationshipGraph = ({ entityId, entityName }: RelationshipGraphPro
                     <p className="font-medium">Runtime</p>
                     <p className="text-muted-foreground">{selectedNode.entity.runtime || "N/A"}</p>
                   </div>
+                </div>
+
+                <div className="p-2 bg-muted rounded text-xs">
+                  <p className="font-medium mb-1">Debug Info:</p>
+                  <p>Metas exists: {selectedNode.entity.metas ? "Yes" : "No"}</p>
+                  <p>Metas count: {selectedNode.entity.metas?.length || 0}</p>
                 </div>
 
                 {selectedNode.entity.metas && selectedNode.entity.metas.length > 0 && (
