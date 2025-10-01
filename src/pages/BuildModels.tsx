@@ -11,12 +11,14 @@ import { useToast } from "@/hooks/use-toast";
 import { GlossaryEntityDropdown } from "@/components/glossary/GlossaryEntityDropdown";
 import { type Entity } from "@/graphql/queries/entity";
 import {
-  GET_META_CONCEPTUAL,
   GET_CONCEPTUAL_MODEL,
-  type MetaConceptualField,
   type ConceptualModel,
   type ConceptualModelMeta,
 } from "@/graphql/queries/conceptualmodel";
+import {
+  GET_META_FOR_ENTITY,
+  type MetaField,
+} from "@/graphql/queries/meta";
 import { API_CONFIG } from "@/config/api";
 
 export default function BuildModels() {
@@ -24,12 +26,12 @@ export default function BuildModels() {
   const { toast } = useToast();
   const [selectedEntity, setSelectedEntity] = useState<Entity | null>(null);
   const [projectCode, setProjectCode] = useState("model");
-  const [metaFields, setMetaFields] = useState<MetaConceptualField[]>([]);
+  const [metaFields, setMetaFields] = useState<MetaField[]>([]);
   const [selectedMetas, setSelectedMetas] = useState<Set<string>>(new Set<string>());
   const [existingModel, setExistingModel] = useState<ConceptualModel | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const [fetchMeta, { loading: metaLoading }] = useLazyQuery(GET_META_CONCEPTUAL, {
+  const [fetchMeta, { loading: metaLoading }] = useLazyQuery(GET_META_FOR_ENTITY, {
     onCompleted: (data) => {
       if (data?.meta_meta) {
         setMetaFields(data.meta_meta);
@@ -70,7 +72,7 @@ export default function BuildModels() {
     setExistingModel(null);
 
     // Fetch meta fields for the selected entity
-    fetchMeta({ variables: { entity: entity.id } });
+    fetchMeta({ variables: { enid: entity.id } });
 
     // Check if there's an existing conceptual model for this entity
     fetchConceptualModel({ variables: { glossaryEntityId: entity.id } });
