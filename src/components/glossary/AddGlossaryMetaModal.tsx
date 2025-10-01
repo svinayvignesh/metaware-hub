@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLazyQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import { Loader2 } from "lucide-react";
 import {
   Dialog,
@@ -31,37 +31,44 @@ export function AddGlossaryMetaModal({
 }: AddGlossaryMetaModalProps) {
   const { toast } = useToast();
   const [selectedMetas, setSelectedMetas] = useState<Set<string>>(new Set());
-  const [metaFields, setMetaFields] = useState<MetaField[]>([]);
 
-  const [fetchMeta, { loading, data, error }] = useLazyQuery(GET_META_FOR_ENTITY, {
+  console.log("🔍 Modal props:", { open, entityId, alreadySelectedIdsCount: alreadySelectedIds.size });
+
+  // Use useQuery with skip to only fetch when modal is open
+  const { data, loading, error, refetch } = useQuery(GET_META_FOR_ENTITY, {
+    variables: { enid: entityId },
+    skip: !open || !entityId,
     fetchPolicy: 'network-only',
+    notifyOnNetworkStatusChange: true,
     onCompleted: (data) => {
       console.log("✅ Query completed successfully:", data);
-      if (data?.meta_meta) {
-        console.log("✅ Setting metaFields with", data.meta_meta.length, "items");
-        setMetaFields(data.meta_meta);
-      } else {
-        console.warn("⚠️ Query returned but meta_meta is empty");
-      }
     },
     onError: (error) => {
       console.error("❌ Query error:", error);
       toast({
         title: "Error",
-        description: "Failed to fetch metadata fields",
+        description: `Failed to fetch metadata fields: ${error.message}`,
         variant: "destructive",
       });
     }
   });
 
-  const handleOpenChange = (newOpen: boolean) => {
-    console.log("🔄 handleOpenChange called with:", { newOpen, entityId, alreadySelectedIds: Array.from(alreadySelectedIds) });
-    
-    if (newOpen) {
-      // Initialize with already selected IDs so they show as checked
+  const metaFields = data?.meta_meta || [];
+  
+  console.log("📊 Current state:", {
+    open,
+    loading,
+    error: error?.message,
+    metaFieldsCount: metaFields.length,
+    metaFieldsData: metaFields,
+    entityId
+  });
+
+  // Initialize selected metas when modal opens
+  useEffect(() => {
+    if (open) {
+      console.log("🚀 Modal opened, initializing selectedMetas with:", Array.from(alreadySelectedIds));
       setSelectedMetas(new Set(alreadySelectedIds));
-      setMetaFields([]);
-      console.log("🚀 Opening modal, calling fetchMeta with entityId:", entityId);
       
       if (!entityId) {
         console.error("❌ Entity ID is missing!");
@@ -70,19 +77,9 @@ export function AddGlossaryMetaModal({
           description: "Entity ID is missing",
           variant: "destructive",
         });
-        return;
       }
-      
-      fetchMeta({ variables: { enid: entityId } })
-        .then(result => {
-          console.log("📊 fetchMeta promise resolved:", result);
-        })
-        .catch(err => {
-          console.error("❌ fetchMeta promise rejected:", err);
-        });
     }
-    onOpenChange(newOpen);
-  };
+  }, [open, entityId, alreadySelectedIds, toast]);
 
   const handleToggle = (metaId: string) => {
     setSelectedMetas((prev) => {
@@ -105,17 +102,8 @@ export function AddGlossaryMetaModal({
     onOpenChange(false);
   };
 
-  console.log("AddGlossaryMetaModal render:", {
-    open,
-    loading,
-    metaFieldsCount: metaFields.length,
-    alreadySelectedIdsCount: alreadySelectedIds.size,
-    selectedMetasCount: selectedMetas.size,
-    metaFields,
-  });
-
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Add Glossary Meta</DialogTitle>
