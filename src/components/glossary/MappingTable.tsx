@@ -84,12 +84,19 @@ export function MappingTable({ glossaryEntity, sourceEntity, existingRuleset }: 
     }
   }, [existingRuleset, sourceEntity]);
 
-  const handleAddGlossaryMetas = (selectedMetas: MetaField[]) => {
-    const newRows: MappingRow[] = selectedMetas.map((meta) => ({
-      id: crypto.randomUUID(),
-      glossaryMeta: meta,
-    }));
-    setMappingRows((prev) => [...prev, ...newRows]);
+  const handleAddGlossaryMetas = (selectedMetas: MetaField[], removedIds: string[]) => {
+    // Remove rows for unchecked items
+    setMappingRows((prev) => {
+      const filtered = prev.filter((row) => !removedIds.includes(row.glossaryMeta.id));
+      
+      // Add new rows for newly selected items
+      const newRows: MappingRow[] = selectedMetas.map((meta) => ({
+        id: crypto.randomUUID(),
+        glossaryMeta: meta,
+      }));
+      
+      return [...filtered, ...newRows];
+    });
   };
 
   const handleRemoveRow = (rowId: string) => {

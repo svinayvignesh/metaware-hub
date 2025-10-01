@@ -18,7 +18,7 @@ interface AddGlossaryMetaModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   entityId: string;
-  onSave: (selectedMetas: MetaField[]) => void;
+  onSave: (selectedMetas: MetaField[], removedIds: string[]) => void;
   alreadySelectedIds: Set<string>;
 }
 
@@ -94,11 +94,17 @@ export function AddGlossaryMetaModal({
   };
 
   const handleSave = () => {
-    // Only save newly added items (not already selected ones)
+    // Find newly added items
     const newlySelected = metaFields.filter(
       (meta) => selectedMetas.has(meta.id) && !alreadySelectedIds.has(meta.id)
     );
-    onSave(newlySelected);
+    
+    // Find removed items (were in alreadySelectedIds but not in selectedMetas)
+    const removedIds = Array.from(alreadySelectedIds).filter(
+      (id) => !selectedMetas.has(id)
+    );
+    
+    onSave(newlySelected, removedIds);
     onOpenChange(false);
   };
 
@@ -129,7 +135,6 @@ export function AddGlossaryMetaModal({
                     checked={selectedMetas.has(meta.id)}
                     onCheckedChange={() => handleToggle(meta.id)}
                     className="mt-1"
-                    disabled={alreadySelectedIds.has(meta.id)}
                   />
                   <div className="flex-1">
                     <div className="font-medium">{meta.name}</div>
@@ -154,9 +159,9 @@ export function AddGlossaryMetaModal({
           </Button>
           <Button
             onClick={handleSave}
-            disabled={selectedMetas.size === alreadySelectedIds.size || loading}
+            disabled={loading}
           >
-            Add Selected ({selectedMetas.size - alreadySelectedIds.size} new)
+            Save Changes
           </Button>
         </DialogFooter>
       </DialogContent>
