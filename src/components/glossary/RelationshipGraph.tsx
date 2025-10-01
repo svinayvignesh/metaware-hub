@@ -123,6 +123,12 @@ export const RelationshipGraph = ({ entityId, entityName }: RelationshipGraphPro
     data.entity_relation.forEach((relation) => {
       console.log("🔗 Processing relation:", relation);
 
+      // Only process relations where target_en_id matches current entityId
+      if (relation.target_en_id !== entityId) {
+        console.log("⏭️ Skipping relation - target doesn't match:", relation.target_en_id, "vs", entityId);
+        return;
+      }
+
       // related_entity is an array
       relation.related_entity.forEach((entity) => {
         if (relation.relation_type === "GLOSSARY-SOURCE") {
