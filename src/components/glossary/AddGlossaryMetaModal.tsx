@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLazyQuery } from "@apollo/client";
 import { Loader2 } from "lucide-react";
 import {
@@ -33,25 +33,31 @@ export function AddGlossaryMetaModal({
   const [selectedMetas, setSelectedMetas] = useState<Set<string>>(new Set());
   const [metaFields, setMetaFields] = useState<MetaField[]>([]);
 
-  const [fetchMeta, { loading }] = useLazyQuery(GET_META_FOR_ENTITY, {
-    onCompleted: (data) => {
-      if (data?.meta_meta) {
-        setMetaFields(data.meta_meta);
-      }
-    },
-    onError: (error) => {
+  const [fetchMeta, { loading, data, error }] = useLazyQuery(GET_META_FOR_ENTITY);
+
+  useEffect(() => {
+    if (data?.meta_meta) {
+      console.log("Fetched meta fields:", data.meta_meta);
+      setMetaFields(data.meta_meta);
+    }
+  }, [data]);
+
+  useEffect(() => {
+    if (error) {
       console.error("Error fetching meta:", error);
       toast({
         title: "Error",
         description: "Failed to fetch metadata fields",
         variant: "destructive",
       });
-    },
-  });
+    }
+  }, [error, toast]);
 
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen) {
       setSelectedMetas(new Set());
+      setMetaFields([]);
+      console.log("Opening modal, fetching meta for entity:", entityId);
       fetchMeta({ variables: { enid: entityId } });
     }
     onOpenChange(newOpen);
