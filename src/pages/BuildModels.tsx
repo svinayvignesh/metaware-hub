@@ -247,13 +247,21 @@ export default function BuildModels() {
             </CardHeader>
             <CardContent>
               {existingModel ? (
-                <div className="space-y-2">
-                  <div className="text-sm">
-                    <span className="font-medium">1. </span>
-                    {existingModel.glossaryEntityFqn}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    ID: {existingModel.id}
+                <div className="space-y-3">
+                  <div className="flex items-start gap-2">
+                    <span className="font-medium text-sm mt-0.5">1.</span>
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center gap-1.5 text-sm flex-wrap">
+                        <span className="font-semibold text-primary">{existingModel.glossaryEntityFqn.split('.')[0]}</span>
+                        <span className="text-muted-foreground">/</span>
+                        <span className="font-medium">{existingModel.glossaryEntityFqn.split('.')[1]}</span>
+                        <span className="text-muted-foreground">/</span>
+                        <span>{existingModel.glossaryEntityFqn.split('.')[2]}</span>
+                      </div>
+                      <div className="text-xs text-muted-foreground font-mono">
+                        {existingModel.id}
+                      </div>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -271,12 +279,19 @@ export default function BuildModels() {
             <CardContent>
               {existingModel?.associated_source_entities &&
               existingModel.associated_source_entities.length > 0 ? (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {existingModel.associated_source_entities.map((source, idx) => (
-                    <div key={source.id} className="text-sm">
-                      <span className="font-medium">{idx + 1}. </span>
-                      {source.name} / {source.subjectarea.name} /{" "}
-                      {source.subjectarea.namespace.name}
+                    <div key={source.id} className="flex items-start gap-2">
+                      <span className="font-medium text-sm mt-0.5">{idx + 1}.</span>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-1.5 text-sm flex-wrap">
+                          <span className="font-semibold text-primary">{source.subjectarea.namespace.name}</span>
+                          <span className="text-muted-foreground">/</span>
+                          <span className="font-medium">{source.subjectarea.name}</span>
+                          <span className="text-muted-foreground">/</span>
+                          <span>{source.name}</span>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>

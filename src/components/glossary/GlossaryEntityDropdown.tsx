@@ -105,10 +105,13 @@ export function GlossaryEntityDropdown({
           className="w-full justify-between"
         >
           {selectedEntity ? (
-            <span className="flex items-center gap-2">
-              <Database className="h-4 w-4" />
-              {selectedEntity.subjectarea.namespace.name}.
-              {selectedEntity.subjectarea.name}.{selectedEntity.name}
+            <span className="flex items-center gap-1.5 text-sm">
+              <Database className="h-4 w-4 shrink-0" />
+              <span className="font-medium">{selectedEntity.subjectarea.namespace.name}</span>
+              <span className="text-muted-foreground">/</span>
+              <span className="font-medium">{selectedEntity.subjectarea.name}</span>
+              <span className="text-muted-foreground">/</span>
+              <span>{selectedEntity.name}</span>
             </span>
           ) : (
             placeholder
@@ -137,17 +140,17 @@ export function GlossaryEntityDropdown({
                       const entities = entitiesBySubjectArea[sa.id] || [];
                       
                       return (
-                        <div key={sa.id} className="relative">
+                        <div key={sa.id} className="relative group">
                           <div
-                            className="flex items-center justify-between px-2 py-1.5 text-sm hover:bg-muted cursor-pointer rounded-sm"
+                            className="flex items-center justify-between px-2 py-1.5 text-sm hover:bg-accent cursor-pointer rounded-sm transition-colors"
                             onMouseEnter={() => {
                               setHoveredNamespace(namespace.id);
                               setHoveredSubjectArea(sa.id);
                             }}
                           >
-                            <span>{sa.name}</span>
+                            <span className="font-medium">{sa.name}</span>
                             {entities.length > 0 && (
-                              <ChevronRight className="h-4 w-4" />
+                              <ChevronRight className="h-4 w-4 text-muted-foreground" />
                             )}
                           </div>
                           
@@ -155,22 +158,21 @@ export function GlossaryEntityDropdown({
                             hoveredSubjectArea === sa.id &&
                             entities.length > 0 && (
                               <div
-                                className="absolute left-full top-0 ml-1 bg-popover border rounded-md shadow-md p-1 w-64 z-50"
+                                className="absolute left-full top-0 ml-1 bg-popover border rounded-md shadow-lg p-1 w-64 z-[100]"
                                 onMouseLeave={() => {
                                   setHoveredNamespace(null);
                                   setHoveredSubjectArea(null);
                                 }}
                               >
                                 {entities.map((entity: Entity) => (
-                                  <CommandItem
+                                  <div
                                     key={entity.id}
-                                    value={entity.name}
-                                    onSelect={() => handleSelect(entity)}
-                                    className="cursor-pointer"
+                                    onClick={() => handleSelect(entity)}
+                                    className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent rounded-sm cursor-pointer transition-colors"
                                   >
-                                    <Database className="mr-2 h-4 w-4" />
-                                    {entity.name}
-                                  </CommandItem>
+                                    <Database className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                    <span>{entity.name}</span>
+                                  </div>
                                 ))}
                               </div>
                             )}
