@@ -44,7 +44,7 @@ export const Header = () => {
         {/* Left side - Logo and Company Name */}
         <div className="flex items-center gap-3">
           <div className="h-8 w-8 rounded bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">M</span>
+            <img src="/images/Metaware Logo White.png" alt="MetaWare Logo" className="h-8 w-8" />
           </div>
           <span className="text-lg font-bold text-foreground">MetaWare</span>
         </div>
