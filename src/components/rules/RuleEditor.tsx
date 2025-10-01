@@ -64,7 +64,7 @@ export function RuleEditor({ open, onClose, columnName, entityContext }: RuleEdi
         console.log("All rules:", allRules);
         console.log("Filtering for column:", columnName);
         // Filter rules for this specific column
-        const columnRules = allRules.filter((rule: Rule) => rule.meta?.name === columnName);
+        const columnRules = allRules.filter((rule: Rule) => rule.meta?.alias === columnName || rule.meta?.name === columnName);
         console.log("Filtered column rules:", columnRules);
         setExistingRules(columnRules);
       } else {
@@ -164,12 +164,12 @@ export function RuleEditor({ open, onClose, columnName, entityContext }: RuleEdi
 
   const handleDeleteExistingRule = async (ruleId: string) => {
     try {
-      const response = await fetch(`${API_CONFIG.REST_ENDPOINT}/api/v1/rule`, {
-        method: "DELETE",
+      const response = await fetch(`${API_CONFIG.REST_ENDPOINT}/mwn/delete`, {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ ids: [ruleId] }),
+        body: JSON.stringify({ object_type: "rule", ids: [ruleId] }),
       });
 
       if (!response.ok) {
@@ -226,7 +226,7 @@ export function RuleEditor({ open, onClose, columnName, entityContext }: RuleEdi
           is_shared: rule.is_shared,
           language: rule.language,
           meta_id: rule.meta_id,
-          meta: rule.meta?.name,
+          meta: rule.meta?.alias || rule.meta?.name,
         })),
         ...localRules.map((rule) => ({
           type: "dq",
