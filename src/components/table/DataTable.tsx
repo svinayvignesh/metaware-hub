@@ -450,15 +450,29 @@ export const DataTable = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredData.map((row) => (
-              <TableRow
-                key={row.id}
-                className={cn(
-                  getRowClassName(row),
-                  row._status === 'draft' && "border-l-4 border-l-warning/70",
-                  row._status === 'edited' && "border-l-4 border-l-primary/70"
-                )}
-              >
+            {filteredData.map((row) => {
+              const isRowEditing = editingRows.includes(row.id) || row._status === 'draft' || row._status === 'edited';
+              
+              return (
+                <TableRow
+                  key={row.id}
+                  className={cn(
+                    getRowClassName(row),
+                    row._status === 'draft' && "border-l-4 border-l-warning/70",
+                    row._status === 'edited' && "border-l-4 border-l-primary/70",
+                    !isRowEditing && "cursor-pointer"
+                  )}
+                  onClick={(e) => {
+                    // Only toggle selection if not in edit mode and not clicking on interactive elements
+                    if (!isRowEditing && !(e.target as HTMLElement).closest('input, button, select, a')) {
+                      setSelectedRows(prev =>
+                        prev.includes(row.id)
+                          ? prev.filter(id => id !== row.id)
+                          : [...prev, row.id]
+                      );
+                    }
+                  }}
+                >
                 <TableCell className={cn(
                   row._status === 'draft' && "pl-2",
                   row._status === 'edited' && "pl-2"
@@ -534,7 +548,8 @@ export const DataTable = ({
                   </TableCell>
                 ))}
               </TableRow>
-            ))}
+              );
+            })}
           </TableBody>
         </Table>
       </div>
