@@ -318,20 +318,22 @@ export const RelationshipGraph = ({ entityId, entityName }: RelationshipGraphPro
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Grain</TableHead>
+                          <TableHead className="h-8 py-2 px-3">Name</TableHead>
+                          <TableHead className="h-8 py-2 px-3">Type</TableHead>
+                          <TableHead className="h-8 py-2 px-3">Grain</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {metaData.meta_meta.map((meta: MetaField) => (
                           <TableRow key={meta.id}>
-                            <TableCell className="font-medium">{meta.name}</TableCell>
-                            <TableCell>{meta.type}</TableCell>
-                            <TableCell className="flex gap-1">
-                              {meta.is_primary_grain && <Badge variant="default">P</Badge>}
-                              {meta.is_secondary_grain && <Badge variant="secondary">S</Badge>}
-                              {meta.is_tertiary_grain && <Badge variant="outline">T</Badge>}
+                            <TableCell className="py-2 px-3 font-medium">{meta.name}</TableCell>
+                            <TableCell className="py-2 px-3">{meta.type}</TableCell>
+                            <TableCell className="py-2 px-3">
+                              <div className="flex gap-1">
+                                {meta.is_primary_grain && <Badge variant="default" className="text-xs px-1.5 py-0">P</Badge>}
+                                {meta.is_secondary_grain && <Badge variant="secondary" className="text-xs px-1.5 py-0">S</Badge>}
+                                {meta.is_tertiary_grain && <Badge variant="outline" className="text-xs px-1.5 py-0">T</Badge>}
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
