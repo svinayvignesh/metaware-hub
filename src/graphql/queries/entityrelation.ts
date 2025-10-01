@@ -2,7 +2,7 @@ import { gql } from "@apollo/client";
 
 export const GET_ENTITY_RELATIONS = gql`
   query GetEntityRelations($relatedEnId: String) {
-    entity_relation(related_en_id: $relatedEnId) {
+    entity_relation(relatedEnId: $relatedEnId) {
       id
       related_en_id
       relation_type
