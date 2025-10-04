@@ -226,7 +226,7 @@ export function MappingTable({ glossaryEntity, sourceEntity, existingRuleset }: 
                 Glossary Standardized Meta
               </th>
               <th className="text-left p-4 font-medium w-[45%]">
-                Source Raw Column
+                Source Expression
               </th>
               <th className="text-left p-4 font-medium w-[10%]"></th>
             </tr>
