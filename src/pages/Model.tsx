@@ -8,6 +8,8 @@ import { queryMDTable } from "@/hooks/useMDConnection";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, X, Database, Loader2, Hammer } from "lucide-react";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage, BreadcrumbLink, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { Link } from "react-router-dom";
 
 export default function Model() {
   const navigate = useNavigate();
@@ -77,6 +79,13 @@ export default function Model() {
       <div className="flex-1 overflow-hidden">
         {!selectedEntity ? (
           <div className="p-6 space-y-6 h-full overflow-y-auto">
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Data Model</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-2xl font-bold text-foreground">Data Model</h1>
@@ -137,6 +146,19 @@ export default function Model() {
           </div>
         ) : (
           <div className="h-full flex flex-col p-6">
+            <Breadcrumb className="mb-4">
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <Link to="/model">Data Model</Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>{selectedEntity.name}</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
             <div className="mb-4 flex items-center gap-4">
               <Button
                 variant="ghost"

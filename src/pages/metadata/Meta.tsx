@@ -46,8 +46,11 @@ import {
   type GetMetaForEntityResponse
 } from "@/graphql/queries";
 import { entityAPI, metaAPI } from "@/services/api";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { FileUploadModal } from "@/components/meta/FileUploadModal";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage, BreadcrumbLink, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { Link } from "react-router-dom";
+
 
 /**
  * Column configuration for the meta fields table
@@ -491,6 +494,19 @@ export default function Meta() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/">Metadata</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Meta</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
       {/* Page Header */}
       <div>
         <h1 className="text-2xl font-bold text-foreground">Meta Data Management</h1>

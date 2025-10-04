@@ -14,6 +14,8 @@ import { MappingTable } from "@/components/glossary/MappingTable";
 import { RelationshipGraph } from "@/components/glossary/RelationshipGraph";
 import { ImportConfigModal } from "@/components/glossary/ImportConfigModal";
 import { type Entity } from "@/graphql/queries/entity";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage, BreadcrumbLink, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { Link } from "react-router-dom";
 
 export default function Glossary() {
   const [selectedSubjectAreaId, setSelectedSubjectAreaId] = useState<string | null>(null);
@@ -101,6 +103,13 @@ export default function Glossary() {
       <div className="flex-1 overflow-hidden">
         {!selectedEntity ? (
           <div className="p-6 space-y-6 h-full overflow-y-auto">
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Business Glossary</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
             <div>
               <h1 className="text-2xl font-bold text-foreground">Business Glossary</h1>
               <p className="text-muted-foreground">
@@ -157,6 +166,19 @@ export default function Glossary() {
           </div>
         ) : (
           <div className="h-full flex flex-col p-6">
+            <Breadcrumb className="mb-4">
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <Link to="/glossary">Business Glossary</Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>{selectedEntity.name}</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
             <div className="mb-4 flex items-center gap-4">
               <Button
                 variant="ghost"

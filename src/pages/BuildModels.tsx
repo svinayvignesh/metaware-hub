@@ -20,6 +20,8 @@ import {
   type MetaField,
 } from "@/graphql/queries/meta";
 import { API_CONFIG } from "@/config/api";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage, BreadcrumbLink, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { Link } from "react-router-dom";
 
 export default function BuildModels() {
   const navigate = useNavigate();
@@ -195,6 +197,19 @@ export default function BuildModels() {
 
   return (
     <div className="min-h-screen p-6 space-y-6">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/model">Data Model</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Build Models</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"

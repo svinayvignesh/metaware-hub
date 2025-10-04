@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Database, CheckCircle, XCircle } from "lucide-react";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
 
 export default function DuckDBDemo() {
   const { connection, connect, ready, error } = useMDConnection();
@@ -38,6 +39,13 @@ export default function DuckDBDemo() {
   return (
     <div className="flex-1 overflow-y-auto p-8">
       <div className="max-w-4xl mx-auto space-y-6">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbPage>DuckDB Demo</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
         <div>
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
             <Database className="h-8 w-8" />

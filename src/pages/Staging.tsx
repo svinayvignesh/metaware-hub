@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, X, Database, Loader2 } from "lucide-react";
 import { RuleEditor } from "@/components/rules/RuleEditor";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage, BreadcrumbLink, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { Link } from "react-router-dom";
 
 export default function Staging() {
   const [selectedSubjectAreaId, setSelectedSubjectAreaId] = useState<string | null>(null);
@@ -93,6 +95,13 @@ export default function Staging() {
       <div className="flex-1 overflow-hidden">
         {!selectedEntity ? (
           <div className="p-6 space-y-6 h-full overflow-y-auto">
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Staging</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
             <div>
               <h1 className="text-2xl font-bold text-foreground">Staging Management</h1>
               <p className="text-muted-foreground">
@@ -147,6 +156,19 @@ export default function Staging() {
           </div>
         ) : (
           <div className="h-full flex flex-col p-6">
+            <Breadcrumb className="mb-4">
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <Link to="/staging">Staging</Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>{selectedEntity.name}</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
             <div className="mb-4 flex items-center gap-4">
               <Button
                 variant="ghost"

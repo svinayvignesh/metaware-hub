@@ -21,9 +21,13 @@ import { useQuery } from '@apollo/client/react/hooks';
 import { DataTable, Column, TableData } from "@/components/table/DataTable";
 import { GET_SUBJECTAREAS, GET_NAMESPACES, type GetSubjectAreasResponse, type GetNamespacesResponse } from "@/graphql/queries";
 import { subjectAreaAPI } from "@/services/api";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { GroupedNamespaceSelect } from "@/components/table/GroupedNamespaceSelect";
 import { Badge } from "@/components/ui/badge";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage, BreadcrumbLink, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { Link } from "react-router-dom";
+
+
 
 /**
  * Helper function to get badge variant for namespace type
@@ -303,6 +307,19 @@ export default function SubjectArea() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/">Metadata</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Subject Area</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
       {/* Page Header */}
       <div>
         <h1 className="text-2xl font-bold text-foreground">Subject Area Management</h1>
