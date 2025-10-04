@@ -1,15 +1,14 @@
 import { useState, useEffect } from "react";
 import { useLazyQuery } from "@apollo/client";
-import { Trash2, Loader2 } from "lucide-react";
+import { Trash2, Loader2, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { GET_META_FOR_ENTITY, type MetaField } from "@/graphql/queries/meta";
 import { type Entity } from "@/graphql/queries/entity";
@@ -254,23 +253,39 @@ export function MappingTable({ glossaryEntity, sourceEntity, existingRuleset }: 
                         Loading...
                       </div>
                     ) : (
-                      <Select
-                        value={row.sourceMetaAlias}
-                        onValueChange={(value) =>
-                          handleSourceMetaChange(row.id, value)
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select source column" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {sourceMetaFields.map((meta) => (
-                            <SelectItem key={meta.id} value={meta.alias}>
-                              {meta.alias}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="flex gap-2">
+                        <Input
+                          value={row.sourceMetaAlias || ""}
+                          onChange={(e) =>
+                            handleSourceMetaChange(row.id, e.target.value)
+                          }
+                          placeholder="Type expression or select"
+                          className="flex-1"
+                        />
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" size="icon" className="shrink-0">
+                              <ChevronDown className="h-4 w-4" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-64 p-2" align="end">
+                            <div className="space-y-1">
+                              {sourceMetaFields.map((meta) => (
+                                <Button
+                                  key={meta.id}
+                                  variant="ghost"
+                                  className="w-full justify-start"
+                                  onClick={() => {
+                                    handleSourceMetaChange(row.id, meta.alias);
+                                  }}
+                                >
+                                  {meta.alias}
+                                </Button>
+                              ))}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
                     )}
                   </td>
                   <td className="p-4">
