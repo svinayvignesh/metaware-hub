@@ -93,6 +93,7 @@ export const DataTable = ({
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
   const [groupByColumn, setGroupByColumn] = useState<string | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
 
   // Use external edited data if provided, otherwise use internal state
   const editedData = externalEditedData !== undefined ? externalEditedData : internalEditedData;
@@ -432,23 +433,16 @@ export const DataTable = ({
               className="pl-8 w-64"
             />
           </div>
-          
-          <Select value={groupByColumn || '_none'} onValueChange={(value) => setGroupByColumn(value === '_none' ? null : value)}>
-            <SelectTrigger className="w-48">
-              <div className="flex items-center gap-2">
-                <Group className="h-4 w-4" />
-                <SelectValue placeholder="Group by..." />
-              </div>
-            </SelectTrigger>
-            <SelectContent className="bg-popover z-50">
-              <SelectItem value="_none">No grouping</SelectItem>
-              {columns.map((col) => (
-                <SelectItem key={col.key} value={col.key}>
-                  {col.title}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+
+          <Button
+            variant={showFilters ? "default" : "outline"}
+            size="sm"
+            onClick={() => setShowFilters(!showFilters)}
+            title="Toggle column filters"
+          >
+            <Filter className="h-4 w-4 mr-2" />
+            Filters
+          </Button>
 
           {hasActiveFilters && (
             <Button
@@ -480,7 +474,32 @@ export const DataTable = ({
       </div>
 
       {/* Table */}
-      <div className="border rounded-lg overflow-y-auto max-h-[calc(100vh-280px)]">
+      <div className="border rounded-lg overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-2 bg-muted/30 border-b">
+          <div className="flex items-center gap-2">
+            <Group className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium">Group by:</span>
+            <Select value={groupByColumn || '_none'} onValueChange={(value) => setGroupByColumn(value === '_none' ? null : value)}>
+              <SelectTrigger className="h-8 w-[180px] bg-background">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-popover z-50">
+                <SelectItem value="_none">None</SelectItem>
+                {columns.map((col) => (
+                  <SelectItem key={col.key} value={col.key}>
+                    {col.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {groupByColumn && (
+            <Badge variant="secondary" className="text-xs">
+              Grouped by {columns.find(c => c.key === groupByColumn)?.title}
+            </Badge>
+          )}
+        </div>
+        <div className="overflow-y-auto max-h-[calc(100vh-340px)]">
         <Table>
           <TableHeader className="bg-table-header sticky top-0 z-20 shadow-sm">
             <TableRow>
@@ -500,7 +519,7 @@ export const DataTable = ({
               </TableHead>
               {columns.map((column) => (
                 <TableHead key={column.key}>
-                  <div className="space-y-2">
+                  <div className={cn("space-y-2", !showFilters && "space-y-0")}>
                     <div 
                       className="flex items-center cursor-pointer select-none hover:bg-muted/50 rounded px-2 py-1"
                       onClick={(e) => {
@@ -514,49 +533,51 @@ export const DataTable = ({
                       {column.title}
                       {!column.onHeaderClick && getSortIcon(column.key)}
                     </div>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant={columnFilters[column.key] ? "default" : "ghost"}
-                          size="sm"
-                          className="h-7 w-full text-xs"
-                        >
-                          <Filter className="h-3 w-3 mr-1" />
-                          {columnFilters[column.key] ? 'Filtered' : 'Filter'}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-64" align="start">
-                        <div className="space-y-2">
-                          <h4 className="font-medium text-sm">Filter {column.title}</h4>
-                          <Input
-                            placeholder={`Filter by ${column.title}...`}
-                            value={columnFilters[column.key] || ''}
-                            onChange={(e) => {
-                              setColumnFilters(prev => ({
-                                ...prev,
-                                [column.key]: e.target.value
-                              }));
-                            }}
-                          />
-                          {columnFilters[column.key] && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="w-full"
-                              onClick={() => {
-                                setColumnFilters(prev => {
-                                  const newFilters = { ...prev };
-                                  delete newFilters[column.key];
-                                  return newFilters;
-                                });
+                    {showFilters && (
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant={columnFilters[column.key] ? "default" : "ghost"}
+                            size="sm"
+                            className="h-7 w-full text-xs"
+                          >
+                            <Filter className="h-3 w-3 mr-1" />
+                            {columnFilters[column.key] ? 'Filtered' : 'Filter'}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-64" align="start">
+                          <div className="space-y-2">
+                            <h4 className="font-medium text-sm">Filter {column.title}</h4>
+                            <Input
+                              placeholder={`Filter by ${column.title}...`}
+                              value={columnFilters[column.key] || ''}
+                              onChange={(e) => {
+                                setColumnFilters(prev => ({
+                                  ...prev,
+                                  [column.key]: e.target.value
+                                }));
                               }}
-                            >
-                              Clear filter
-                            </Button>
-                          )}
-                        </div>
-                      </PopoverContent>
-                    </Popover>
+                            />
+                            {columnFilters[column.key] && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full"
+                                onClick={() => {
+                                  setColumnFilters(prev => {
+                                    const newFilters = { ...prev };
+                                    delete newFilters[column.key];
+                                    return newFilters;
+                                  });
+                                }}
+                              >
+                                Clear filter
+                              </Button>
+                            )}
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    )}
                   </div>
                 </TableHead>
               ))}
@@ -781,6 +802,7 @@ export const DataTable = ({
             )}
           </TableBody>
         </Table>
+        </div>
       </div>
 
       {/* Footer */}
