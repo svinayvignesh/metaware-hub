@@ -44,35 +44,39 @@ export function SubSidebar({ namespaceType, onSubjectAreaSelect, selectedSubject
               <div key={namespace.id}>
                 <button
                   onClick={() => toggleNamespace(namespace.id)}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-accent transition-colors"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-accent transition-all duration-200 ease-in-out hover:scale-[1.02]"
                 >
-                  {isExpanded ? (
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  )}
+                  <ChevronDown 
+                    className={cn(
+                      "h-4 w-4 text-muted-foreground transition-transform duration-300 ease-in-out",
+                      !isExpanded && "-rotate-90"
+                    )} 
+                  />
                   <span className="flex-1 text-left truncate">{namespace.name}</span>
                   <span className="text-xs text-muted-foreground">({subjectAreas.length})</span>
                 </button>
 
-                {isExpanded && (
-                  <div className="ml-6 mt-1 space-y-1">
-                    {subjectAreas.map((sa) => (
-                      <button
-                        key={sa.id}
-                        onClick={() => onSubjectAreaSelect(sa.id)}
-                        className={cn(
-                          "w-full text-left px-3 py-2 text-sm rounded-md transition-colors",
-                          selectedSubjectAreaId === sa.id
-                            ? "bg-primary text-primary-foreground"
-                            : "hover:bg-accent"
-                        )}
-                      >
-                        {sa.name}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <div 
+                  className={cn(
+                    "ml-6 space-y-1 overflow-hidden transition-all duration-300 ease-in-out",
+                    isExpanded ? "mt-1 max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
+                  )}
+                >
+                  {subjectAreas.map((sa) => (
+                    <button
+                      key={sa.id}
+                      onClick={() => onSubjectAreaSelect(sa.id)}
+                      className={cn(
+                        "w-full text-left px-3 py-2 text-sm rounded-md transition-all duration-200 ease-in-out",
+                        selectedSubjectAreaId === sa.id
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "hover:bg-accent hover:scale-[1.02] hover:shadow-sm"
+                      )}
+                    >
+                      {sa.name}
+                    </button>
+                  ))}
+                </div>
               </div>
             );
           })}

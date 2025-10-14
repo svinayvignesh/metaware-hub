@@ -452,4 +452,28 @@
   button:focus-visible {
     @apply ring-1 ring-ring ring-offset-0;
   }
+
+  /* Smooth transitions for all interactive elements */
+  button,
+  a,
+  [role="button"],
+  [role="menuitem"],
+  [role="option"] {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Smooth hover effects for list items */
+  li:hover,
+  [role="listitem"]:hover {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Smooth dropdown animations */
+  [data-radix-popper-content-wrapper],
+  [data-radix-select-content],
+  [data-radix-dropdown-menu-content],
+  [data-radix-popover-content] {
+    animation-duration: 0.2s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
 }

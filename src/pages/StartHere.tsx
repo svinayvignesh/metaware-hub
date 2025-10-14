@@ -50,12 +50,12 @@ export default function StartHere() {
         <CardContent className="space-y-4">
           <Collapsible open={openSteps[1]} onOpenChange={() => toggleStep(1)}>
             <CollapsibleTrigger asChild>
-              <Button variant="outline" className="w-full justify-between">
+              <Button variant="outline" className="w-full justify-between hover:shadow-md transition-all duration-200">
                 <span className="flex items-center gap-2">
                   <BookOpen className="h-4 w-4" />
                   How to Load Source Data
                 </span>
-                <ArrowRight className={`h-4 w-4 transition-transform ${openSteps[1] ? 'rotate-90' : ''}`} />
+                <ArrowRight className={`h-4 w-4 transition-transform duration-300 ease-in-out ${openSteps[1] ? 'rotate-90' : ''}`} />
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-4 space-y-4">
@@ -156,12 +156,12 @@ export default function StartHere() {
         <CardContent className="space-y-4">
           <Collapsible open={openSteps[2]} onOpenChange={() => toggleStep(2)}>
             <CollapsibleTrigger asChild>
-              <Button variant="outline" className="w-full justify-between">
+              <Button variant="outline" className="w-full justify-between hover:shadow-md transition-all duration-200">
                 <span className="flex items-center gap-2">
                   <BookOpen className="h-4 w-4" />
                   How to Build Your Business Blueprint
                 </span>
-                <ArrowRight className={`h-4 w-4 transition-transform ${openSteps[2] ? 'rotate-90' : ''}`} />
+                <ArrowRight className={`h-4 w-4 transition-transform duration-300 ease-in-out ${openSteps[2] ? 'rotate-90' : ''}`} />
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-4 space-y-4">
@@ -302,12 +302,12 @@ export default function StartHere() {
         <CardContent className="space-y-4">
           <Collapsible open={openSteps[3]} onOpenChange={() => toggleStep(3)}>
             <CollapsibleTrigger asChild>
-              <Button variant="outline" className="w-full justify-between">
+              <Button variant="outline" className="w-full justify-between hover:shadow-md transition-all duration-200">
                 <span className="flex items-center gap-2">
                   <BookOpen className="h-4 w-4" />
                   How to Publish Models & Extracts
                 </span>
-                <ArrowRight className={`h-4 w-4 transition-transform ${openSteps[3] ? 'rotate-90' : ''}`} />
+                <ArrowRight className={`h-4 w-4 transition-transform duration-300 ease-in-out ${openSteps[3] ? 'rotate-90' : ''}`} />
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-4 space-y-4">
