@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@apollo/client";
 import { SubSidebar } from "@/components/layout/SubSidebar";
 import { EntityGrid } from "@/components/entity/EntityGrid";
 import { DataTable } from "@/components/table/DataTable";
@@ -10,6 +11,7 @@ import { Search, X, Database, Loader2 } from "lucide-react";
 import { RuleEditor } from "@/components/rules/RuleEditor";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage, BreadcrumbLink, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Link } from "react-router-dom";
+import { GET_SUBJECTAREAS, type GetSubjectAreasResponse } from "@/graphql/queries";
 
 export default function Staging() {
   const [selectedSubjectAreaId, setSelectedSubjectAreaId] = useState<string | null>(null);
@@ -20,6 +22,9 @@ export default function Staging() {
   const [data, setData] = useState<{ columns: string[]; rows: any[] }>({ columns: [], rows: [] });
   const [ruleEditorOpen, setRuleEditorOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState<string>("");
+  
+  const { data: subjectAreasData } = useQuery<GetSubjectAreasResponse>(GET_SUBJECTAREAS);
+  const selectedSubjectArea = subjectAreasData?.meta_subjectarea.find(sa => sa.id === selectedSubjectAreaId);
 
   // Connect to database on mount
   useEffect(() => {
@@ -111,6 +116,14 @@ export default function Staging() {
                     </button>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
+                {selectedSubjectArea && (
+                  <>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      <BreadcrumbPage>{selectedSubjectArea.name}</BreadcrumbPage>
+                    </BreadcrumbItem>
+                  </>
+                )}
               </BreadcrumbList>
             </Breadcrumb>
             <div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLazyQuery } from "@apollo/client";
+import { useLazyQuery, useQuery } from "@apollo/client";
 import { SubSidebar } from "@/components/layout/SubSidebar";
 import { EntityGrid } from "@/components/entity/EntityGrid";
 import { DataTable } from "@/components/table/DataTable";
@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, X, Database, Loader2, Upload } from "lucide-react";
 import { GET_META_FOR_ENTITY, type MetaField } from "@/graphql/queries/meta";
 import { GET_RULESETS_BY_ENTITY, type RulesetWithSource } from "@/graphql/queries/ruleset";
+import { GET_SUBJECTAREAS, type GetSubjectAreasResponse } from "@/graphql/queries";
 import { SourceAssociationSelect } from "@/components/glossary/SourceAssociationSelect";
 import { MappingTable } from "@/components/glossary/MappingTable";
 import { RelationshipGraph } from "@/components/glossary/RelationshipGraph";
@@ -26,6 +27,9 @@ export default function Glossary() {
   const [activeTab, setActiveTab] = useState("meta");
   const [existingRuleset, setExistingRuleset] = useState<RulesetWithSource | null>(null);
   const [importModalOpen, setImportModalOpen] = useState(false);
+  
+  const { data: subjectAreasData } = useQuery<GetSubjectAreasResponse>(GET_SUBJECTAREAS);
+  const selectedSubjectArea = subjectAreasData?.meta_subjectarea.find(sa => sa.id === selectedSubjectAreaId);
 
   const [fetchMeta, { loading: metaLoading }] = useLazyQuery(GET_META_FOR_ENTITY, {
     onCompleted: (data) => {
@@ -119,6 +123,14 @@ export default function Glossary() {
                     </button>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
+                {selectedSubjectArea && (
+                  <>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      <BreadcrumbPage>{selectedSubjectArea.name}</BreadcrumbPage>
+                    </BreadcrumbItem>
+                  </>
+                )}
               </BreadcrumbList>
             </Breadcrumb>
             <div>

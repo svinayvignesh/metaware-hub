@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@apollo/client";
 import { SubSidebar } from "@/components/layout/SubSidebar";
 import { EntityGrid } from "@/components/entity/EntityGrid";
 import { DataTable } from "@/components/table/DataTable";
@@ -10,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Search, X, Database, Loader2, Hammer } from "lucide-react";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage, BreadcrumbLink, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Link } from "react-router-dom";
+import { GET_SUBJECTAREAS, type GetSubjectAreasResponse } from "@/graphql/queries";
 
 export default function Model() {
   const navigate = useNavigate();
@@ -19,6 +21,9 @@ export default function Model() {
   const { connection, connect, ready } = useMDConnectionContext();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<{ columns: string[]; rows: any[] }>({ columns: [], rows: [] });
+  
+  const { data: subjectAreasData } = useQuery<GetSubjectAreasResponse>(GET_SUBJECTAREAS);
+  const selectedSubjectArea = subjectAreasData?.meta_subjectarea.find(sa => sa.id === selectedSubjectAreaId);
 
   // Connect to database on mount
   useEffect(() => {
@@ -95,6 +100,14 @@ export default function Model() {
                     </button>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
+                {selectedSubjectArea && (
+                  <>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      <BreadcrumbPage>{selectedSubjectArea.name}</BreadcrumbPage>
+                    </BreadcrumbItem>
+                  </>
+                )}
               </BreadcrumbList>
             </Breadcrumb>
             <div className="flex items-center justify-between">
