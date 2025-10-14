@@ -77,6 +77,8 @@ const entityColumns: Column[] = [
 export default function Entity() {
   const { toast } = useToast();
   const [editedData, setEditedData] = useState<TableData[]>([]);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   
   /**
    * GraphQL queries to fetch entities, namespaces, and subject areas
@@ -272,6 +274,7 @@ export default function Entity() {
    * Handle deleting entities
    */
   const handleDelete = async (ids: string[]) => {
+    setIsDeleting(true);
     try {
       await entityAPI.delete(ids);
       await refetch();
@@ -285,6 +288,8 @@ export default function Entity() {
         description: `Failed to delete entities: ${error}`,
         variant: "destructive",
       });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -292,6 +297,7 @@ export default function Entity() {
    * Handle bulk save operations
    */
   const handleSave = async (data: TableData[]) => {
+    setIsSaving(true);
     try {
       const entitiesToSave = data
         .map(item => {
@@ -387,6 +393,8 @@ export default function Entity() {
         description: `Failed to save changes: ${error}`,
         variant: "destructive",
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -446,6 +454,8 @@ export default function Entity() {
         entityType="Entity"
         externalEditedData={editedData}
         onEditedDataChange={setEditedData}
+        isDeleting={isDeleting}
+        isSaving={isSaving}
       />
     </div>
   );

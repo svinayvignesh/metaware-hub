@@ -16,6 +16,7 @@
  * @version 1.0.0
  */
 
+import { useState } from 'react';
 import { useQuery } from '@apollo/client/react/hooks';
 import { DataTable, Column, TableData } from "@/components/table/DataTable";
 import { GET_NAMESPACES, type GetNamespacesResponse } from "@/graphql/queries";
@@ -98,6 +99,8 @@ const namespaceColumns: Column[] = [
  */
 export default function NameSpace() {
   const { toast } = useToast();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   
   /**
    * GraphQL query to fetch all namespaces
@@ -185,6 +188,7 @@ export default function NameSpace() {
    * Handle deleting namespaces
    */
   const handleDelete = async (ids: string[]) => {
+    setIsDeleting(true);
     try {
       await namespaceAPI.delete(ids);
       await refetch();
@@ -198,6 +202,8 @@ export default function NameSpace() {
         description: `Failed to delete namespaces: ${error}`,
         variant: "destructive",
       });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -205,6 +211,7 @@ export default function NameSpace() {
    * Handle bulk save operations
    */
   const handleSave = async (data: TableData[]) => {
+    setIsSaving(true);
     try {
       const namespacesToSave = data
         .map(item => {
@@ -273,6 +280,8 @@ export default function NameSpace() {
         description: `Failed to save changes: ${error}`,
         variant: "destructive",
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -330,6 +339,8 @@ export default function NameSpace() {
         onDelete={handleDelete}
         onSave={handleSave}
         entityType="Namespace"
+        isDeleting={isDeleting}
+        isSaving={isSaving}
       />
     </div>
   );

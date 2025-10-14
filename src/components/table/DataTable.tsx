@@ -77,6 +77,8 @@ interface DataTableProps {
   entityType?: string;
   externalEditedData?: TableData[];
   onEditedDataChange?: (data: TableData[]) => void;
+  isDeleting?: boolean;
+  isSaving?: boolean;
 }
 
 export const DataTable = ({
@@ -90,6 +92,8 @@ export const DataTable = ({
   entityType = "Row",
   externalEditedData,
   onEditedDataChange,
+  isDeleting: externalIsDeleting,
+  isSaving: externalIsSaving,
 }: DataTableProps) => {
   const [editingRows, setEditingRows] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -98,6 +102,9 @@ export const DataTable = ({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [newlyAddedIds, setNewlyAddedIds] = useState<string[]>([]);
+  
+  const isCurrentlySaving = externalIsSaving ?? isSaving;
+  const isCurrentlyDeleting = externalIsDeleting ?? false;
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
@@ -236,7 +243,9 @@ export const DataTable = ({
       return;
     }
 
-    setIsSaving(true);
+    if (!externalIsSaving) {
+      setIsSaving(true);
+    }
     try {
       await onSave?.(editedData);
       
@@ -250,7 +259,9 @@ export const DataTable = ({
         setNewlyAddedIds([]);
       }, 3000);
     } finally {
-      setIsSaving(false);
+      if (!externalIsSaving) {
+        setIsSaving(false);
+      }
     }
   };
 
@@ -513,10 +524,10 @@ export const DataTable = ({
               variant="default" 
               size="sm" 
               onClick={handleSave}
-              disabled={isSaving}
+              disabled={isCurrentlySaving}
               className="animate-fade-in"
             >
-              {isSaving ? (
+              {isCurrentlySaving ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                   Saving...
@@ -541,9 +552,23 @@ export const DataTable = ({
           </Button>
           
           {selectedRows.length > 0 && (
-            <Button variant="destructive" size="sm" onClick={handleDelete}>
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete ({selectedRows.length})
+            <Button 
+              variant="destructive" 
+              size="sm" 
+              onClick={handleDelete}
+              disabled={isCurrentlyDeleting}
+            >
+              {isCurrentlyDeleting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete ({selectedRows.length})
+                </>
+              )}
             </Button>
           )}
         </div>

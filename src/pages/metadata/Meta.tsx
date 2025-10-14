@@ -84,6 +84,8 @@ export default function Meta() {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [editedData, setEditedData] = useState<TableData[]>([]);
   const { toast } = useToast();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // GraphQL queries for dropdown data
   const { data: namespacesData } = useQuery<GetNamespacesResponse>(GET_NAMESPACES);
@@ -272,6 +274,7 @@ export default function Meta() {
   };
 
   const handleDelete = async (ids: string[]) => {
+    setIsDeleting(true);
     try {
       await metaAPI.delete(ids);
       await refetch();
@@ -285,6 +288,8 @@ export default function Meta() {
         description: `Failed to delete meta fields: ${error}`,
         variant: "destructive",
       });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -298,6 +303,7 @@ export default function Meta() {
       return;
     }
 
+    setIsSaving(true);
     try {
       const selectedEntityData = availableEntities.find(e => e.id === selectedEntity);
       if (!selectedEntityData) return;
@@ -444,6 +450,8 @@ export default function Meta() {
         description: `Failed to save changes: ${error}`,
         variant: "destructive",
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -644,6 +652,8 @@ export default function Meta() {
               entityType="Metadata"
               externalEditedData={editedData}
               onEditedDataChange={setEditedData}
+              isDeleting={isDeleting}
+              isSaving={isSaving}
             />
           )}
         </div>
