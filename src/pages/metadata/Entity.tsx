@@ -437,16 +437,18 @@ export default function Entity() {
       </div>
 
       {/* Data Table with GraphQL Integration */}
-      <DataTable
-        columns={columnsWithRender}
-        data={tableData}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onSave={handleSave}
-        entityType="Entity"
-        externalEditedData={editedData}
-        onEditedDataChange={setEditedData}
-      />
+      <div className="w-0">
+        <DataTable
+          columns={columnsWithRender}
+          data={tableData}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onSave={handleSave}
+          entityType="Entity"
+          externalEditedData={editedData}
+          onEditedDataChange={setEditedData}
+        />
+      </div>
     </div>
   );
 }
