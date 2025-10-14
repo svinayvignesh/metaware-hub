@@ -11,12 +11,7 @@ const CollapsibleContent = ({
   ...props
 }: React.ComponentPropsWithoutRef<typeof CollapsiblePrimitive.CollapsibleContent>) => (
   <CollapsiblePrimitive.CollapsibleContent
-    className={cn(
-      "overflow-hidden transition-all duration-300 ease-in-out",
-      "data-[state=closed]:animate-accordion-up",
-      "data-[state=open]:animate-accordion-down",
-      className
-    )}
+    className={cn("collapsible-content", className)}
     {...props}
   >
     {children}

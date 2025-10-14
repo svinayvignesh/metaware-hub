@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@apollo/client/react/hooks";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { GET_NAMESPACES, GET_SUBJECTAREAS, type GetNamespacesResponse, type GetSubjectAreasResponse } from "@/graphql/queries";
 import { cn } from "@/lib/utils";
 
@@ -16,8 +16,20 @@ export function SubSidebar({ namespaceType, onSubjectAreaSelect, selectedSubject
   const { data: namespacesData } = useQuery<GetNamespacesResponse>(GET_NAMESPACES);
   const { data: subjectAreasData } = useQuery<GetSubjectAreasResponse>(GET_SUBJECTAREAS);
 
-  const namespaces = namespacesData?.meta_namespace?.filter(ns => ns.type.toLowerCase() === namespaceType.toLowerCase()) || [];
-  const allSubjectAreas = subjectAreasData?.meta_subjectarea || [];
+  const namespaces = useMemo(
+    () => (namespacesData?.meta_namespace ?? []).filter(ns => ns.type.toLowerCase() === namespaceType.toLowerCase()),
+    [namespacesData, namespaceType]
+  );
+
+  const subjectAreasByNs = useMemo(() => {
+    const all = subjectAreasData?.meta_subjectarea ?? [];
+    const map = new Map<string, typeof all>();
+    for (const sa of all) {
+      if (!map.has(sa.ns_id)) map.set(sa.ns_id, []);
+      map.get(sa.ns_id)!.push(sa);
+    }
+    return map;
+  }, [subjectAreasData]);
 
   const toggleNamespace = (namespaceId: string) => {
     const newExpanded = new Set(expandedNamespaces);
@@ -38,17 +50,17 @@ export function SubSidebar({ namespaceType, onSubjectAreaSelect, selectedSubject
         <div className="space-y-1">
           {namespaces.map((namespace) => {
             const isExpanded = expandedNamespaces.has(namespace.id);
-            const subjectAreas = allSubjectAreas.filter(sa => sa.ns_id === namespace.id);
+            const subjectAreas = subjectAreasByNs.get(namespace.id) ?? [];
 
             return (
               <div key={namespace.id}>
                 <button
                   onClick={() => toggleNamespace(namespace.id)}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-accent transition-all duration-200 ease-in-out hover:scale-[1.02]"
+                  className="button-anim w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-accent transform-gpu will-change-transform hover:scale-[1.02]"
                 >
                   <ChevronDown 
                     className={cn(
-                      "h-4 w-4 text-muted-foreground transition-transform duration-300 ease-in-out",
+                      "h-4 w-4 text-muted-foreground transform-gpu will-change-transform transition-transform duration-300 ease-in-out",
                       !isExpanded && "-rotate-90"
                     )} 
                   />
@@ -67,10 +79,10 @@ export function SubSidebar({ namespaceType, onSubjectAreaSelect, selectedSubject
                       key={sa.id}
                       onClick={() => onSubjectAreaSelect(sa.id)}
                       className={cn(
-                        "w-full text-left px-3 py-2 text-sm rounded-md transition-all duration-200 ease-in-out",
+                        "listitem-anim w-full text-left px-3 py-2 text-sm rounded-md transform-gpu will-change-transform",
                         selectedSubjectAreaId === sa.id
-                          ? "bg-primary text-primary-foreground shadow-sm"
-                          : "hover:bg-accent hover:scale-[1.02] hover:shadow-sm"
+                          ? "bg-primary text-primary-foreground"
+                          : "hover:bg-accent hover:scale-[1.02]"
                       )}
                     >
                       {sa.name}
