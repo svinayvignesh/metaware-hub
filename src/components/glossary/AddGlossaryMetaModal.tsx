@@ -34,7 +34,6 @@ export function AddGlossaryMetaModal({
 
   console.log("🔍 Modal props:", { open, entityId, alreadySelectedIdsCount: alreadySelectedIds.size });
 
-  // Use useQuery with skip to only fetch when modal is open
   const { data, loading, error, refetch } = useQuery(GET_META_FOR_ENTITY, {
     variables: { enid: entityId },
     skip: !open || !entityId,
@@ -64,7 +63,6 @@ export function AddGlossaryMetaModal({
     entityId
   });
 
-  // Initialize selected metas when modal opens
   useEffect(() => {
     if (open) {
       console.log("🚀 Modal opened, initializing selectedMetas with:", Array.from(alreadySelectedIds));
@@ -94,12 +92,10 @@ export function AddGlossaryMetaModal({
   };
 
   const handleSave = () => {
-    // Find newly added items
     const newlySelected = metaFields.filter(
       (meta) => selectedMetas.has(meta.id) && !alreadySelectedIds.has(meta.id)
     );
     
-    // Find removed items (were in alreadySelectedIds but not in selectedMetas)
     const removedIds = Array.from(alreadySelectedIds).filter(
       (id) => !selectedMetas.has(id)
     );
@@ -109,62 +105,145 @@ export function AddGlossaryMetaModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Add Glossary Meta</DialogTitle>
-        </DialogHeader>
+    <>
+      <style>{`
+        .glossary-modal-content {
+          max-width: 42rem;
+        }
 
-        {loading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
-        ) : metaFields.length === 0 ? (
-          <div className="py-8 text-center text-muted-foreground">
-            No metadata fields available
-          </div>
-        ) : (
-          <ScrollArea className="max-h-[400px] pr-4">
-            <div className="space-y-3">
-              {metaFields.map((meta) => (
-                <div
-                  key={meta.id}
-                  className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors"
-                >
-                  <Checkbox
-                    checked={selectedMetas.has(meta.id)}
-                    onCheckedChange={() => handleToggle(meta.id)}
-                    className="mt-1"
-                  />
-                  <div className="flex-1">
-                    <div className="font-medium">{meta.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {meta.alias} · {meta.type}
-                    </div>
-                    {meta.description && (
-                      <div className="text-sm text-muted-foreground mt-1">
-                        {meta.description}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
+        .glossary-modal-loading {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding-top: 2rem;
+          padding-bottom: 2rem;
+        }
+
+        .glossary-modal-loader {
+          height: 2rem;
+          width: 2rem;
+          animation: spin 1s linear infinite;
+          color: hsl(var(--muted-foreground));
+        }
+
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        .glossary-modal-empty {
+          padding-top: 2rem;
+          padding-bottom: 2rem;
+          text-align: center;
+          color: hsl(var(--muted-foreground));
+        }
+
+        .glossary-modal-scroll {
+          max-height: 25rem;
+          padding-right: 1rem;
+        }
+
+        .glossary-modal-list {
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+        }
+
+        .glossary-modal-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 0.75rem;
+          padding: 0.75rem;
+          border-radius: 0.5rem;
+          border: 1px solid hsl(var(--border));
+          transition: background-color 0.2s;
+        }
+
+        .glossary-modal-item:hover {
+          background-color: hsl(var(--muted) / 0.5);
+        }
+
+        .glossary-modal-checkbox {
+          margin-top: 0.25rem;
+        }
+
+        .glossary-modal-item-content {
+          flex: 1;
+        }
+
+        .glossary-modal-item-name {
+          font-weight: 500;
+        }
+
+        .glossary-modal-item-details {
+          font-size: 0.875rem;
+          color: hsl(var(--muted-foreground));
+        }
+
+        .glossary-modal-item-description {
+          font-size: 0.875rem;
+          color: hsl(var(--muted-foreground));
+          margin-top: 0.25rem;
+        }
+      `}</style>
+
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="glossary-modal-content">
+          <DialogHeader>
+            <DialogTitle>Add Glossary Meta</DialogTitle>
+          </DialogHeader>
+
+          {loading ? (
+            <div className="glossary-modal-loading">
+              <Loader2 className="glossary-modal-loader" />
             </div>
-          </ScrollArea>
-        )}
+          ) : metaFields.length === 0 ? (
+            <div className="glossary-modal-empty">
+              No metadata fields available
+            </div>
+          ) : (
+            <ScrollArea className="glossary-modal-scroll">
+              <div className="glossary-modal-list">
+                {metaFields.map((meta) => (
+                  <div
+                    key={meta.id}
+                    className="glossary-modal-item"
+                  >
+                    <Checkbox
+                      checked={selectedMetas.has(meta.id)}
+                      onCheckedChange={() => handleToggle(meta.id)}
+                      className="glossary-modal-checkbox"
+                    />
+                    <div className="glossary-modal-item-content">
+                      <div className="glossary-modal-item-name">{meta.name}</div>
+                      <div className="glossary-modal-item-details">
+                        {meta.alias} · {meta.type}
+                      </div>
+                      {meta.description && (
+                        <div className="glossary-modal-item-description">
+                          {meta.description}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          )}
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSave}
-            disabled={loading}
-          >
-            Save Changes
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={loading}
+            >
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

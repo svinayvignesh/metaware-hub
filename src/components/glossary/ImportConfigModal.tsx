@@ -109,96 +109,225 @@ export function ImportConfigModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Import Configuration</DialogTitle>
-          <DialogDescription>
-            Upload a configuration file and select the sheet name to import
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <style>{`
+        .import-modal-content {
+          max-width: 28rem;
+        }
 
-        <div className="space-y-4 py-4">
-          {/* Sheet Name Selection */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
-              Sheet Name <span className="text-destructive">*</span>
-            </label>
-            <Select value={sheetName} onValueChange={setSheetName}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select sheet name" />
-              </SelectTrigger>
-              <SelectContent>
-                {SHEET_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        @media (min-width: 640px) {
+          .import-modal-content {
+            max-width: 28rem;
+          }
+        }
 
-          {/* File Upload */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
-              File <span className="text-destructive">*</span>
-            </label>
-            {!file ? (
-              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">
-                    Click to upload or drag and drop
-                  </p>
-                </div>
-                <input
-                  type="file"
-                  className="hidden"
-                  onChange={handleFileChange}
-                  accept=".xlsx,.xls,.csv"
-                />
+        .import-modal-body {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+          padding-top: 1rem;
+          padding-bottom: 1rem;
+        }
+
+        .import-modal-field {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .import-modal-label {
+          font-size: 0.875rem;
+          font-weight: 500;
+        }
+
+        .import-modal-required {
+          color: hsl(var(--destructive));
+        }
+
+        .import-modal-upload-zone {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          height: 8rem;
+          border: 2px dashed hsl(var(--muted));
+          border-radius: 0.5rem;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+
+        .import-modal-upload-zone:hover {
+          background-color: hsl(var(--accent) / 0.5);
+        }
+
+        .import-modal-upload-content {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding-top: 1.25rem;
+          padding-bottom: 1.5rem;
+        }
+
+        .import-modal-upload-icon {
+          width: 2rem;
+          height: 2rem;
+          margin-bottom: 0.5rem;
+          color: hsl(var(--muted-foreground));
+        }
+
+        .import-modal-upload-text {
+          font-size: 0.875rem;
+          color: hsl(var(--muted-foreground));
+        }
+
+        .import-modal-file-preview {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0.75rem;
+          border: 1px solid hsl(var(--border));
+          border-radius: 0.5rem;
+          background-color: hsl(var(--accent) / 0.5);
+        }
+
+        .import-modal-file-info {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          flex: 1;
+          min-width: 0;
+        }
+
+        .import-modal-file-icon {
+          width: 1rem;
+          height: 1rem;
+          color: hsl(var(--muted-foreground));
+          flex-shrink: 0;
+        }
+
+        .import-modal-file-name {
+          font-size: 0.875rem;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .import-modal-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 0.5rem;
+        }
+
+        .import-modal-loader-icon {
+          margin-right: 0.5rem;
+          height: 1rem;
+          width: 1rem;
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        .import-modal-action-icon {
+          margin-right: 0.5rem;
+          height: 1rem;
+          width: 1rem;
+        }
+      `}</style>
+
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="import-modal-content">
+          <DialogHeader>
+            <DialogTitle>Import Configuration</DialogTitle>
+            <DialogDescription>
+              Upload a configuration file and select the sheet name to import
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="import-modal-body">
+            <div className="import-modal-field">
+              <label className="import-modal-label">
+                Sheet Name <span className="import-modal-required">*</span>
               </label>
-            ) : (
-              <div className="flex items-center justify-between p-3 border rounded-lg bg-accent/50">
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <Upload className="w-4 h-4 text-muted-foreground shrink-0" />
-                  <span className="text-sm truncate">{file.name}</span>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleRemoveFile}
-                  className="shrink-0"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
+              <Select value={sheetName} onValueChange={setSheetName}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select sheet name" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SHEET_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={handleCancel} disabled={isUploading}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleUpload}
-            disabled={!file || !sheetName || isUploading}
-          >
-            {isUploading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Uploading...
-              </>
-            ) : (
-              <>
-                <Upload className="mr-2 h-4 w-4" />
-                Upload
-              </>
-            )}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+            <div className="import-modal-field">
+              <label className="import-modal-label">
+                File <span className="import-modal-required">*</span>
+              </label>
+              {!file ? (
+                <label className="import-modal-upload-zone">
+                  <div className="import-modal-upload-content">
+                    <Upload className="import-modal-upload-icon" />
+                    <p className="import-modal-upload-text">
+                      Click to upload or drag and drop
+                    </p>
+                  </div>
+                  <input
+                    type="file"
+                    className="hidden"
+                    onChange={handleFileChange}
+                    accept=".xlsx,.xls,.csv"
+                  />
+                </label>
+              ) : (
+                <div className="import-modal-file-preview">
+                  <div className="import-modal-file-info">
+                    <Upload className="import-modal-file-icon" />
+                    <span className="import-modal-file-name">{file.name}</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleRemoveFile}
+                    className="shrink-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="import-modal-actions">
+            <Button variant="outline" onClick={handleCancel} disabled={isUploading}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpload}
+              disabled={!file || !sheetName || isUploading}
+            >
+              {isUploading ? (
+                <>
+                  <Loader2 className="import-modal-loader-icon" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <Upload className="import-modal-action-icon" />
+                  Upload
+                </>
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

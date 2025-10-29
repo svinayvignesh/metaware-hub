@@ -16,42 +16,84 @@ import { AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
 export function ConnectionStatus() {
   const { isConnected, isChecking, lastError, checkConnection } = useConnectionMonitor();
 
-  // Don't show anything if connection is healthy
   if (isConnected && !lastError) {
     return null;
   }
 
   return (
-    <Alert variant={isConnected ? "default" : "destructive"} className="mb-4">
-      <div className="flex items-start gap-3">
-        {isConnected ? (
-          <CheckCircle2 className="h-5 w-5 mt-0.5" />
-        ) : (
-          <AlertCircle className="h-5 w-5 mt-0.5" />
-        )}
-        <div className="flex-1">
-          <AlertTitle>
-            {isConnected ? 'Connection Restored' : 'Connection Issue Detected'}
-          </AlertTitle>
-          <AlertDescription>
-            {isConnected 
-              ? 'Your connection to the database has been restored.'
-              : lastError || 'Unable to connect to the database. This may be due to connection pool exhaustion.'}
-          </AlertDescription>
-          {!isConnected && (
-            <Button
-              onClick={checkConnection}
-              disabled={isChecking}
-              variant="outline"
-              size="sm"
-              className="mt-3"
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${isChecking ? 'animate-spin' : ''}`} />
-              {isChecking ? 'Checking...' : 'Retry Connection'}
-            </Button>
+    <>
+      <style>{`
+        .connection-alert {
+          margin-bottom: 1rem;
+        }
+
+        .connection-content {
+          display: flex;
+          align-items: flex-start;
+          gap: 0.75rem;
+        }
+
+        .connection-icon {
+          height: 1.25rem;
+          width: 1.25rem;
+          margin-top: 0.125rem;
+        }
+
+        .connection-text {
+          flex: 1;
+        }
+
+        .connection-button {
+          margin-top: 0.75rem;
+        }
+
+        .connection-button-icon {
+          height: 1rem;
+          width: 1rem;
+          margin-right: 0.5rem;
+        }
+
+        .connection-button-icon-spin {
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+
+      <Alert variant={isConnected ? "default" : "destructive"} className="connection-alert">
+        <div className="connection-content">
+          {isConnected ? (
+            <CheckCircle2 className="connection-icon" />
+          ) : (
+            <AlertCircle className="connection-icon" />
           )}
+          <div className="connection-text">
+            <AlertTitle>
+              {isConnected ? 'Connection Restored' : 'Connection Issue Detected'}
+            </AlertTitle>
+            <AlertDescription>
+              {isConnected 
+                ? 'Your connection to the database has been restored.'
+                : lastError || 'Unable to connect to the database. This may be due to connection pool exhaustion.'}
+            </AlertDescription>
+            {!isConnected && (
+              <Button
+                onClick={checkConnection}
+                disabled={isChecking}
+                variant="outline"
+                size="sm"
+                className="connection-button"
+              >
+                <RefreshCw className={`connection-button-icon ${isChecking ? 'connection-button-icon-spin' : ''}`} />
+                {isChecking ? 'Checking...' : 'Retry Connection'}
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
-    </Alert>
+      </Alert>
+    </>
   );
 }

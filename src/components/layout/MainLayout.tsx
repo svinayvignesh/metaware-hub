@@ -7,14 +7,34 @@ interface MainLayoutProps {
 
 export const MainLayout = ({ children }: MainLayoutProps) => {
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <div className="flex">
-        <Sidebar />
-        <main className="flex-1 ml-64 mt-14 p-6">
-          {children}
-        </main>
+    <>
+      <style>{`
+        .main-layout-container {
+          min-height: 100vh;
+          background-color: hsl(var(--background));
+        }
+
+        .main-layout-content {
+          display: flex;
+        }
+
+        .main-layout-main {
+          flex: 1;
+          margin-left: 16rem;
+          margin-top: 3.5rem;
+          padding: 1.5rem;
+        }
+      `}</style>
+
+      <div className="main-layout-container">
+        <Header />
+        <div className="main-layout-content">
+          <Sidebar />
+          <main className="main-layout-main">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </>
   );
 };

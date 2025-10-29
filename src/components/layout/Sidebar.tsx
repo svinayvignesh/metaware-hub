@@ -8,7 +8,6 @@ import {
   Layers,
   BookOpen,
   Shield,
-  ChevronDown,
   ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -82,69 +81,185 @@ export const Sidebar = () => {
   };
 
   return (
-    <aside className="fixed left-0 top-14 bottom-0 w-64 border-r border-sidebar-border bg-sidebar-background z-30">
-      <nav className="p-4 space-y-2">
-        {navItems.map((item) => (
-          <div key={item.title}>
-            {item.children ? (
-              <div>
-                <Button
-                  variant="ghost"
-                  className={cn(
-                    "w-full justify-start gap-3 h-10",
-                    isActive(item.href) && "bg-sidebar-item-active text-primary"
-                  )}
-                  onClick={() => toggleExpanded(item.title)}
-                >
-                  <item.icon className="h-4 w-4" />
-                  <span className="flex-1 text-left">{item.title}</span>
+    <>
+      <style>{`
+        .sidebar-container {
+          position: fixed;
+          left: 0;
+          top: 3.5rem;
+          bottom: 0;
+          width: 16rem;
+          border-right: 1px solid hsl(var(--sidebar-border));
+          background-color: hsl(var(--sidebar-background));
+          z-index: 30;
+        }
+
+        .sidebar-nav {
+          padding: 1rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .sidebar-parent-button {
+          width: 100%;
+          justify-content: flex-start;
+          gap: 0.75rem;
+          height: 2.5rem;
+        }
+
+        .sidebar-parent-button-active {
+          background-color: hsl(var(--sidebar-item-active));
+          color: hsl(var(--primary));
+        }
+
+        .sidebar-parent-icon {
+          height: 1rem;
+          width: 1rem;
+        }
+
+        .sidebar-parent-text {
+          flex: 1;
+          text-align: left;
+        }
+
+        .sidebar-chevron {
+          transition: transform 200ms;
+        }
+
+        .sidebar-chevron-expanded {
+          transform: rotate(90deg);
+        }
+
+        .sidebar-children-container {
+          margin-left: 1.5rem;
+          margin-top: 0.25rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+          overflow: hidden;
+          transition: all 300ms ease-in-out;
+        }
+
+        .sidebar-children-expanded {
+          max-height: 24rem;
+          opacity: 1;
+        }
+
+        .sidebar-children-collapsed {
+          max-height: 0;
+          opacity: 0;
+        }
+
+        .sidebar-child-link {
+          display: block;
+          padding: 0.5rem 0.75rem;
+          border-radius: 0.375rem;
+          font-size: 0.875rem;
+          transition: all 200ms;
+        }
+
+        .sidebar-child-link:hover {
+          background-color: hsl(var(--sidebar-item-hover));
+          transform: translateX(0.25rem);
+        }
+
+        .sidebar-child-link-active {
+          background-color: hsl(var(--sidebar-item-active));
+          color: hsl(var(--primary));
+          font-weight: 500;
+        }
+
+        .sidebar-link {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.5rem 0.75rem;
+          border-radius: 0.375rem;
+          font-size: 0.875rem;
+          transition: colors 200ms;
+        }
+
+        .sidebar-link:hover {
+          background-color: hsl(var(--sidebar-item-hover));
+        }
+
+        .sidebar-link-active {
+          background-color: hsl(var(--sidebar-item-active));
+          color: hsl(var(--primary));
+          font-weight: 500;
+        }
+
+        .sidebar-link-icon {
+          height: 1rem;
+          width: 1rem;
+        }
+      `}</style>
+
+      <aside className="sidebar-container">
+        <nav className="sidebar-nav">
+          {navItems.map((item) => (
+            <div key={item.title}>
+              {item.children ? (
+                <div>
+                  <Button
+                    variant="ghost"
+                    className={cn(
+                      "sidebar-parent-button",
+                      isActive(item.href) && "sidebar-parent-button-active"
+                    )}
+                    onClick={() => toggleExpanded(item.title)}
+                  >
+                    <item.icon className="sidebar-parent-icon" />
+                    <span className="sidebar-parent-text">{item.title}</span>
+                    <div className={cn(
+                      "sidebar-chevron",
+                      expandedItems.includes(item.title) && "sidebar-chevron-expanded"
+                    )}>
+                      <ChevronRight className="sidebar-parent-icon" />
+                    </div>
+                  </Button>
+                  
                   <div className={cn(
-                    "transition-transform duration-200",
-                    expandedItems.includes(item.title) ? "rotate-90" : "rotate-0"
+                    "sidebar-children-container",
+                    expandedItems.includes(item.title) 
+                      ? "sidebar-children-expanded" 
+                      : "sidebar-children-collapsed"
                   )}>
-                    <ChevronRight className="h-4 w-4" />
+                    {item.children.map((child) => (
+                      <NavLink
+                        key={child.href}
+                        to={child.href}
+                        className={({ isActive }) =>
+                          cn(
+                            "sidebar-child-link",
+                            isActive && "sidebar-child-link-active"
+                          )
+                        }
+                      >
+                        {child.title}
+                      </NavLink>
+                    ))}
                   </div>
-                </Button>
-                
-                <div className={cn(
-                  "ml-6 mt-1 space-y-1 overflow-hidden transition-all duration-300 ease-in-out",
-                  expandedItems.includes(item.title) 
-                    ? "max-h-96 opacity-100" 
-                    : "max-h-0 opacity-0"
-                )}>
-                  {item.children.map((child) => (
-                    <NavLink
-                      key={child.href}
-                      to={child.href}
-                      className={({ isActive }) =>
-                        cn(
-                          "block px-3 py-2 rounded-md text-sm transition-all duration-200 hover:bg-sidebar-item-hover transform hover:translate-x-1",
-                          isActive && "bg-sidebar-item-active text-primary font-medium"
-                        )
-                      }
-                    >
-                      {child.title}
-                    </NavLink>
-                  ))}
                 </div>
-              </div>
-            ) : (
-              <NavLink
-                to={item.href}
-                className={({ isActive }) =>
-                  cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors hover:bg-sidebar-item-hover",
-                    isActive && "bg-sidebar-item-active text-primary font-medium"
-                  )
-                }
-              >
-                <item.icon className="h-4 w-4" />
-                {item.title}
-              </NavLink>
-            )}
-          </div>
-        ))}
-      </nav>
-    </aside>
+              ) : (
+                <NavLink
+                  to={item.href}
+                  className={({ isActive }) =>
+                    cn(
+                      "sidebar-link",
+                      isActive && "sidebar-link-active"
+                    )
+                  }
+                >
+                  <item.icon className="sidebar-link-icon" />
+                  {item.title}
+                </NavLink>
+              )}
+            </div>
+          ))}
+        </nav>
+      </aside>
+    </>
   );
 };

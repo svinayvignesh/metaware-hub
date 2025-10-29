@@ -26,11 +26,9 @@ export function SourceAssociationSelect({
   const sourceAssociations = useMemo(() => {
     if (!data?.meta_entity || !glossaryEntity) return [];
 
-    // Get the entity name from the glossary entity - this is the grain to match
     const glossaryEntityName = glossaryEntity.name;
     if (!glossaryEntityName) return [];
 
-    // Find staging entities whose primary_grain matches the glossary entity name
     return data.meta_entity.filter(
       (entity: Entity) =>
         entity.subjectarea.namespace.type === "staging" &&
@@ -40,45 +38,91 @@ export function SourceAssociationSelect({
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Loader2 className="h-4 w-4 animate-spin" />
-        Loading associations...
-      </div>
+      <>
+        <style>{`
+          .source-loading {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: hsl(var(--muted-foreground));
+          }
+
+          .source-loading-icon {
+            height: 1rem;
+            width: 1rem;
+            animation: spin 1s linear infinite;
+          }
+
+          @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
+
+        <div className="source-loading">
+          <Loader2 className="source-loading-icon" />
+          Loading associations...
+        </div>
+      </>
     );
   }
 
   if (sourceAssociations.length === 0) {
     return (
-      <div className="text-sm text-muted-foreground">
-        No source associations found for this entity
-      </div>
+      <>
+        <style>{`
+          .source-empty {
+            font-size: 0.875rem;
+            color: hsl(var(--muted-foreground));
+          }
+        `}</style>
+
+        <div className="source-empty">
+          No source associations found for this entity
+        </div>
+      </>
     );
   }
 
   return (
-    <Select
-      value={value}
-      onValueChange={(val) => {
-        const selected = sourceAssociations.find((e) => e.id === val);
-        if (selected) onSelect(selected);
-      }}
-    >
-      <SelectTrigger className="w-full">
-        <SelectValue placeholder="Select Association" />
-      </SelectTrigger>
-      <SelectContent>
-        {sourceAssociations.map((entity) => (
-          <SelectItem key={entity.id} value={entity.id}>
-            <span className="font-medium">
-              {entity.subjectarea.namespace.name}
-            </span>
-            <span className="text-muted-foreground mx-1.5">/</span>
-            <span className="font-medium">{entity.subjectarea.name}</span>
-            <span className="text-muted-foreground mx-1.5">/</span>
-            <span>{entity.name}</span>
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <>
+      <style>{`
+        .source-select-label {
+          font-weight: 500;
+        }
+
+        .source-select-separator {
+          color: hsl(var(--muted-foreground));
+          margin-left: 0.375rem;
+          margin-right: 0.375rem;
+        }
+      `}</style>
+
+      <Select
+        value={value}
+        onValueChange={(val) => {
+          const selected = sourceAssociations.find((e) => e.id === val);
+          if (selected) onSelect(selected);
+        }}
+      >
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Select Association" />
+        </SelectTrigger>
+        <SelectContent>
+          {sourceAssociations.map((entity) => (
+            <SelectItem key={entity.id} value={entity.id}>
+              <span className="source-select-label">
+                {entity.subjectarea.namespace.name}
+              </span>
+              <span className="source-select-separator">/</span>
+              <span className="source-select-label">{entity.subjectarea.name}</span>
+              <span className="source-select-separator">/</span>
+              <span>{entity.name}</span>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </>
   );
 }

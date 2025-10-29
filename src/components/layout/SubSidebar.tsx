@@ -42,58 +42,169 @@ export function SubSidebar({ namespaceType, onSubjectAreaSelect, selectedSubject
   };
 
   return (
-    <div className="w-64 border-r border-border bg-background overflow-y-auto z-30">
-      <div className="p-4">
-        <h2 className="text-sm font-semibold text-muted-foreground uppercase mb-4">
-          {namespaceType} Namespaces
-        </h2>
-        <div className="space-y-1">
-          {namespaces.map((namespace) => {
-            const isExpanded = expandedNamespaces.has(namespace.id);
-            const subjectAreas = subjectAreasByNs.get(namespace.id) ?? [];
+    <>
+      <style>{`
+        .subsidebar-container {
+          width: 16rem;
+          border-right: 1px solid hsl(var(--border));
+          background-color: hsl(var(--background));
+          overflow-y: auto;
+          z-index: 30;
+        }
 
-            return (
-              <div key={namespace.id}>
-                <button
-                  onClick={() => toggleNamespace(namespace.id)}
-                  className="button-anim w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-accent transform-gpu will-change-transform hover:scale-[1.02]"
-                >
-                  <ChevronDown 
-                    className={cn(
-                      "h-4 w-4 text-muted-foreground transform-gpu will-change-transform transition-transform duration-300 ease-in-out",
-                      !isExpanded && "-rotate-90"
-                    )} 
-                  />
-                  <span className="flex-1 text-left truncate">{namespace.name}</span>
-                  <span className="text-xs text-muted-foreground">({subjectAreas.length})</span>
-                </button>
+        .subsidebar-content {
+          padding: 1rem;
+        }
 
-                <div 
-                  className={cn(
-                    "ml-6 space-y-1 overflow-hidden transition-all duration-300 ease-in-out",
-                    isExpanded ? "mt-1 max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
-                  )}
-                >
-                  {subjectAreas.map((sa) => (
-                    <button
-                      key={sa.id}
-                      onClick={() => onSubjectAreaSelect(sa.id)}
+        .subsidebar-header {
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: hsl(var(--muted-foreground));
+          text-transform: uppercase;
+          margin-bottom: 1rem;
+        }
+
+        .subsidebar-list {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+        }
+
+        .subsidebar-namespace-button {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.5rem 0.75rem;
+          font-size: 0.875rem;
+          border-radius: 0.375rem;
+          will-change: transform;
+          transform: translateZ(0);
+        }
+
+        .subsidebar-namespace-button:hover {
+          background-color: hsl(var(--accent));
+          transform: scale(1.02);
+        }
+
+        .subsidebar-chevron {
+          height: 1rem;
+          width: 1rem;
+          color: hsl(var(--muted-foreground));
+          will-change: transform;
+          transform: translateZ(0);
+          transition: transform 300ms ease-in-out;
+        }
+
+        .subsidebar-chevron-collapsed {
+          transform: rotate(-90deg);
+        }
+
+        .subsidebar-namespace-name {
+          flex: 1;
+          text-align: left;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .subsidebar-count {
+          font-size: 0.75rem;
+          color: hsl(var(--muted-foreground));
+        }
+
+        .subsidebar-subjects-container {
+          margin-left: 1.5rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+          overflow: hidden;
+          transition: all 300ms ease-in-out;
+        }
+
+        .subsidebar-subjects-expanded {
+          margin-top: 0.25rem;
+          max-height: 125rem;
+          opacity: 1;
+        }
+
+        .subsidebar-subjects-collapsed {
+          max-height: 0;
+          opacity: 0;
+        }
+
+        .subsidebar-subject-button {
+          width: 100%;
+          text-align: left;
+          padding: 0.5rem 0.75rem;
+          font-size: 0.875rem;
+          border-radius: 0.375rem;
+          will-change: transform;
+          transform: translateZ(0);
+        }
+
+        .subsidebar-subject-button:hover {
+          background-color: hsl(var(--accent));
+          transform: scale(1.02);
+        }
+
+        .subsidebar-subject-button-active {
+          background-color: hsl(var(--primary));
+          color: hsl(var(--primary-foreground));
+        }
+      `}</style>
+
+      <div className="subsidebar-container">
+        <div className="subsidebar-content">
+          <h2 className="subsidebar-header">
+            {namespaceType} Namespaces
+          </h2>
+          <div className="subsidebar-list">
+            {namespaces.map((namespace) => {
+              const isExpanded = expandedNamespaces.has(namespace.id);
+              const subjectAreas = subjectAreasByNs.get(namespace.id) ?? [];
+
+              return (
+                <div key={namespace.id}>
+                  <button
+                    onClick={() => toggleNamespace(namespace.id)}
+                    className="button-anim subsidebar-namespace-button"
+                  >
+                    <ChevronDown 
                       className={cn(
-                        "listitem-anim w-full text-left px-3 py-2 text-sm rounded-md transform-gpu will-change-transform",
-                        selectedSubjectAreaId === sa.id
-                          ? "bg-primary text-primary-foreground"
-                          : "hover:bg-accent hover:scale-[1.02]"
-                      )}
-                    >
-                      {sa.name}
-                    </button>
-                  ))}
+                        "subsidebar-chevron",
+                        !isExpanded && "subsidebar-chevron-collapsed"
+                      )} 
+                    />
+                    <span className="subsidebar-namespace-name">{namespace.name}</span>
+                    <span className="subsidebar-count">({subjectAreas.length})</span>
+                  </button>
+
+                  <div 
+                    className={cn(
+                      "subsidebar-subjects-container",
+                      isExpanded ? "subsidebar-subjects-expanded" : "subsidebar-subjects-collapsed"
+                    )}
+                  >
+                    {subjectAreas.map((sa) => (
+                      <button
+                        key={sa.id}
+                        onClick={() => onSubjectAreaSelect(sa.id)}
+                        className={cn(
+                          "listitem-anim subsidebar-subject-button",
+                          selectedSubjectAreaId === sa.id && "subsidebar-subject-button-active"
+                        )}
+                      >
+                        {sa.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
