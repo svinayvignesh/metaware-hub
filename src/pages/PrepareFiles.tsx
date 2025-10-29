@@ -15,6 +15,7 @@ import {
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import { FileUploadModal } from "@/components/meta/FileUploadModal";
 import { ImportConfigModal } from "@/components/glossary/ImportConfigModal";
+import { GroupedNamespaceSelect } from "@/components/table/GroupedNamespaceSelect";
 import { 
   GET_NAMESPACES, 
   GET_SUBJECTAREAS, 
@@ -199,18 +200,12 @@ export default function PrepareFiles() {
                   <Label className="prepare-files-label">
                     Namespace <span className="prepare-files-required">*</span>
                   </Label>
-                  <Select value={selectedNamespace} onValueChange={handleNamespaceChange}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select namespace" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {namespacesData?.meta_namespace.map((ns) => (
-                        <SelectItem key={ns.id} value={ns.id}>
-                          {ns.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <GroupedNamespaceSelect
+                    namespaces={namespacesData?.meta_namespace || []}
+                    value={selectedNamespace}
+                    onChange={handleNamespaceChange}
+                    placeholder="Select namespace"
+                  />
                 </div>
 
                 <div className="prepare-files-field">

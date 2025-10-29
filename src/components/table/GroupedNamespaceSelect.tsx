@@ -83,6 +83,7 @@ export const GroupedNamespaceSelect = ({
         .grouped-namespace-content {
           background-color: hsl(var(--popover));
           z-index: 50;
+          border: 1px solid hsl(var(--border));
         }
 
         .grouped-namespace-header {

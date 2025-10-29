@@ -48,6 +48,7 @@ import {
 import { entityAPI, metaAPI } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
 import { FileUploadModal } from "@/components/meta/FileUploadModal";
+import { GroupedNamespaceSelect } from "@/components/table/GroupedNamespaceSelect";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage, BreadcrumbLink, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Link } from "react-router-dom";
 
@@ -100,18 +101,6 @@ export default function Meta() {
       skip: !selectedEntity, // Skip query if no entity is selected
     }
   );
-
-  /**
-   * Group namespaces by type for organized dropdown display
-   */
-  const groupedNamespaces = namespacesData?.meta_namespace.reduce((groups, namespace) => {
-    const type = namespace.type || 'Other';
-    if (!groups[type]) {
-      groups[type] = [];
-    }
-    groups[type].push(namespace);
-    return groups;
-  }, {} as Record<string, Array<{ id: string; name: string; type: string; status: string; tags?: string[] }>>) || {};
 
   /**
    * Filter subject areas based on selected namespace
@@ -515,25 +504,12 @@ export default function Meta() {
         {/* Namespace Dropdown - Grouped by Type */}
         <div className="space-y-2">
           <Label htmlFor="namespace">NameSpace</Label>
-          <Select onValueChange={handleNamespaceChange} value={selectedNamespace}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select namespace..." />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(groupedNamespaces).map(([type, namespaces]) => (
-                <div key={type}>
-                  <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground">
-                    {type}
-                  </div>
-                  {namespaces.map((namespace) => (
-                    <SelectItem key={namespace.id} value={namespace.id} className="pl-6">
-                      {namespace.name}
-                    </SelectItem>
-                  ))}
-                </div>
-              ))}
-            </SelectContent>
-          </Select>
+          <GroupedNamespaceSelect
+            namespaces={namespacesData?.meta_namespace || []}
+            value={selectedNamespace}
+            onChange={handleNamespaceChange}
+            placeholder="Select namespace..."
+          />
         </div>
 
         {/* Subject Area Dropdown */}
