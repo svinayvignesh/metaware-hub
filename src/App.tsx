@@ -7,6 +7,7 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { MDConnectionProvider } from "@/contexts/MDConnectionContext";
 import StartHere from "./pages/StartHere";
 import Dashboard from "./pages/Dashboard";
+import PrepareFiles from "./pages/PrepareFiles";
 import NameSpace from "./pages/metadata/NameSpace";
 import SubjectArea from "./pages/metadata/SubjectArea";
 import Entity from "./pages/metadata/Entity";
@@ -33,6 +34,7 @@ const App = () => (
               <Route path="/" element={<StartHere />} />
               <Route path="/start-here" element={<StartHere />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/prepare-files" element={<PrepareFiles />} />
               <Route path="/metadata/namespace" element={<NameSpace />} />
               <Route path="/metadata/subject-area" element={<SubjectArea />} />
               <Route path="/metadata/entity" element={<Entity />} />

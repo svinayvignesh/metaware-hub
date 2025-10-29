@@ -9,6 +9,7 @@ import {
   BookOpen,
   Shield,
   ChevronRight,
+  Upload,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -30,6 +31,11 @@ const navItems: NavItem[] = [
     title: "Dashboard",
     href: "/dashboard",
     icon: BarChart3,
+  },
+  {
+    title: "Prepare Files",
+    href: "/prepare-files",
+    icon: Upload,
   },
   {
     title: "Metadata",

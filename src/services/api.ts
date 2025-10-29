@@ -154,4 +154,20 @@ export const metaAPI = {
 
     return response.json();
   },
+
+  importConfiguration: async (file: File, sheetName: string) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${API_BASE_URL}/mwn/import_configuration?sheet_name=${encodeURIComponent(sheetName)}`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} - ${response.statusText}`);
+    }
+
+    return response.json();
+  },
 };
