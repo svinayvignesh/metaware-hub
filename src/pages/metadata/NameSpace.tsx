@@ -18,8 +18,9 @@
 
 import { useState } from 'react';
 import { useQuery } from '@apollo/client/react/hooks';
+import { useApolloClient } from '@apollo/client';
 import { DataTable, Column, TableData } from "@/components/table/DataTable";
-import { GET_NAMESPACES, type GetNamespacesResponse } from "@/graphql/queries";
+import { GET_NAMESPACES, GET_SUBJECTAREAS, GET_ENTITIES, type GetNamespacesResponse } from "@/graphql/queries";
 import { namespaceAPI } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -99,6 +100,7 @@ const namespaceColumns: Column[] = [
  */
 export default function NameSpace() {
   const { toast } = useToast();
+  const apolloClient = useApolloClient();
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   
@@ -191,7 +193,15 @@ export default function NameSpace() {
     setIsDeleting(true);
     try {
       await namespaceAPI.delete(ids);
+      
+      // Refetch namespaces
       await refetch();
+      
+      // Refetch subject areas and entities to clear deleted data from cache
+      await apolloClient.refetchQueries({
+        include: [GET_SUBJECTAREAS, GET_ENTITIES],
+      });
+      
       toast({
         title: "Success",
         description: `${ids.length} namespace(s) deleted successfully`,

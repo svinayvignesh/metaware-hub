@@ -109,16 +109,10 @@ export function FileUploadModal({
 
       const shouldReturnDraftRows = !createMeta && !loadData;
 
-      if (loadData && createMeta) {
-        const tableResponse = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/mwn/table_data?ns=${namespace}&sa=${subjectArea}&en=${entity}`
-        );
-        
-        if (tableResponse.ok) {
-          const tableData = await tableResponse.json();
-          setLoadedTableData(tableData);
-          setShowSuccessModal(true);
-        }
+      // If both createMeta and loadData are checked, show the staging data modal
+      if (loadData && createMeta && responseData.staging_data) {
+        setLoadedTableData(responseData.staging_data);
+        setShowSuccessModal(true);
       }
 
       toast({
