@@ -106,13 +106,22 @@ export function FileUploadModal({
       }
 
       const responseData = await response.json();
+      console.log('Upload response:', responseData);
 
       const shouldReturnDraftRows = !createMeta && !loadData;
 
       // If both createMeta and loadData are checked, show the staging data modal
-      if (loadData && createMeta && responseData.staging_data) {
-        setLoadedTableData(responseData.staging_data);
-        setShowSuccessModal(true);
+      if (loadData && createMeta) {
+        // The response might have staging_data or data or be an array directly
+        const stagingData = responseData.staging_data || responseData.data || responseData;
+        console.log('Staging data:', stagingData);
+        
+        if (Array.isArray(stagingData) && stagingData.length > 0) {
+          setLoadedTableData(stagingData);
+          setShowSuccessModal(true);
+        } else {
+          console.warn('No staging data found in response');
+        }
       }
 
       toast({
