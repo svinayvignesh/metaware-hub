@@ -62,10 +62,14 @@ export default function Staging() {
     }
   }, [ready, connection, selectedEntity]);
 
-  // Reset selected entity when subject area changes
+  // Reset selected entity when subject area changes manually (not from URL params)
   useEffect(() => {
-    setSelectedEntity(null);
-  }, [selectedSubjectAreaId]);
+    // Only reset if no URL params are present
+    const hasUrlParams = searchParams.get('en') && searchParams.get('sa') && searchParams.get('ns');
+    if (!hasUrlParams && selectedSubjectAreaId !== null) {
+      setSelectedEntity(null);
+    }
+  }, [selectedSubjectAreaId, searchParams]);
 
   const fetchData = async () => {
     if (!connection || !selectedEntity) return;
