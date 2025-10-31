@@ -93,6 +93,11 @@ export function FileUploadModal({
       const formData = new FormData();
       formData.append('file', file);
 
+      // Only include primary_grain if it's a valid value (not empty or just a dot)
+      const validPrimaryGrain = primaryGrain && primaryGrain.trim() !== '' && primaryGrain.trim() !== '.' 
+        ? primaryGrain.trim() 
+        : '';
+
       const queryParams = new URLSearchParams({
         ns: namespace,
         sa: subjectArea,
@@ -100,7 +105,7 @@ export function FileUploadModal({
         ns_type: namespaceType,
         create_meta: String(createMeta),
         load_data: String(loadData),
-        primary_grain: primaryGrain || '',
+        ...(validPrimaryGrain && { primary_grain: validPrimaryGrain }),
       });
 
       const response = await fetch(
