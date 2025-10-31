@@ -74,17 +74,20 @@ export default function SubjectArea() {
 
   /**
    * Transform GraphQL data to table format with namespace display as "type->namespace"
+   * Filter out subject areas with null/deleted namespaces
    */
-  const tableData: TableData[] = data?.meta_subjectarea.map(subjectArea => ({
-    id: subjectArea.id,
-    name: subjectArea.name,
-    namespace_display: `${subjectArea.namespace.type}->${subjectArea.namespace.name}`,
-    namespace_name: subjectArea.namespace.name,
-    namespace_type: subjectArea.namespace.type,
-    type: subjectArea.type,
-    tags: Array.isArray(subjectArea.tags) ? subjectArea.tags.join(', ') : subjectArea.tags || '',
-    ns_id: subjectArea.ns_id,
-  })) || [];
+  const tableData: TableData[] = data?.meta_subjectarea
+    .filter(subjectArea => subjectArea.namespace != null)
+    .map(subjectArea => ({
+      id: subjectArea.id,
+      name: subjectArea.name,
+      namespace_display: `${subjectArea.namespace.type}->${subjectArea.namespace.name}`,
+      namespace_name: subjectArea.namespace.name,
+      namespace_type: subjectArea.namespace.type,
+      type: subjectArea.type,
+      tags: Array.isArray(subjectArea.tags) ? subjectArea.tags.join(', ') : subjectArea.tags || '',
+      ns_id: subjectArea.ns_id,
+    })) || [];
 
   const namespaces = namespacesData?.meta_namespace || [];
 

@@ -92,33 +92,36 @@ export default function Entity() {
 
   /**
    * Transform GraphQL data to table format with namespace and subject area display
+   * Filter out entities with null/deleted subject areas or namespaces
    */
-  const tableData: TableData[] = data?.meta_entity.map(entity => {
-    // Find the namespace ID by matching the namespace name
-    const namespace = namespaces.find(ns => ns.name === entity.subjectarea.namespace.name);
-    const nsId = namespace?.id || '';
+  const tableData: TableData[] = data?.meta_entity
+    .filter(entity => entity.subjectarea != null && entity.subjectarea.namespace != null)
+    .map(entity => {
+      // Find the namespace ID by matching the namespace name
+      const namespace = namespaces.find(ns => ns.name === entity.subjectarea.namespace.name);
+      const nsId = namespace?.id || '';
 
-    return {
-      id: entity.id,
-      name: entity.name,
-      type: entity.type,
-      subtype: entity.subtype || '',
-      description: entity.description || '',
-      subjectarea_display: entity.subjectarea.name,
-      subjectarea_name: entity.subjectarea.name,
-      namespace_display: `${entity.subjectarea.namespace.type}->${entity.subjectarea.namespace.name}`,
-      namespace_name: entity.subjectarea.namespace.name,
-      namespace_type: entity.subjectarea.namespace.type,
-      is_delta: entity.is_delta ? 'Yes' : 'No',
-      primary_grain: entity.primary_grain || '',
-      secondary_grain: entity.secondary_grain || '',
-      tertiary_grain: entity.tertiary_grain || '',
-      is_delta_bool: entity.is_delta || false,
-      runtime: '',
-      sa_id: entity.sa_id,
-      ns_id: nsId,
-    };
-  }) || [];
+      return {
+        id: entity.id,
+        name: entity.name,
+        type: entity.type,
+        subtype: entity.subtype || '',
+        description: entity.description || '',
+        subjectarea_display: entity.subjectarea.name,
+        subjectarea_name: entity.subjectarea.name,
+        namespace_display: `${entity.subjectarea.namespace.type}->${entity.subjectarea.namespace.name}`,
+        namespace_name: entity.subjectarea.namespace.name,
+        namespace_type: entity.subjectarea.namespace.type,
+        is_delta: entity.is_delta ? 'Yes' : 'No',
+        primary_grain: entity.primary_grain || '',
+        secondary_grain: entity.secondary_grain || '',
+        tertiary_grain: entity.tertiary_grain || '',
+        is_delta_bool: entity.is_delta || false,
+        runtime: '',
+        sa_id: entity.sa_id,
+        ns_id: nsId,
+      };
+    }) || [];
 
   /**
    * Handle custom cell edits with cascading updates for namespace and subject area
