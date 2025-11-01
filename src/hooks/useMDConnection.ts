@@ -137,11 +137,19 @@ export async function queryMDTable(
     return { columns, rows };
   } catch (err) {
     console.error('Query error:', err);
-    toast({
-      title: "Query Failed",
-      description: err instanceof Error ? err.message : 'Failed to execute query',
-      variant: "destructive",
-    });
+    
+    // Don't show toast for table not found errors - let the component handle it
+    const errorMessage = err instanceof Error ? err.message : 'Failed to execute query';
+    const isTableNotFound = errorMessage.includes('Table with name') && errorMessage.includes('does not exist');
+    
+    if (!isTableNotFound) {
+      toast({
+        title: "Query Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    }
+    
     throw err;
   }
 }

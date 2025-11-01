@@ -24,6 +24,7 @@ export default function Staging() {
   const [data, setData] = useState<{ columns: string[]; rows: any[] }>({ columns: [], rows: [] });
   const [ruleEditorOpen, setRuleEditorOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState<string>("");
+  const [tableNotFound, setTableNotFound] = useState(false);
   
   const { data: subjectAreasData } = useQuery<GetSubjectAreasResponse>(GET_SUBJECTAREAS);
   const { data: entitiesData } = useQuery<GetEntitiesResponse>(GET_ENTITIES);
@@ -77,6 +78,7 @@ export default function Staging() {
     if (!connection || !selectedEntity || !selectedEntity.subjectarea || !selectedEntity.subjectarea.namespace) return;
 
     setLoading(true);
+    setTableNotFound(false);
     try {
       const namespace = selectedEntity.subjectarea.namespace.name;
       const subjectarea = selectedEntity.subjectarea.name;
@@ -93,6 +95,13 @@ export default function Staging() {
       setData({ ...result, rows: rowsWithIds });
     } catch (error) {
       console.error("Error fetching entity data:", error);
+      
+      // Check if the error is due to table not existing
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes('Table with name') && errorMessage.includes('does not exist')) {
+        setTableNotFound(true);
+      }
+      
       setData({ columns: [], rows: [] });
     } finally {
       setLoading(false);
@@ -267,12 +276,23 @@ export default function Staging() {
             
             {data.rows.length === 0 ? (
               <div className="flex items-center justify-center flex-1">
-                <div className="text-center space-y-2">
+                <div className="text-center space-y-3 max-w-md">
                   <Database className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
-                  <p className="text-muted-foreground">No data found</p>
-                  <Button variant="outline" size="sm" onClick={fetchData}>
-                    Retry
-                  </Button>
+                  <div className="space-y-2">
+                    <p className="font-medium text-foreground">
+                      {tableNotFound ? 'No Data Loaded' : 'No Data Found'}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {tableNotFound 
+                        ? 'This entity exists but has no data loaded yet. Make sure to check "Load Data" when uploading the meta file to load data into the staging table.'
+                        : 'No data is available for this entity.'}
+                    </p>
+                  </div>
+                  {!tableNotFound && (
+                    <Button variant="outline" size="sm" onClick={fetchData}>
+                      Retry
+                    </Button>
+                  )}
                 </div>
               </div>
             ) : (
