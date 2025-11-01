@@ -348,6 +348,7 @@ export default function NameSpace() {
         onEdit={handleEdit}
         onDelete={handleDelete}
         onSave={handleSave}
+        onRefresh={refetch}
         entityType="Namespace"
         isDeleting={isDeleting}
         isSaving={isSaving}

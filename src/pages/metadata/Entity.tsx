@@ -454,6 +454,7 @@ export default function Entity() {
         onEdit={handleEdit}
         onDelete={handleDelete}
         onSave={handleSave}
+        onRefresh={refetch}
         entityType="Entity"
         externalEditedData={editedData}
         onEditedDataChange={setEditedData}

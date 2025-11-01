@@ -297,7 +297,7 @@ export default function Staging() {
               </div>
             ) : (
               <div className="flex-1">
-                <DataTable columns={columns} data={data.rows} />
+                <DataTable columns={columns} data={data.rows} onRefresh={fetchData} />
               </div>
             )}
           </div>

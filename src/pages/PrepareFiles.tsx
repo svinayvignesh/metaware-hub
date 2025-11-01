@@ -649,6 +649,7 @@ export default function PrepareFiles() {
                         onEdit={handleEdit}
                         onDelete={handleDelete}
                         onSave={handleSave}
+                        onRefresh={refetch}
                         entityType="Meta Field"
                         externalEditedData={editedData}
                         onEditedDataChange={setEditedData}

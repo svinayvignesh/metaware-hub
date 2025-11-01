@@ -236,7 +236,7 @@ export default function Model() {
               </div>
             ) : (
               <div className="flex-1 overflow-hidden">
-                <DataTable columns={columns} data={data.rows} />
+                <DataTable columns={columns} data={data.rows} onRefresh={fetchData} />
               </div>
             )}
           </div>

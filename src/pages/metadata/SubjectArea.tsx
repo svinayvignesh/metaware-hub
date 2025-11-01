@@ -333,6 +333,7 @@ export default function SubjectArea() {
         onEdit={handleEdit}
         onDelete={handleDelete}
         onSave={handleSave}
+        onRefresh={refetch}
         entityType="Subject Area"
         externalEditedData={editedData}
         onEditedDataChange={setEditedData}

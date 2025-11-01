@@ -43,6 +43,7 @@ import {
   ChevronDown,
   ChevronRight,
   Loader2,
+  RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -75,6 +76,7 @@ interface DataTableProps {
   onEdit?: (id: string, updatedData: Partial<TableData>) => void;
   onDelete?: (ids: string[]) => void;
   onSave?: (data: TableData[]) => void;
+  onRefresh?: () => void;
   className?: string;
   entityType?: string;
   externalEditedData?: TableData[];
@@ -90,6 +92,7 @@ export const DataTable = ({
   onEdit,
   onDelete,
   onSave,
+  onRefresh,
   className,
   entityType = "Row",
   externalEditedData,
@@ -992,6 +995,18 @@ export const DataTable = ({
                 title="Clear all filters"
               >
                 <FilterX className="dt-icon-sm" />
+              </Button>
+            )}
+            
+            {onRefresh && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onRefresh}
+                disabled={isCurrentlySaving || isCurrentlyDeleting}
+                title="Refresh data"
+              >
+                <RefreshCw className="dt-icon-sm" />
               </Button>
             )}
             
