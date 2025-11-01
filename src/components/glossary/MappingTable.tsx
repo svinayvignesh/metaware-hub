@@ -160,7 +160,7 @@ export function MappingTable({ glossaryEntity, sourceEntity, existingRuleset }: 
           subtype: "standard",
           name: "Direct mapping",
           status: "Active",
-          transform_config: JSON.stringify({}),
+          transform_config: {},
         },
       };
 
