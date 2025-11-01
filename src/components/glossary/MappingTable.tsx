@@ -156,7 +156,7 @@ export function MappingTable({ glossaryEntity, sourceEntity, existingRuleset }: 
         transform_request: {
           id: "",
           strategy: "sql",
-          type: "aggregator",
+          type: "passive",
           subtype: "standard",
           name: "Direct mapping",
           status: "Active",

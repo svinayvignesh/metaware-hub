@@ -114,8 +114,8 @@ export function MappingEditorModal({
           },
           transform_request: {
             id: "",
-            strategy: "direct",
-            type: "mapping",
+            strategy: "sql",
+            type: "passive",
             subtype: "standard",
             name: "Direct mapping",
             status: "Active",
