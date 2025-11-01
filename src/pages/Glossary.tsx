@@ -149,15 +149,10 @@ export default function Glossary() {
             en_id: selectedEntity!.id,
           },
           ruleset_request: {
-            id: `rs_${selectedEntity!.id}_${sourceEnId}_${Date.now()}`,
+            name: `${selectedEntity!.subjectarea?.namespace?.name}_${selectedEntity!.subjectarea?.name}_${selectedEntity!.name}_to_${firstMapping.source_ns}_${firstMapping.source_sa}_${firstMapping.source_en_name}_ruleset`,
+            description: `${selectedEntity!.subjectarea?.namespace?.name}_${selectedEntity!.subjectarea?.name}_${selectedEntity!.name}_to_${firstMapping.source_ns}_${firstMapping.source_sa}_${firstMapping.source_en_name}_ruleset`,
             type: "glossary_association",
-            name: `${selectedEntity!.name} to ${firstMapping.source_en_name} mapping`,
-            description: "Auto-generated mapping from standardized blueprint",
-            view_name: "",
-            target_en_id: selectedEntity!.id,
-            source_id: `src_${sourceEnId}_${Date.now()}`,
-            transform_id: `trns_${Date.now()}`,
-            rule_requests: sourceMappings.map((mapping, index) => ({
+            rule_requests: sourceMappings.map((mapping) => ({
               meta: mapping.glossary_meta_name,
               rule_expression: mapping.source_expression,
               name: `${mapping.glossary_meta_name}_rule`,
@@ -167,17 +162,21 @@ export default function Glossary() {
               subtype: ".",
               type: "glossary",
             })),
-            ruleset_id: "",
           },
           source_request: {
             type: "DIRECT",
             source_ns: firstMapping.source_ns || "",
             source_sa: firstMapping.source_sa || "",
             source_en: firstMapping.source_en_name || "",
-            source_filter: "",
-            source_en_id: sourceEnId,
-            source_id: "",
-            sql_override: "",
+          },
+          transform_request: {
+            id: "",
+            strategy: "sql",
+            type: "aggregator",
+            subtype: "standard",
+            name: "Direct mapping",
+            status: "Active",
+            transform_config: JSON.stringify({}),
           },
         };
 

@@ -153,6 +153,15 @@ export function MappingTable({ glossaryEntity, sourceEntity, existingRuleset }: 
           source_sa: sourceEntity.subjectarea.name,
           source_en: sourceEntity.name,
         },
+        transform_request: {
+          id: "",
+          strategy: "sql",
+          type: "aggregator",
+          subtype: "standard",
+          name: "Direct mapping",
+          status: "Active",
+          transform_config: JSON.stringify({}),
+        },
       };
 
       const response = await fetch(
