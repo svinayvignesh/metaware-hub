@@ -156,7 +156,7 @@ export function MappingTable({ glossaryEntity, sourceEntity, existingRuleset }: 
       };
 
       const response = await fetch(
-        `${API_CONFIG.REST_ENDPOINT}/mwn/create_rulesets`,
+        `${API_CONFIG.REST_ENDPOINT}/mwn/create_ruleset`,
         {
           method: "POST",
           headers: {
