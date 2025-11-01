@@ -85,7 +85,43 @@ export function GenerateBlueprintModal({
       const targetSa = glossaryEntity.subjectarea?.name || "";
       
       const response = await glossaryAPI.generateSuggestions(selectedEntityIds, targetNs, targetSa) as any;
-      onSuccess(response.standardized_meta || [], response.mappings || []);
+      
+      // Transform the response into the format needed for StandardizedMetaEditor
+      const standardizedMetas = response.return_data?.standardized_metas || [];
+      const transformedMeta = standardizedMetas.map((meta: any, index: number) => ({
+        id: `temp-${index}`,
+        type: meta.type,
+        subtype: meta.subtype || "",
+        name: meta.name,
+        alias: meta.alias || "",
+        description: meta.description || "",
+        order: meta.order || 0,
+        length: meta.length || null,
+        default: meta.default || null,
+        nullable: meta.nullable ?? true,
+        format: meta.format || null,
+        is_primary_grain: meta.is_primary_grain ?? false,
+        is_secondary_grain: false,
+        is_tertiary_grain: false,
+        tags: "",
+        custom_props: [],
+      }));
+      
+      // Transform the raw_columns into mappings for MappingEditorModal
+      const mappings = standardizedMetas.flatMap((meta: any) => 
+        (meta.raw_columns || []).map((rawCol: any) => ({
+          glossary_meta_name: meta.name,
+          glossary_meta_alias: meta.alias,
+          source_ns: rawCol.ns,
+          source_sa: rawCol.sa,
+          source_en: rawCol.en,
+          source_en_id: rawCol.en_id || "",
+          source_column: rawCol.name,
+          source_expression: rawCol.name, // Pre-populate with the raw column name
+        }))
+      );
+      
+      onSuccess(transformedMeta, mappings);
       onOpenChange(false);
       setSelectedEntityIds([]);
     } catch (error) {
