@@ -128,7 +128,7 @@ export const Header = () => {
         }
 
         .header-name-dark {
-          height: 1.5rem;
+          height: 1.0rem;
           object-fit: contain;
         }
 
@@ -137,7 +137,7 @@ export const Header = () => {
         }
 
         .header-name-light {
-          height: 1.5rem;
+          height: 1.0rem;
           object-fit: contain;
           display: none;
         }
