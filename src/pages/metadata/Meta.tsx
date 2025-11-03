@@ -16,7 +16,7 @@
  * @version 1.0.0
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from '@apollo/client/react/hooks';
 import { Upload } from "lucide-react";
 import { DataTable, Column, TableData } from "@/components/table/DataTable";
@@ -146,10 +146,14 @@ export default function Meta() {
     };
   }) || [];
 
-  // Populate editedData with draft fields when meta data changes
-  if (metaData && editedData.length === 0 && draftMetaFields.length > 0) {
-    setEditedData(draftMetaFields);
-  }
+  // Populate editedData with draft fields when meta data changes or entity changes
+  useEffect(() => {
+    if (metaData && draftMetaFields.length > 0) {
+      setEditedData(draftMetaFields);
+    } else if (!metaData || metaData.meta_meta.length === 0) {
+      setEditedData([]);
+    }
+  }, [metaData, selectedEntity]);
 
   /**
    * Handle namespace selection change
@@ -181,11 +185,39 @@ export default function Meta() {
 
 
 
+  /**
+   * Handle deleting meta fields
+   * Works with both draft and persisted rows
+   */
   const handleDelete = async (ids: string[]) => {
     setIsDeleting(true);
     try {
-      await metaAPI.delete(ids);
+      // Filter out draft rows (not yet persisted) and actual IDs to delete from server
+      const idsToDeleteFromServer = ids
+        .map(id => {
+          const row = editedData.find(r => r.id === id);
+          if (row && row._originalId) {
+            // This is a draft row with an original ID - delete the original
+            return row._originalId;
+          } else if (!id.startsWith('draft_')) {
+            // This is a persisted row ID
+            return id;
+          }
+          return null;
+        })
+        .filter((id): id is string => id !== null);
+
+      // Delete from server if there are persisted rows to delete
+      if (idsToDeleteFromServer.length > 0) {
+        await metaAPI.delete(idsToDeleteFromServer);
+      }
+
+      // Remove deleted rows from editedData
+      setEditedData(prev => prev.filter(row => !ids.includes(row.id)));
+
+      // Refetch to get fresh data
       await refetch();
+      
       toast({
         title: "Success",
         description: `${ids.length} meta field(s) deleted successfully`,
@@ -203,7 +235,7 @@ export default function Meta() {
 
   /**
    * Handle saving draft meta fields (matches Glossary meta behavior)
-   * Only processes draft rows and persists them to the server
+   * Processes all draft rows and persists them to the server
    */
   const handleSaveDraftMeta = async (data: TableData[]) => {
     if (!selectedEntity) {
@@ -241,7 +273,7 @@ export default function Meta() {
         ns_type: 'staging',
       };
 
-      // Process all draft rows
+      // Process all rows with draft status (includes edited rows from server)
       const metaFields = data
         .filter(item => item._status === 'draft')
         .map(item => ({
@@ -279,17 +311,17 @@ export default function Meta() {
       if (metaFields.length === 0) {
         toast({
           title: "No changes",
-          description: "No draft rows to save",
+          description: "No changes to save",
         });
         return;
       }
 
       await entityAPI.createWithMeta(entityData, metaFields);
 
-      // Clear draft rows after successful save
+      // Clear edited data and refetch to get fresh data as draft
       setEditedData([]);
-
       await refetch();
+      
       toast({
         title: "Success",
         description: `${metaFields.length} meta field(s) saved successfully`,
