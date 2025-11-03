@@ -199,13 +199,13 @@ export default function Meta() {
         setEditedData(prev => prev.filter(row => !draftIds.includes(row.id)));
       }
 
-      // Refetch to get fresh data from server
-      await refetch();
-      
       toast({
         title: "Success",
         description: `${ids.length} meta field(s) deleted successfully`,
       });
+
+      // Always refetch to get fresh data from server
+      await refetch();
     } catch (error) {
       toast({
         title: "Error",

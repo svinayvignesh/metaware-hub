@@ -281,15 +281,15 @@ export default function Glossary() {
         setDraftMetaFields(prev => prev.filter(row => !draftIds.includes(row.id)));
       }
 
-      // Refetch meta to get fresh data from server
-      if (selectedEntity && persistedIds.length > 0) {
-        fetchMeta({ variables: { enid: selectedEntity.id } });
-      }
-      
       toast({
         title: "Success",
         description: `${ids.length} meta field(s) deleted successfully`,
       });
+
+      // Always refetch meta to get fresh data from server
+      if (selectedEntity) {
+        await fetchMeta({ variables: { enid: selectedEntity.id } });
+      }
     } catch (error) {
       toast({
         title: "Error",
