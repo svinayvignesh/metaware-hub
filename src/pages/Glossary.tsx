@@ -21,7 +21,7 @@ import { type Entity } from "@/graphql/queries/entity";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage, BreadcrumbLink, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { rulesetAPI } from "@/services/api";
+import { rulesetAPI, metaAPI } from "@/services/api";
 
 export default function Glossary() {
   const [selectedSubjectAreaId, setSelectedSubjectAreaId] = useState<string | null>(null);
@@ -37,6 +37,7 @@ export default function Glossary() {
   const [mappings, setMappings] = useState<any[]>([]);
   const [draftMetaFields, setDraftMetaFields] = useState<any[]>([]);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
   
   const { data: subjectAreasData } = useQuery<GetSubjectAreasResponse>(GET_SUBJECTAREAS);
@@ -263,6 +264,43 @@ export default function Glossary() {
     }
   };
 
+  const handleDeleteMeta = async (ids: string[]) => {
+    setIsDeleting(true);
+    try {
+      // Separate draft IDs (new, unsaved) from persisted IDs
+      const draftIds = ids.filter(id => id.startsWith('draft_') || id.startsWith('new_'));
+      const persistedIds = ids.filter(id => !id.startsWith('draft_') && !id.startsWith('new_'));
+
+      // Delete persisted rows from server
+      if (persistedIds.length > 0) {
+        await metaAPI.delete(persistedIds);
+      }
+
+      // Remove draft rows from local state
+      if (draftIds.length > 0) {
+        setDraftMetaFields(prev => prev.filter(row => !draftIds.includes(row.id)));
+      }
+
+      // Refetch meta to get fresh data from server
+      if (selectedEntity && persistedIds.length > 0) {
+        fetchMeta({ variables: { enid: selectedEntity.id } });
+      }
+      
+      toast({
+        title: "Success",
+        description: `${ids.length} meta field(s) deleted successfully`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: `Failed to delete meta fields: ${error}`,
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const draftMetaColumns = draftMetaFields.length > 0 ? [
     { key: 'name', title: 'Name', type: 'text' as const },
     { key: 'alias', title: 'Alias', type: 'text' as const },
@@ -464,7 +502,9 @@ export default function Glossary() {
                         setDraftMetaFields([...draftMetaFields, newField]);
                       }}
                       onSave={handleSaveDraftMeta}
+                      onDelete={handleDeleteMeta}
                       isSaving={isSavingDraft}
+                      isDeleting={isDeleting}
                     />
                   </div>
                 ) : metaFields.length === 0 ? (
@@ -500,6 +540,8 @@ export default function Glossary() {
                         // Open blueprint modal to add more meta
                         setBlueprintModalOpen(true);
                       }}
+                      onDelete={handleDeleteMeta}
+                      isDeleting={isDeleting}
                     />
                   </div>
                 )}
