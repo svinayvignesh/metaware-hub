@@ -35,8 +35,8 @@ export default function Glossary() {
   const [blueprintModalOpen, setBlueprintModalOpen] = useState(false);
   const [standardizedMeta, setStandardizedMeta] = useState<any[]>([]);
   const [mappings, setMappings] = useState<any[]>([]);
-  const [metaEditorOpen, setMetaEditorOpen] = useState(false);
-  const [mappingEditorOpen, setMappingEditorOpen] = useState(false);
+  const [draftMetaFields, setDraftMetaFields] = useState<any[]>([]);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
   const { toast } = useToast();
   
   const { data: subjectAreasData } = useQuery<GetSubjectAreasResponse>(GET_SUBJECTAREAS);
@@ -110,14 +110,47 @@ export default function Glossary() {
   const handleBlueprintGenerated = (generatedMeta: any[], generatedMappings: any[]) => {
     setStandardizedMeta(generatedMeta);
     setMappings(generatedMappings);
-    setMetaEditorOpen(true);
+    setDraftMetaFields(generatedMeta);
+    setActiveTab("meta");
   };
 
-  const handleMetaSaved = async (savedMappings: any[], savedMeta: any[]) => {
+  const handleSaveDraftMeta = async () => {
+    if (!selectedEntity || draftMetaFields.length === 0) return;
+
+    setIsSavingDraft(true);
     try {
+      const { entityAPI } = await import("@/services/api");
+
+      const entityRequest = {
+        ns: selectedEntity.subjectarea?.namespace?.name || "",
+        sa: selectedEntity.subjectarea?.name || "",
+        en: selectedEntity.name,
+        ns_type: "glossary",
+        ns_id: selectedEntity.subjectarea?.namespace?.id || "",
+        sa_id: selectedEntity.sa_id,
+        en_id: selectedEntity.id,
+      };
+
+      const metaRequests = draftMetaFields.map((item: any) => ({
+        name: item.name || "",
+        alias: item.alias || "",
+        description: item.description || "",
+        type: item.type || "text",
+        nullable: item.nullable !== undefined ? item.nullable : true,
+        unique: item.unique !== undefined ? item.unique : false,
+        primary: item.primary !== undefined ? item.primary : false,
+        autoincrement: item.autoincrement !== undefined ? item.autoincrement : false,
+        default_value: item.default_value || null,
+        reference: item.reference || null,
+        meta_status: "active",
+      }));
+
+      const response = await entityAPI.createWithMeta(entityRequest, metaRequests) as { meta?: any[] };
+      const savedMeta = response.meta || [];
+
       // Enrich mappings with glossary_meta_id from saved meta
-      const enrichedMappings = savedMappings.map(mapping => {
-        const matchingMeta = savedMeta.find(meta => meta.name === mapping.glossary_meta_name);
+      const enrichedMappings = mappings.map(mapping => {
+        const matchingMeta = savedMeta.find((meta: any) => meta.name === mapping.glossary_meta_name);
         return {
           ...mapping,
           glossary_meta_id: matchingMeta?.id || "",
@@ -140,17 +173,17 @@ export default function Glossary() {
         
         const payload = {
           entity_core: {
-            ns: selectedEntity!.subjectarea?.namespace?.name || "",
-            sa: selectedEntity!.subjectarea?.name || "",
-            en: selectedEntity!.name,
+            ns: selectedEntity.subjectarea?.namespace?.name || "",
+            sa: selectedEntity.subjectarea?.name || "",
+            en: selectedEntity.name,
             ns_type: "glossary",
-            ns_id: selectedEntity!.subjectarea?.namespace?.id || "",
-            sa_id: selectedEntity!.sa_id,
-            en_id: selectedEntity!.id,
+            ns_id: selectedEntity.subjectarea?.namespace?.id || "",
+            sa_id: selectedEntity.sa_id,
+            en_id: selectedEntity.id,
           },
           ruleset_request: {
-            name: `${selectedEntity!.subjectarea?.namespace?.name}_${selectedEntity!.subjectarea?.name}_${selectedEntity!.name}_to_${firstMapping.source_ns}_${firstMapping.source_sa}_${firstMapping.source_en_name}_ruleset`,
-            description: `${selectedEntity!.subjectarea?.namespace?.name}_${selectedEntity!.subjectarea?.name}_${selectedEntity!.name}_to_${firstMapping.source_ns}_${firstMapping.source_sa}_${firstMapping.source_en_name}_ruleset`,
+            name: `${selectedEntity.subjectarea?.namespace?.name}_${selectedEntity.subjectarea?.name}_${selectedEntity.name}_to_${firstMapping.source_ns}_${firstMapping.source_sa}_${firstMapping.source_en_name}_ruleset`,
+            description: `${selectedEntity.subjectarea?.namespace?.name}_${selectedEntity.subjectarea?.name}_${selectedEntity.name}_to_${firstMapping.source_ns}_${firstMapping.source_sa}_${firstMapping.source_en_name}_ruleset`,
             type: "glossary_association",
             rule_requests: sourceMappings.map((mapping) => ({
               meta: mapping.glossary_meta_name,
@@ -188,30 +221,39 @@ export default function Glossary() {
         description: "Metadata and mappings saved successfully",
       });
 
-      // Switch to Source Associations tab
-      setActiveTab("associations");
+      // Clear draft state
+      setDraftMetaFields([]);
+      setStandardizedMeta([]);
+      setMappings([]);
       
       // Refetch meta to show the newly created meta
       if (selectedEntity) {
         fetchMeta({ variables: { enid: selectedEntity.id } });
       }
+
+      // Switch to Source Associations tab
+      setActiveTab("associations");
     } catch (error) {
-      console.error("Error saving mappings:", error);
+      console.error("Error saving draft meta:", error);
       toast({
-        title: "Mapping save failed",
-        description: error instanceof Error ? error.message : "Failed to save mappings",
+        title: "Save failed",
+        description: error instanceof Error ? error.message : "Failed to save metadata",
         variant: "destructive",
       });
+    } finally {
+      setIsSavingDraft(false);
     }
   };
 
-  const handleMappingsSaved = () => {
-    setActiveTab("relationships");
-    // Optionally refetch data
-    if (selectedEntity) {
-      fetchMeta({ variables: { enid: selectedEntity.id } });
-    }
-  };
+  const draftMetaColumns = draftMetaFields.length > 0 ? [
+    { key: 'name', title: 'Name', type: 'text' as const },
+    { key: 'alias', title: 'Alias', type: 'text' as const },
+    { key: 'type', title: 'Type', type: 'text' as const },
+    { key: 'description', title: 'Description', type: 'text' as const },
+    { key: 'nullable', title: 'Nullable', type: 'checkbox' as const },
+    { key: 'unique', title: 'Unique', type: 'checkbox' as const },
+    { key: 'primary', title: 'Primary', type: 'checkbox' as const },
+  ] : [];
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] fixed left-64 right-0 top-14">
@@ -367,10 +409,64 @@ export default function Glossary() {
                 <TabsTrigger value="relationships">Glossary Relationship</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="meta" className="flex-1 overflow-hidden mt-4">
+              <TabsContent value="meta" className="flex-1 overflow-hidden mt-4 flex flex-col">
                 {metaLoading ? (
                   <div className="flex items-center justify-center h-full">
                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                ) : draftMetaFields.length > 0 ? (
+                  <div className="flex flex-col h-full gap-4">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-muted-foreground">
+                        Review and edit the generated metadata below. Click Save to persist changes.
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setDraftMetaFields([]);
+                            setStandardizedMeta([]);
+                            setMappings([]);
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={handleSaveDraftMeta}
+                          disabled={isSavingDraft}
+                        >
+                          {isSavingDraft && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                          Save Meta
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="flex-1 border rounded-lg overflow-hidden">
+                      <DataTable
+                        data={[]}
+                        externalEditedData={draftMetaFields.map(field => ({
+                          ...field,
+                          id: field.id || `draft_${field.name}`,
+                          _status: 'draft' as const,
+                        }))}
+                        onEditedDataChange={(data) => {
+                          setDraftMetaFields(data.map(({ _status, ...rest }) => rest));
+                        }}
+                        columns={draftMetaColumns}
+                        onAdd={() => {
+                          const newField = {
+                            id: `new_${Date.now()}`,
+                            name: '',
+                            alias: '',
+                            type: 'text',
+                            description: '',
+                            nullable: true,
+                            unique: false,
+                            primary: false,
+                          };
+                          setDraftMetaFields([...draftMetaFields, newField]);
+                        }}
+                      />
+                    </div>
                   </div>
                 ) : metaFields.length === 0 ? (
                   <div className="flex items-center justify-center h-full">
@@ -451,23 +547,6 @@ export default function Glossary() {
               namespaceId={selectedEntity.subjectarea?.namespace?.id || ""}
               glossaryEntity={selectedEntity}
               onSuccess={handleBlueprintGenerated}
-            />
-
-            <StandardizedMetaEditor
-              open={metaEditorOpen}
-              onOpenChange={setMetaEditorOpen}
-              glossaryEntity={selectedEntity}
-              standardizedMeta={standardizedMeta}
-              onSuccess={handleMetaSaved}
-              mappings={mappings}
-            />
-
-            <MappingEditorModal
-              open={mappingEditorOpen}
-              onOpenChange={setMappingEditorOpen}
-              glossaryEntity={selectedEntity}
-              mappings={mappings}
-              onSuccess={handleMappingsSaved}
             />
           </div>
         )}
