@@ -429,7 +429,7 @@ export default function Glossary() {
                 <TabsTrigger value="relationships">Glossary Relationship</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="meta" className="flex-1 overflow-hidden flex flex-col">
+              <TabsContent value="meta" className="mt-0 flex-1 overflow-hidden flex flex-col">
                 {metaLoading ? (
                   <div className="flex items-center justify-center h-full">
                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -529,7 +529,7 @@ export default function Glossary() {
                 )}
               </TabsContent>
 
-              <TabsContent value="associations" className="flex-1 overflow-auto">
+              <TabsContent value="associations" className="mt-0 flex-1 overflow-auto">
                 <div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Select Association</label>
@@ -550,7 +550,7 @@ export default function Glossary() {
                 </div>
               </TabsContent>
 
-              <TabsContent value="relationships" className="flex-1 overflow-hidden">
+              <TabsContent value="relationships" className="mt-0 flex-1 overflow-hidden">
                 <RelationshipGraph
                   entityId={selectedEntity.id}
                   entityName={selectedEntity.name}
