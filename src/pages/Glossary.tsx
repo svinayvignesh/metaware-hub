@@ -43,34 +43,44 @@ export default function Glossary() {
   const { data: subjectAreasData } = useQuery<GetSubjectAreasResponse>(GET_SUBJECTAREAS);
   const selectedSubjectArea = subjectAreasData?.meta_subjectarea.find(sa => sa.id === selectedSubjectAreaId);
 
-  const [fetchMeta, { loading: metaLoading }] = useLazyQuery(GET_META_FOR_ENTITY, {
-    onCompleted: (data) => {
-      if (data?.meta_meta) {
-        setMetaFields(data.meta_meta);
-      }
-    },
-    onError: (error) => {
-      console.error("Error fetching meta:", error);
-    },
-  });
+  const [fetchMeta, { loading: metaLoading, data: metaData, error: metaError }] = useLazyQuery(GET_META_FOR_ENTITY);
 
-  const [fetchRulesets] = useLazyQuery(GET_RULESETS_BY_ENTITY, {
-    onCompleted: (data) => {
-      if (data.meta_ruleset && data.meta_ruleset.length > 0) {
-        const matchingRuleset = data.meta_ruleset.find(
-          (rs: RulesetWithSource) =>
-            rs.source?.source_en_id === sourceEntity?.id
-        );
-        setExistingRuleset(matchingRuleset || null);
-      } else {
-        setExistingRuleset(null);
-      }
-    },
-    onError: (error) => {
-      console.error("Error fetching rulesets:", error);
+  const [fetchRulesets, { data: rulesetsData, error: rulesetsError }] = useLazyQuery(GET_RULESETS_BY_ENTITY);
+
+  // Handle meta data updates
+  useEffect(() => {
+    if (metaData?.meta_meta) {
+      setMetaFields(metaData.meta_meta);
+    }
+  }, [metaData]);
+
+  // Handle meta errors
+  useEffect(() => {
+    if (metaError) {
+      console.error("Error fetching meta:", metaError);
+    }
+  }, [metaError]);
+
+  // Handle rulesets data updates
+  useEffect(() => {
+    if (rulesetsData?.meta_ruleset && rulesetsData.meta_ruleset.length > 0) {
+      const matchingRuleset = rulesetsData.meta_ruleset.find(
+        (rs: RulesetWithSource) =>
+          rs.source?.source_en_id === sourceEntity?.id
+      );
+      setExistingRuleset(matchingRuleset || null);
+    } else if (rulesetsData) {
       setExistingRuleset(null);
-    },
-  });
+    }
+  }, [rulesetsData, sourceEntity?.id]);
+
+  // Handle rulesets errors
+  useEffect(() => {
+    if (rulesetsError) {
+      console.error("Error fetching rulesets:", rulesetsError);
+      setExistingRuleset(null);
+    }
+  }, [rulesetsError]);
 
   // Reset selected entity when subject area changes
   useEffect(() => {
