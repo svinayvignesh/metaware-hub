@@ -530,7 +530,7 @@ export default function Glossary() {
               </TabsContent>
 
               <TabsContent value="associations" className="flex-1 overflow-auto">
-                <div className="space-y-6">
+                <div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Select Association</label>
                     <SourceAssociationSelect
