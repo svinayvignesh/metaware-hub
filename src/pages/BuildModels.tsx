@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { GlossaryEntityDropdown } from "@/components/glossary/GlossaryEntityDropdown";
 import { type Entity } from "@/graphql/queries/entity";
@@ -32,6 +34,9 @@ export default function BuildModels() {
   const [selectedMetas, setSelectedMetas] = useState<Set<string>>(new Set<string>());
   const [existingModel, setExistingModel] = useState<ConceptualModel | null>(null);
   const [loading, setLoading] = useState(false);
+  const [step1Response, setStep1Response] = useState<any>(null);
+  const [step2Response, setStep2Response] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState("step1");
 
   const [fetchMeta, { loading: metaLoading }] = useLazyQuery(GET_META_FOR_ENTITY, {
     onCompleted: (data) => {
@@ -92,7 +97,7 @@ export default function BuildModels() {
     });
   };
 
-  const handlePublishModel = async () => {
+  const handleBuildGlossaryPublish = async () => {
     if (!selectedEntity) {
       toast({
         title: "Validation Error",
@@ -113,81 +118,190 @@ export default function BuildModels() {
 
     setLoading(true);
     try {
-      // Step 1: Build Conceptual Model
-      const buildPayload = {
-        glossary_entity_core: {
-          ns: selectedEntity.subjectarea.namespace.name,
-          sa: selectedEntity.subjectarea.name,
-          en: selectedEntity.name,
-          ns_type: "glossary",
-        },
-        conceptual_model_meta_request: {
-          meta_names: Array.from(selectedMetas),
-        },
-        load_model: true,
-      };
-
-      const buildResponse = await fetch(
-        `${API_CONFIG.REST_ENDPOINT}/mwn/build_conceptual_model?project_code=${projectCode}&load_model=true`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(buildPayload),
-        }
-      );
-
-      if (!buildResponse.ok) {
-        throw new Error(`Build model failed with status: ${buildResponse.status}`);
-      }
-
-      const buildResult = await buildResponse.json();
-      
-      if (buildResult.status !== "success") {
-        throw new Error("Build model returned unsuccessful status");
-      }
-
-      // Step 2: Load Conceptual Model
-      const loadPayload = {
-        ns: selectedEntity.subjectarea.namespace.name,
+      const targetEntityCore = {
+        ns: `${selectedEntity.subjectarea.namespace.name}_publish`,
         sa: selectedEntity.subjectarea.name,
         en: selectedEntity.name,
-        ns_type: "staging",
+        ns_type: "model",
         ns_id: selectedEntity.subjectarea.namespace.id,
         sa_id: selectedEntity.sa_id,
         en_id: selectedEntity.id,
       };
 
-      const loadResponse = await fetch(
-        `${API_CONFIG.REST_ENDPOINT}/mwn/load_conceptual_model?project_code=${projectCode}`,
+      const glossaryEntityCore = {
+        ns: selectedEntity.subjectarea.namespace.name,
+        sa: selectedEntity.subjectarea.name,
+        en: selectedEntity.name,
+        ns_type: "glossary",
+        ns_id: selectedEntity.subjectarea.namespace.id,
+        sa_id: selectedEntity.sa_id,
+        en_id: selectedEntity.id,
+      };
+
+      const publishColumns = Array.from(selectedMetas).map(metaName => {
+        const metaField = metaFields.find(f => f.alias === metaName);
+        return {
+          target: metaName,
+          glossary: metaName,
+          meta_request: metaField ? {
+            id: metaField.id,
+            type: metaField.type,
+            subtype: metaField.subtype || ".",
+            name: metaField.name,
+            description: metaField.description || "",
+            order: metaField.order || 0,
+            alias: metaField.alias || metaName,
+            length: 0,
+            default: metaField.default || "",
+            nullable: metaField.nullable,
+            format: "",
+            is_primary_grain: metaField.is_primary_grain || false,
+            is_secondary_grain: metaField.is_secondary_grain || false,
+            is_tertiary_grain: metaField.is_tertiary_grain || false,
+            tags: "",
+            custom_props: [],
+            entity_id: selectedEntity.id,
+            ns: selectedEntity.subjectarea.namespace.name,
+            sa: selectedEntity.subjectarea.name,
+            en: selectedEntity.name,
+            entity_core: glossaryEntityCore
+          } : undefined
+        };
+      });
+
+      const rulesetRequest = {
+        name: `${selectedEntity.name}_publish_ruleset`,
+        type: "glossary_publish",
+        description: `Column selection and transforms for ${selectedEntity.name} publishing`,
+        rule_requests: Array.from(selectedMetas).map(metaName => ({
+          meta: metaName,
+          rule_expression: metaName,
+          description: `Rule for ${metaName}`,
+          name: `${metaName}_rule`,
+          type: "glossary_publish",
+          language: "sql",
+          rule_status: "active",
+          subtype: ".",
+        }))
+      };
+
+      const payload = {
+        target_en_core: targetEntityCore,
+        glossary_en_core: glossaryEntityCore,
+        publish_config_request: {
+          glossary_entity_fqn: `${glossaryEntityCore.ns}.${glossaryEntityCore.sa}.${glossaryEntityCore.en}`,
+          target_runtime: "duckdb",
+          target_profile: projectCode,
+          target_namespace: targetEntityCore.ns,
+          target_schema: targetEntityCore.sa,
+          target_name: targetEntityCore.en,
+          target_fqn: `${targetEntityCore.ns}.${targetEntityCore.sa}.${targetEntityCore.en}`,
+          materialize_as: "table",
+          status: "draft",
+          version: 1
+        },
+        publish_columns: publishColumns,
+        ruleset_request: rulesetRequest,
+        source_request: {
+          type: "DIRECT",
+          source_ns: selectedEntity.subjectarea.namespace.name,
+          source_sa: selectedEntity.subjectarea.name,
+          source_en: selectedEntity.name,
+          source_en_id: selectedEntity.id
+        }
+      };
+
+      const response = await fetch(
+        `${API_CONFIG.REST_ENDPOINT}/mwn/build_glossary_publish`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(loadPayload),
+          body: JSON.stringify(payload),
         }
       );
 
-      if (!loadResponse.ok) {
-        throw new Error(`Load model failed with status: ${loadResponse.status}`);
+      if (!response.ok) {
+        throw new Error(`Build glossary publish failed with status: ${response.status}`);
       }
 
-      const loadResult = await loadResponse.json();
+      const result = await response.json();
+      setStep1Response(result);
 
       toast({
         title: "Success",
-        description: "Model built and published successfully",
+        description: "Glossary publish artifacts built successfully",
       });
 
       // Refresh the existing model data
       fetchConceptualModel({ variables: { glossaryEntityId: selectedEntity.id } });
     } catch (error) {
-      console.error("Error publishing model:", error);
+      console.error("Error building glossary publish:", error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to publish model. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to build glossary publish. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLoadGlossaryPublish = async () => {
+    if (!selectedEntity) {
+      toast({
+        title: "Validation Error",
+        description: "Please select a glossary entity",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const targetEntityCore = {
+        ns: `${selectedEntity.subjectarea.namespace.name}_publish`,
+        sa: selectedEntity.subjectarea.name,
+        en: selectedEntity.name,
+        ns_type: "model",
+        ns_id: selectedEntity.subjectarea.namespace.id,
+        sa_id: selectedEntity.sa_id,
+        en_id: selectedEntity.id,
+      };
+
+      const payload = {
+        target_en_core: targetEntityCore,
+        loader_cfg: {}
+      };
+
+      const response = await fetch(
+        `${API_CONFIG.REST_ENDPOINT}/mwn/load_glossary_publish`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Load glossary publish failed with status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      setStep2Response(result);
+
+      toast({
+        title: "Success",
+        description: `Data loaded successfully. Rows: ${result.rows || 0}`,
+      });
+    } catch (error) {
+      console.error("Error loading glossary publish:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to load glossary publish. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -245,61 +359,137 @@ export default function BuildModels() {
             </div>
           </div>
 
-          {metaLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : metaFields.length > 0 ? (
-            <div className="border rounded-lg overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-muted/50">
-                  <tr>
-                    <th className="text-left p-4 font-medium">Select</th>
-                    <th className="text-left p-4 font-medium">Attribute</th>
-                    <th className="text-left p-4 font-medium">Type</th>
-                    <th className="text-left p-4 font-medium">Description</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {metaFields.map((field) => (
-                    <tr key={field.id} className="border-t hover:bg-muted/30">
-                      <td className="p-4">
-                        <Checkbox
-                          checked={selectedMetas.has(field.alias)}
-                          onCheckedChange={() => handleMetaToggle(field.alias)}
-                        />
-                      </td>
-                      <td className="p-4">{field.name}</td>
-                      <td className="p-4 font-mono text-sm">{field.alias}</td>
-                      <td className="p-4 text-muted-foreground">
-                        {field.description || "-"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="text-center py-12 text-muted-foreground">
-              Select a glossary entity to view attributes
-            </div>
-          )}
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="step1">Step 1: Build Artifacts</TabsTrigger>
+              <TabsTrigger value="step2">Step 2: Load Data</TabsTrigger>
+            </TabsList>
 
-          <div className="flex gap-3">
-            <Button onClick={handlePublishModel} disabled={!selectedEntity || loading}>
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Publishing...
-                </>
+            <TabsContent value="step1" className="space-y-6">
+              {metaLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : metaFields.length > 0 ? (
+                <div className="border rounded-lg overflow-hidden">
+                  <table className="w-full">
+                    <thead className="bg-muted/50">
+                      <tr>
+                        <th className="text-left p-4 font-medium">Select</th>
+                        <th className="text-left p-4 font-medium">Attribute</th>
+                        <th className="text-left p-4 font-medium">Type</th>
+                        <th className="text-left p-4 font-medium">Description</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {metaFields.map((field) => (
+                        <tr key={field.id} className="border-t hover:bg-muted/30">
+                          <td className="p-4">
+                            <Checkbox
+                              checked={selectedMetas.has(field.alias)}
+                              onCheckedChange={() => handleMetaToggle(field.alias)}
+                            />
+                          </td>
+                          <td className="p-4">{field.name}</td>
+                          <td className="p-4 font-mono text-sm">{field.alias}</td>
+                          <td className="p-4 text-muted-foreground">
+                            {field.description || "-"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               ) : (
-                "Publish Model"
+                <div className="text-center py-12 text-muted-foreground">
+                  Select a glossary entity to view attributes
+                </div>
               )}
-            </Button>
-            <Button variant="outline" onClick={() => navigate("/model")}>
-              Cancel
-            </Button>
-          </div>
+
+              <div className="flex gap-3">
+                <Button onClick={handleBuildGlossaryPublish} disabled={!selectedEntity || loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Building...
+                    </>
+                  ) : (
+                    "Build Artifacts"
+                  )}
+                </Button>
+                <Button variant="outline" onClick={() => navigate("/model")}>
+                  Cancel
+                </Button>
+              </div>
+
+              {step1Response && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Build Response</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <pre className="text-sm bg-muted p-4 rounded-lg overflow-auto">
+                      {JSON.stringify(step1Response, null, 2)}
+                    </pre>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            <TabsContent value="step2" className="space-y-6">
+              <div className="flex gap-3">
+                <Button onClick={handleLoadGlossaryPublish} disabled={!selectedEntity || loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    "Load Data"
+                  )}
+                </Button>
+              </div>
+
+              {step2Response && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Load Results</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="text-sm">
+                        <span className="font-medium">Rows Loaded:</span> {step2Response.rows || 0}
+                      </div>
+                      {step2Response.data && Array.isArray(step2Response.data) && step2Response.data.length > 0 && (
+                        <div className="border rounded-lg overflow-auto">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                {Object.keys(step2Response.data[0]).map((key) => (
+                                  <TableHead key={key}>{key}</TableHead>
+                                ))}
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {step2Response.data.map((row: any, idx: number) => (
+                                <TableRow key={idx}>
+                                  {Object.values(row).map((value: any, cellIdx: number) => (
+                                    <TableCell key={cellIdx}>
+                                      {value !== null && value !== undefined ? String(value) : "-"}
+                                    </TableCell>
+                                  ))}
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
 
         <div className="space-y-4">
