@@ -265,16 +265,15 @@ export const DataTable = ({
   const handleEditMode = () => {
     if (editingRows.length > 0) {
       setEditingRows([]);
-      setEditedData(prev => {
-        const withoutDrafts = prev.filter(row => row._status !== 'draft');
-        return withoutDrafts.map(row => {
-          if (row._status === 'edited') {
-            const original = data.find(d => d.id === row.id);
-            return original ? { ...original } : row;
-          }
-          return row;
-        });
+      const withoutDrafts = editedData.filter(row => row._status !== 'draft');
+      const newData = withoutDrafts.map(row => {
+        if (row._status === 'edited') {
+          const original = data.find(d => d.id === row.id);
+          return original ? { ...original } : row;
+        }
+        return row;
       });
+      setEditedData(newData);
     } else if (selectedRows.length > 0) {
       setEditingRows(prev => [...prev, ...selectedRows.filter(id => !prev.includes(id))]);
       if (editedData.length === 0) setEditedData([...data]);
@@ -336,14 +335,14 @@ export const DataTable = ({
     if (editedData.length === 0) {
       setEditedData([...data, newRow]);
     } else {
-      setEditedData(prev => [...prev, newRow]);
+      setEditedData([...editedData, newRow]);
     }
     setEditingRows(prev => [...prev, newRow.id]);
   };
 
   const handleCellEdit = (id: string, key: string, value: string | boolean) => {
-    setEditedData(prev =>
-      prev.map(row =>
+    setEditedData(
+      editedData.map(row =>
         row.id === id
           ? { ...row, [key]: value, _status: row._status === 'draft' ? 'draft' : 'edited' }
           : row
@@ -578,6 +577,7 @@ export const DataTable = ({
           align-items: center;
           justify-content: space-between;
           gap: 1rem;
+          margin: 5px;
         }
 
         .dt-toolbar-left, .dt-toolbar-right {
