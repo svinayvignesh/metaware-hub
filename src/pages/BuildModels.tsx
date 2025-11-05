@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { useLazyQuery } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, ExternalLink } from "lucide-react";
+import { useMDConnectionContext } from "@/contexts/MDConnectionContext";
+import { queryMDTable } from "@/hooks/useMDConnection";
+import { DataTable } from "@/components/table/DataTable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,6 +37,7 @@ import { useEffect } from "react";
 export default function BuildModels() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { connection, connect, ready } = useMDConnectionContext();
   const [selectedEntity, setSelectedEntity] = useState<Entity | null>(null);
   const [projectCode, setProjectCode] = useState("model");
   const [metaFields, setMetaFields] = useState<MetaField[]>([]);
@@ -44,8 +48,14 @@ export default function BuildModels() {
   const [step1Response, setStep1Response] = useState<any>(null);
   const [step2Response, setStep2Response] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("step1");
+  const [loadedModelData, setLoadedModelData] = useState<{ columns: string[]; rows: any[] }>({ columns: [], rows: [] });
 
   const [fetchMeta, { loading: metaLoading, data: metaData }] = useLazyQuery(GET_META_FOR_ENTITY);
+
+  // Connect to MotherDuck on mount
+  useEffect(() => {
+    connect();
+  }, [connect]);
 
   useEffect(() => {
     if (metaData?.meta_meta) {
@@ -306,6 +316,32 @@ export default function BuildModels() {
         title: "Success",
         description: `Data loaded successfully. Rows: ${result.rows || 0}`,
       });
+
+      // Fetch the actual model data from MotherDuck
+      if (connection && ready) {
+        try {
+          const modelNamespace = `${selectedEntity.subjectarea?.namespace?.name}_publish`;
+          const modelSubjectArea = `${selectedEntity.subjectarea?.name}_publish`;
+          const modelEntity = `${selectedEntity.name}_publish`;
+
+          const modelData = await queryMDTable(connection, modelNamespace, modelSubjectArea, modelEntity);
+          
+          // Add IDs to rows for table rendering
+          const rowsWithIds = modelData.rows.map((row, index) => ({
+            ...row,
+            id: row.id || `row_${index}`
+          }));
+          
+          setLoadedModelData({ columns: modelData.columns || [], rows: rowsWithIds });
+        } catch (error) {
+          console.error("Error fetching model data:", error);
+          toast({
+            title: "Warning",
+            description: "Data loaded but couldn't fetch model table data for preview",
+            variant: "destructive",
+          });
+        }
+      }
     } catch (error) {
       console.error("Error loading glossary publish:", error);
       toast({
@@ -460,42 +496,70 @@ export default function BuildModels() {
               </div>
 
               {step2Response && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Load Results</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="text-sm">
-                        <span className="font-medium">Rows Loaded:</span> {step2Response.rows || 0}
-                      </div>
-                      {step2Response.data && Array.isArray(step2Response.data) && step2Response.data.length > 0 && (
-                        <div className="border rounded-lg overflow-auto">
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                {Object.keys(step2Response.data[0]).map((key) => (
-                                  <TableHead key={key}>{key}</TableHead>
-                                ))}
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {step2Response.data.map((row: any, idx: number) => (
-                                <TableRow key={idx}>
-                                  {Object.values(row).map((value: any, cellIdx: number) => (
-                                    <TableCell key={cellIdx}>
-                                      {value !== null && value !== undefined ? String(value) : "-"}
-                                    </TableCell>
-                                  ))}
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
+                <>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Load Results</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="text-sm">
+                          <span className="font-medium">Rows Loaded:</span> {step2Response.rows || 0}
                         </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {loadedModelData.rows.length > 0 && (
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between">
+                        <CardTitle className="text-lg">Model Data Preview</CardTitle>
+                        <Button
+                          onClick={() => {
+                            // Navigate to model page - the Model component will handle displaying the entity
+                            navigate(`/model`, { 
+                              state: { 
+                                selectedEntity: {
+                                  ...selectedEntity,
+                                  name: `${selectedEntity?.name}_publish`,
+                                  subjectarea: {
+                                    ...selectedEntity?.subjectarea,
+                                    name: `${selectedEntity?.subjectarea?.name}_publish`,
+                                    namespace: {
+                                      ...selectedEntity?.subjectarea?.namespace,
+                                      name: `${selectedEntity?.subjectarea?.namespace?.name}_publish`
+                                    }
+                                  }
+                                }
+                              } 
+                            });
+                          }}
+                          size="sm"
+                        >
+                          <ExternalLink className="mr-2 h-4 w-4" />
+                          View in Model Data Table
+                        </Button>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="border rounded-lg overflow-auto max-h-[500px]">
+                          <DataTable
+                            columns={loadedModelData.columns.map((col) => ({
+                              key: col,
+                              title: col,
+                              type: "text" as const,
+                            }))}
+                            data={loadedModelData.rows}
+                            entityType="Model Row"
+                            onAdd={() => {}}
+                            onEdit={() => {}}
+                            onDelete={() => {}}
+                            onSave={() => {}}
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </>
               )}
             </TabsContent>
           </Tabs>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import { SubSidebar } from "@/components/layout/SubSidebar";
 import { EntityGrid } from "@/components/entity/EntityGrid";
@@ -15,6 +15,7 @@ import { GET_SUBJECTAREAS, type GetSubjectAreasResponse } from "@/graphql/querie
 
 export default function Model() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [selectedSubjectAreaId, setSelectedSubjectAreaId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedEntity, setSelectedEntity] = useState<any>(null);
@@ -29,6 +30,15 @@ export default function Model() {
   useEffect(() => {
     connect();
   }, [connect]);
+
+  // Handle navigation state (from BuildModels)
+  useEffect(() => {
+    if (location.state?.selectedEntity) {
+      setSelectedEntity(location.state.selectedEntity);
+      // Clear the navigation state after using it
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   useEffect(() => {
     if (ready && connection && selectedEntity) {
