@@ -188,6 +188,7 @@ export default function BuildModels() {
 
       const payload = {
         publish_config_request: {
+<<<<<<< Updated upstream
           glossary_entity_fqn: `${selectedEntity.subjectarea?.namespace?.name}.${selectedEntity.subjectarea?.name}.${selectedEntity.name}`,
           target_runtime: "duckdb",
           target_profile: projectCode,
@@ -195,15 +196,30 @@ export default function BuildModels() {
           target_schema: selectedEntity.subjectarea?.name,
           target_name: selectedEntity.name,
           target_fqn: `${selectedEntity.subjectarea?.namespace?.name}_publish.${selectedEntity.subjectarea?.name}.${selectedEntity.name}`,
+=======
+          glossary_entity_fqn: `${selectedEntity.subjectarea.namespace.name}.${selectedEntity.subjectarea.name}.${selectedEntity.name}`,
+          target_runtime: "duckdb",
+          target_profile: projectCode,
+          target_namespace: `${selectedEntity.subjectarea.namespace.name}_publish`,
+          target_schema: `${selectedEntity.subjectarea.name}_publish`,
+          target_name: `${selectedEntity.name}_publish`,
+          target_fqn: `${selectedEntity.subjectarea.namespace.name}_publish.${selectedEntity.subjectarea.name}.${selectedEntity.name}`,
+>>>>>>> Stashed changes
           materialize_as: "table",
           status: "draft",
           version: 1
         },
         publish_columns: publishColumns,
         entity_core: {
+<<<<<<< Updated upstream
           ns: `${selectedEntity.subjectarea?.namespace?.name}_publish`,
           sa: selectedEntity.subjectarea?.name,
           en: selectedEntity.name,
+=======
+          ns: `${selectedEntity.subjectarea.namespace.name}_publish`,
+          sa: `${selectedEntity.subjectarea.name}_publish`,
+          en: `${selectedEntity.name}_publish`,
+>>>>>>> Stashed changes
           ns_type: "model"
         },
         source_request: {

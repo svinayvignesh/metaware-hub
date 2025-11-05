@@ -709,6 +709,7 @@ export default function PrepareFiles() {
             namespace={selectedNamespaceData.name}
             subjectArea={availableSubjectAreas.find(sa => sa.id === selectedSubjectArea)?.name || ''}
             entity={selectedEntityData.name}
+            entityDescription={selectedEntityData.description || ''}
             namespaceType={selectedNamespaceData.type}
             primaryGrain={selectedEntityData.primary_grain || ''}
             onSuccess={handleMetaUploadSuccess}

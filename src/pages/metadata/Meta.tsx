@@ -468,7 +468,8 @@ export default function Meta() {
           namespace={selectedEntityData.subjectarea?.namespace?.name || ''}
           subjectArea={selectedEntityData.subjectarea?.name || ''}
           entity={selectedEntityData.name}
-          namespaceType={selectedEntityData.subjectarea?.namespace?.type || 'staging'}
+          entityDescription={selectedEntityData.description || ''}
+          namespaceType={selectedEntityData.subjectarea?.namespace?.type || 'unknown'}
           primaryGrain={selectedEntityData.primary_grain || ''}
           onSuccess={handleUploadSuccess}
         />

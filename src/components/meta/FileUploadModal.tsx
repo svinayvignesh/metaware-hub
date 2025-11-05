@@ -24,6 +24,7 @@ interface FileUploadModalProps {
   namespace: string;
   subjectArea: string;
   entity: string;
+  entityDescription: string;
   namespaceType: string;
   primaryGrain: string;
   onSuccess: (draftRows?: any[]) => void;
@@ -35,6 +36,7 @@ export function FileUploadModal({
   namespace,
   subjectArea,
   entity,
+  entityDescription,
   namespaceType,
   primaryGrain,
   onSuccess,
@@ -97,6 +99,7 @@ export function FileUploadModal({
         ns: namespace,
         sa: subjectArea,
         en: entity,
+        description: entityDescription || '',
         ns_type: namespaceType,
         create_meta: String(createMeta),
         load_data: String(loadData),
