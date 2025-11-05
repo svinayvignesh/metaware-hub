@@ -495,71 +495,54 @@ export default function BuildModels() {
                 </Button>
               </div>
 
-              {step2Response && (
-                <>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Load Results</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="text-sm">
-                          <span className="font-medium">Rows Loaded:</span> {step2Response.rows || 0}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {loadedModelData.rows.length > 0 && (
-                    <Card>
-                      <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle className="text-lg">Model Data Preview</CardTitle>
-                        <Button
-                          onClick={() => {
-                            // Navigate to model page - the Model component will handle displaying the entity
-                            navigate(`/model`, { 
-                              state: { 
-                                selectedEntity: {
-                                  ...selectedEntity,
-                                  name: `${selectedEntity?.name}_publish`,
-                                  subjectarea: {
-                                    ...selectedEntity?.subjectarea,
-                                    name: `${selectedEntity?.subjectarea?.name}_publish`,
-                                    namespace: {
-                                      ...selectedEntity?.subjectarea?.namespace,
-                                      name: `${selectedEntity?.subjectarea?.namespace?.name}_publish`
-                                    }
-                                  }
+              {step2Response && loadedModelData.rows.length > 0 && (
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle className="text-lg">Model Data Preview</CardTitle>
+                    <Button
+                      onClick={() => {
+                        navigate(`/model`, { 
+                          state: { 
+                            selectedEntity: {
+                              id: selectedEntity?.id,
+                              name: `${selectedEntity?.name}_publish`,
+                              sa_id: selectedEntity?.sa_id,
+                              subjectarea: {
+                                name: `${selectedEntity?.subjectarea?.name}_publish`,
+                                namespace: {
+                                  id: selectedEntity?.subjectarea?.namespace?.id,
+                                  name: `${selectedEntity?.subjectarea?.namespace?.name}_publish`,
+                                  type: selectedEntity?.subjectarea?.namespace?.type
                                 }
-                              } 
-                            });
-                          }}
-                          size="sm"
-                        >
-                          <ExternalLink className="mr-2 h-4 w-4" />
-                          View in Model Data Table
-                        </Button>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="border rounded-lg overflow-auto max-h-[500px]">
-                          <DataTable
-                            columns={loadedModelData.columns.map((col) => ({
-                              key: col,
-                              title: col,
-                              type: "text" as const,
-                            }))}
-                            data={loadedModelData.rows}
-                            entityType="Model Row"
-                            onAdd={() => {}}
-                            onEdit={() => {}}
-                            onDelete={() => {}}
-                            onSave={() => {}}
-                          />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                </>
+                              }
+                            }
+                          } 
+                        });
+                      }}
+                      size="sm"
+                    >
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      View in Model Data Table
+                    </Button>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="overflow-auto max-h-[600px]">
+                      <DataTable
+                        columns={loadedModelData.columns.map((col) => ({
+                          key: col,
+                          title: col,
+                          type: "text" as const,
+                        }))}
+                        data={loadedModelData.rows}
+                        entityType="Model Row"
+                        onAdd={() => {}}
+                        onEdit={() => {}}
+                        onDelete={() => {}}
+                        onSave={() => {}}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
               )}
             </TabsContent>
           </Tabs>
