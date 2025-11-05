@@ -266,8 +266,8 @@ export const DataTable = ({
   const handleEditMode = () => {
     if (editingRows.length > 0) {
       setEditingRows([]);
-      const withoutDrafts = editedData.filter(row => row._status !== 'draft');
-      const newData = withoutDrafts.map(row => {
+      // Keep draft rows but revert edited rows to their original values
+      const newData = editedData.map(row => {
         if (row._status === 'edited') {
           const original = data.find(d => d.id === row.id);
           return original ? { ...original } : row;
