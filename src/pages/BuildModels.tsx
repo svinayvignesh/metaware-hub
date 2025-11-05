@@ -72,14 +72,24 @@ export default function BuildModels() {
       setExistingModel(model);
       
       // Pre-select metas that are already in the model
+      // Match the selected_metas names to the metaFields aliases
       const selectedNames = new Set<string>(
         model.selected_metas.map((m: ConceptualModelMeta) => m.name)
       );
-      setSelectedMetas(selectedNames);
+      
+      // Map names to aliases from metaFields
+      const selectedAliases = new Set<string>();
+      metaFields.forEach(field => {
+        if (selectedNames.has(field.name)) {
+          selectedAliases.add(field.alias);
+        }
+      });
+      
+      setSelectedMetas(selectedAliases);
     } else if (conceptualModelData?.conceptual_model) {
       setExistingModel(null);
     }
-  }, [conceptualModelData]);
+  }, [conceptualModelData, metaFields]);
 
   const [fetchRulesets, { data: rulesetsData }] = useLazyQuery<GetRulesetsByEntityResponse>(
     GET_RULESETS_BY_ENTITY
