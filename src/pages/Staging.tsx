@@ -80,8 +80,8 @@ export default function Staging() {
     setLoading(true);
     setTableNotFound(false);
     try {
-      const namespace = selectedEntity.subjectarea.namespace.name;
-      const subjectarea = selectedEntity.subjectarea.name;
+      const namespace = selectedEntity.subjectarea?.namespace?.name;
+      const subjectarea = selectedEntity.subjectarea?.name;
       const entityName = selectedEntity.name;
 
       const result = await queryMDTable(connection, namespace, subjectarea, entityName);
@@ -121,11 +121,11 @@ export default function Staging() {
   }));
 
   const entityContext = selectedEntity && selectedEntity.subjectarea && selectedEntity.subjectarea.namespace ? {
-    ns: selectedEntity.subjectarea.namespace.name,
-    sa: selectedEntity.subjectarea.name,
+    ns: selectedEntity.subjectarea?.namespace?.name || '',
+    sa: selectedEntity.subjectarea?.name || '',
     en: selectedEntity.name,
-    ns_id: selectedEntity.subjectarea.namespace.id,
-    sa_id: selectedEntity.subjectarea.id,
+    ns_id: selectedEntity.subjectarea?.namespace?.id || '',
+    sa_id: selectedEntity.subjectarea?.id || '',
     en_id: selectedEntity.id,
   } : null;
 

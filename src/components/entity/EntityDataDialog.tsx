@@ -33,8 +33,8 @@ export function EntityDataDialog({ entity, open, onOpenChange }: EntityDataDialo
 
     setLoading(true);
     try {
-      const namespace = entity.subjectarea.namespace.name;
-      const subjectarea = entity.subjectarea.name;
+      const namespace = entity.subjectarea?.namespace?.name;
+      const subjectarea = entity.subjectarea?.name;
       const entityName = entity.name;
 
       const result = await queryMDTable(connection, namespace, subjectarea, entityName);

@@ -46,8 +46,8 @@ export default function Model() {
 
     setLoading(true);
     try {
-      const namespace = selectedEntity.subjectarea.namespace.name;
-      const subjectarea = selectedEntity.subjectarea.name;
+      const namespace = selectedEntity.subjectarea?.namespace?.name;
+      const subjectarea = selectedEntity.subjectarea?.name;
       const entityName = selectedEntity.name;
 
       const result = await queryMDTable(connection, namespace, subjectarea, entityName);

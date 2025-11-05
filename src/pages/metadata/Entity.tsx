@@ -103,7 +103,7 @@ export default function Entity() {
     .filter(entity => entity.subjectarea != null && entity.subjectarea.namespace != null)
     .map(entity => {
       // Find the namespace ID by matching the namespace name
-      const namespace = namespaces.find(ns => ns.name === entity.subjectarea.namespace.name);
+      const namespace = namespaces.find(ns => ns.name === entity.subjectarea?.namespace?.name);
       const nsId = namespace?.id || '';
 
       return {
@@ -112,11 +112,11 @@ export default function Entity() {
         type: entity.type,
         subtype: entity.subtype || '',
         description: entity.description || '',
-        subjectarea_display: entity.subjectarea.name,
-        subjectarea_name: entity.subjectarea.name,
-        namespace_display: `${entity.subjectarea.namespace.type}->${entity.subjectarea.namespace.name}`,
-        namespace_name: entity.subjectarea.namespace.name,
-        namespace_type: entity.subjectarea.namespace.type,
+        subjectarea_display: entity.subjectarea?.name || '',
+        subjectarea_name: entity.subjectarea?.name || '',
+        namespace_display: `${entity.subjectarea?.namespace?.type}->${entity.subjectarea?.namespace?.name}`,
+        namespace_name: entity.subjectarea?.namespace?.name || '',
+        namespace_type: entity.subjectarea?.namespace?.type || '',
         is_delta: entity.is_delta ? 'Yes' : 'No',
         primary_grain: entity.primary_grain || '',
         secondary_grain: entity.secondary_grain || '',

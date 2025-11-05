@@ -99,9 +99,9 @@ export function GlossaryEntityDropdown({
           {selectedEntity ? (
             <span className="flex-start gap-1.5 text-sm">
               <Database className="icon-sm shrink-0" />
-              <span className="font-medium">{selectedEntity.subjectarea.namespace.name}</span>
+              <span className="font-medium">{selectedEntity.subjectarea?.namespace?.name}</span>
               <span className="text-muted-foreground">/</span>
-              <span className="font-medium">{selectedEntity.subjectarea.name}</span>
+              <span className="font-medium">{selectedEntity.subjectarea?.name}</span>
               <span className="text-muted-foreground">/</span>
               <span>{selectedEntity.name}</span>
             </span>

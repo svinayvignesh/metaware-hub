@@ -252,8 +252,8 @@ export default function Meta() {
         tertiary_grain: '',
         sa_id: selectedEntityData.sa_id,
         update_strategy_: 'U',
-        ns: selectedEntityData.subjectarea.namespace.name,
-        sa: selectedEntityData.subjectarea.name,
+        ns: selectedEntityData.subjectarea?.namespace?.name || '',
+        sa: selectedEntityData.subjectarea?.name || '',
         ns_type: 'staging',
       };
 
@@ -286,12 +286,12 @@ export default function Meta() {
         tags: '',
         custom_props: [],
         entity_id: selectedEntity,
-        ns: selectedEntityData.subjectarea.namespace.name,
-        sa: selectedEntityData.subjectarea.name,
+        ns: selectedEntityData.subjectarea?.namespace?.name || '',
+        sa: selectedEntityData.subjectarea?.name || '',
         en: selectedEntityData.name,
         entity_core: {
-          ns: selectedEntityData.subjectarea.namespace.name,
-          sa: selectedEntityData.subjectarea.name,
+          ns: selectedEntityData.subjectarea?.namespace?.name || '',
+          sa: selectedEntityData.subjectarea?.name || '',
           en: selectedEntityData.name,
           ns_type: 'staging',
           ns_id: selectedNamespace,
@@ -465,10 +465,10 @@ export default function Meta() {
         <FileUploadModal
           open={uploadModalOpen}
           onOpenChange={setUploadModalOpen}
-          namespace={selectedEntityData.subjectarea.namespace.name}
-          subjectArea={selectedEntityData.subjectarea.name}
+          namespace={selectedEntityData.subjectarea?.namespace?.name || ''}
+          subjectArea={selectedEntityData.subjectarea?.name || ''}
           entity={selectedEntityData.name}
-          namespaceType={selectedEntityData.subjectarea.namespace.type}
+          namespaceType={selectedEntityData.subjectarea?.namespace?.type || 'staging'}
           primaryGrain={selectedEntityData.primary_grain || ''}
           onSuccess={handleUploadSuccess}
         />

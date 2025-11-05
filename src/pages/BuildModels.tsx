@@ -188,28 +188,28 @@ export default function BuildModels() {
 
       const payload = {
         publish_config_request: {
-          glossary_entity_fqn: `${selectedEntity.subjectarea.namespace.name}.${selectedEntity.subjectarea.name}.${selectedEntity.name}`,
+          glossary_entity_fqn: `${selectedEntity.subjectarea?.namespace?.name}.${selectedEntity.subjectarea?.name}.${selectedEntity.name}`,
           target_runtime: "duckdb",
           target_profile: projectCode,
-          target_namespace: `${selectedEntity.subjectarea.namespace.name}_publish`,
-          target_schema: selectedEntity.subjectarea.name,
+          target_namespace: `${selectedEntity.subjectarea?.namespace?.name}_publish`,
+          target_schema: selectedEntity.subjectarea?.name,
           target_name: selectedEntity.name,
-          target_fqn: `${selectedEntity.subjectarea.namespace.name}_publish.${selectedEntity.subjectarea.name}.${selectedEntity.name}`,
+          target_fqn: `${selectedEntity.subjectarea?.namespace?.name}_publish.${selectedEntity.subjectarea?.name}.${selectedEntity.name}`,
           materialize_as: "table",
           status: "draft",
           version: 1
         },
         publish_columns: publishColumns,
         entity_core: {
-          ns: `${selectedEntity.subjectarea.namespace.name}_publish`,
-          sa: selectedEntity.subjectarea.name,
+          ns: `${selectedEntity.subjectarea?.namespace?.name}_publish`,
+          sa: selectedEntity.subjectarea?.name,
           en: selectedEntity.name,
           ns_type: "model"
         },
         source_request: {
           type: "DIRECT",
-          source_ns: sourceEntity.subjectarea.namespace.name,
-          source_sa: sourceEntity.subjectarea.name,
+          source_ns: sourceEntity.subjectarea?.namespace?.name,
+          source_sa: sourceEntity.subjectarea?.name,
           source_en: sourceEntity.name
         },
         ruleset_request: {
@@ -270,11 +270,11 @@ export default function BuildModels() {
     setLoading(true);
     try {
       const targetEntityCore = {
-        ns: `${selectedEntity.subjectarea.namespace.name}_publish`,
-        sa: selectedEntity.subjectarea.name,
+        ns: `${selectedEntity.subjectarea?.namespace?.name}_publish`,
+        sa: selectedEntity.subjectarea?.name,
         en: selectedEntity.name,
         ns_type: "model",
-        ns_id: selectedEntity.subjectarea.namespace.id,
+        ns_id: selectedEntity.subjectarea?.namespace?.id,
         sa_id: selectedEntity.sa_id,
         en_id: selectedEntity.id,
       };
@@ -546,7 +546,7 @@ export default function BuildModels() {
                       <span className="font-medium text-sm mt-0.5">{idx + 1}.</span>
                       <div className="flex-1">
                         <div className="flex items-center gap-1.5 text-sm flex-wrap">
-                          <span className="font-semibold text-primary">{source.subjectarea.namespace.name}</span>
+                          <span className="font-semibold text-primary">{source.subjectarea?.namespace?.name}</span>
                           <span className="text-muted-foreground">/</span>
                           <span className="font-medium">{source.subjectarea.name}</span>
                           <span className="text-muted-foreground">/</span>

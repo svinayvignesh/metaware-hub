@@ -31,7 +31,7 @@ export function SourceAssociationSelect({
 
     return data.meta_entity.filter(
       (entity: Entity) =>
-        entity.subjectarea.namespace.type === "staging" &&
+        entity.subjectarea?.namespace?.type === "staging" &&
         entity.primary_grain === glossaryEntityName
     );
   }, [data, glossaryEntity]);
@@ -68,12 +68,12 @@ export function SourceAssociationSelect({
         {sourceAssociations.map((entity) => (
           <SelectItem key={entity.id} value={entity.id}>
             <span className="font-medium">
-              {entity.subjectarea.namespace.name}
+              {entity.subjectarea?.namespace?.name}
             </span>
             <span className="text-muted-foreground mx-1.5">/</span>
-            <span className="font-medium">{entity.subjectarea.name}</span>
+            <span className="font-medium">{entity.subjectarea?.name}</span>
             <span className="text-muted-foreground mx-1.5">/</span>
-            <span>{entity.name}</span>
+<span>{entity.name}</span>
           </SelectItem>
         ))}
       </SelectContent>

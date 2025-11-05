@@ -137,20 +137,20 @@ export function MappingTable({ glossaryEntity, sourceEntity, existingRuleset }: 
 
       const payload = {
         entity_core: {
-          ns: glossaryEntity.subjectarea.namespace.name,
-          sa: glossaryEntity.subjectarea.name,
+          ns: glossaryEntity.subjectarea?.namespace?.name || '',
+          sa: glossaryEntity.subjectarea?.name || '',
           en: glossaryEntity.name,
         },
         ruleset_request: {
-          name: `${glossaryEntity.subjectarea.namespace.name}_${glossaryEntity.subjectarea.name}_${glossaryEntity.name}_to_staging_${sourceEntity.subjectarea.name}_${sourceEntity.name}_ruleset`,
-          description: `${glossaryEntity.subjectarea.namespace.name}_${glossaryEntity.subjectarea.name}_${glossaryEntity.name}_to_staging_${sourceEntity.subjectarea.name}_${sourceEntity.name}_ruleset`,
+          name: `${glossaryEntity.subjectarea?.namespace?.name}_${glossaryEntity.subjectarea?.name}_${glossaryEntity.name}_to_staging_${sourceEntity.subjectarea?.name}_${sourceEntity.name}_ruleset`,
+          description: `${glossaryEntity.subjectarea?.namespace?.name}_${glossaryEntity.subjectarea?.name}_${glossaryEntity.name}_to_staging_${sourceEntity.subjectarea?.name}_${sourceEntity.name}_ruleset`,
           type: "glossary_association",
           rule_requests: ruleRequests,
         },
         source_request: {
           type: "DIRECT",
-          source_ns: sourceEntity.subjectarea.namespace.name,
-          source_sa: sourceEntity.subjectarea.name,
+          source_ns: sourceEntity.subjectarea?.namespace?.name || '',
+          source_sa: sourceEntity.subjectarea?.name || '',
           source_en: sourceEntity.name,
         },
         transform_request: {
