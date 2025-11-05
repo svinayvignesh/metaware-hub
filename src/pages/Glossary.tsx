@@ -37,6 +37,7 @@ export default function Glossary() {
   const [mappings, setMappings] = useState<any[]>([]);
   const [draftMetaFields, setDraftMetaFields] = useState<any[]>([]);
   const [originalDraftMetaFields, setOriginalDraftMetaFields] = useState<any[]>([]);
+  const [editModeSnapshot, setEditModeSnapshot] = useState<any[]>([]);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
@@ -374,9 +375,15 @@ export default function Glossary() {
                       externalEditedData={draftMetaFields.map(field => ({ ...field, id: field.id || `draft_${field.name}`, _status: 'draft' as const, }))}
                       onEditedDataChange={(data) => { setDraftMetaFields(data.map(({ _status, ...rest }) => rest)); }}
                       onEditModeChange={(isEditing) => {
-                        if (!isEditing) {
-                          // Revert to original values when exiting edit mode
-                          setDraftMetaFields(originalDraftMetaFields);
+                        if (isEditing) {
+                          // Snapshot current state when entering edit mode
+                          setEditModeSnapshot(JSON.parse(JSON.stringify(draftMetaFields)));
+                        } else {
+                          // Revert to snapshot when exiting edit mode without saving
+                          if (editModeSnapshot.length > 0) {
+                            setDraftMetaFields(editModeSnapshot);
+                            setEditModeSnapshot([]);
+                          }
                         }
                       }}
                       columns={draftMetaColumns}
