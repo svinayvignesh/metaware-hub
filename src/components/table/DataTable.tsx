@@ -81,6 +81,7 @@ interface DataTableProps {
   entityType?: string;
   externalEditedData?: TableData[];
   onEditedDataChange?: (data: TableData[]) => void;
+  onEditModeChange?: (isEditing: boolean) => void;
   isDeleting?: boolean;
   isSaving?: boolean;
 }
@@ -97,6 +98,7 @@ export const DataTable = ({
   entityType = "Row",
   externalEditedData,
   onEditedDataChange,
+  onEditModeChange,
   isDeleting: externalIsDeleting,
   isSaving: externalIsSaving,
 }: DataTableProps) => {
@@ -265,7 +267,10 @@ export const DataTable = ({
 
   const handleEditMode = () => {
     if (editingRows.length > 0) {
+      // Exiting edit mode
       setEditingRows([]);
+      onEditModeChange?.(false);
+      
       // Keep draft rows but revert edited rows to their original values
       const newData = editedData.map(row => {
         if (row._status === 'edited') {
@@ -276,11 +281,15 @@ export const DataTable = ({
       });
       setEditedData(newData);
     } else if (selectedRows.length > 0) {
+      // Entering edit mode for selected rows
       setEditingRows(prev => [...prev, ...selectedRows.filter(id => !prev.includes(id))]);
       if (editedData.length === 0) setEditedData([...data]);
+      onEditModeChange?.(true);
     } else {
+      // Entering edit mode for all rows
       setEditingRows(filteredData.map(row => row.id));
       if (editedData.length === 0) setEditedData([...data]);
+      onEditModeChange?.(true);
     }
   };
 

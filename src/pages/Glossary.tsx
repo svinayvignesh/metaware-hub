@@ -36,6 +36,7 @@ export default function Glossary() {
   const [standardizedMeta, setStandardizedMeta] = useState<any[]>([]);
   const [mappings, setMappings] = useState<any[]>([]);
   const [draftMetaFields, setDraftMetaFields] = useState<any[]>([]);
+  const [originalDraftMetaFields, setOriginalDraftMetaFields] = useState<any[]>([]);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
@@ -134,6 +135,7 @@ export default function Glossary() {
     setStandardizedMeta(generatedMeta);
     setMappings(generatedMappings);
     setDraftMetaFields(generatedMeta);
+    setOriginalDraftMetaFields(generatedMeta);
     setActiveTab("meta");
   };
 
@@ -371,6 +373,12 @@ export default function Glossary() {
                       data={[]}
                       externalEditedData={draftMetaFields.map(field => ({ ...field, id: field.id || `draft_${field.name}`, _status: 'draft' as const, }))}
                       onEditedDataChange={(data) => { setDraftMetaFields(data.map(({ _status, ...rest }) => rest)); }}
+                      onEditModeChange={(isEditing) => {
+                        if (!isEditing) {
+                          // Revert to original values when exiting edit mode
+                          setDraftMetaFields(originalDraftMetaFields);
+                        }
+                      }}
                       columns={draftMetaColumns}
                       onAdd={() => {
                         const newField = {
