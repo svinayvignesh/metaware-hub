@@ -153,7 +153,8 @@ export const DataTable = ({
       }
     });
     
-    return filtered.sort((a, b) => {
+    // Create a copy before sorting to avoid mutation issues
+    return [...filtered].sort((a, b) => {
       if (a._status === 'draft' && b._status !== 'draft') return -1;
       if (a._status !== 'draft' && b._status === 'draft') return 1;
       
