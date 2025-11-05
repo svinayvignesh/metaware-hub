@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useLazyQuery, useQuery } from "@apollo/client";
+import { useLazyQuery } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Loader2, ExternalLink, Database } from "lucide-react";
+import { ArrowLeft, Loader2, ExternalLink } from "lucide-react";
 import { useMDConnectionContext } from "@/contexts/MDConnectionContext";
 import { queryMDTable } from "@/hooks/useMDConnection";
 import { DataTable } from "@/components/table/DataTable";
@@ -24,7 +24,6 @@ import {
   GET_META_FOR_ENTITY,
   type MetaField,
 } from "@/graphql/queries/meta";
-import { GET_ENTITIES } from "@/graphql/queries/entity";
 import {
   GET_RULESETS_BY_ENTITY,
   type RulesetWithSource,
@@ -52,13 +51,6 @@ export default function BuildModels() {
   const [loadedModelData, setLoadedModelData] = useState<{ columns: string[]; rows: any[] }>({ columns: [], rows: [] });
 
   const [fetchMeta, { loading: metaLoading, data: metaData }] = useLazyQuery(GET_META_FOR_ENTITY);
-  
-  // Check if there are any glossary entities available
-  const { data: entitiesData, loading: entitiesLoading } = useQuery(GET_ENTITIES);
-  
-  const hasGlossaryEntities = entitiesData?.meta_entity?.some(
-    (entity: Entity) => entity.subjectarea?.namespace?.type === "glossary"
-  );
 
   // Connect to MotherDuck on mount
   useEffect(() => {
@@ -371,93 +363,6 @@ export default function BuildModels() {
       setLoading(false);
     }
   };
-
-  // Show empty state if loading or no glossary entities
-  if (entitiesLoading) {
-    return (
-      <div className="min-h-screen p-6 space-y-6">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link to="/model">Data Model</Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>Build Models</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate("/model")}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
-          <h1 className="text-2xl font-bold">Build Models</h1>
-        </div>
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      </div>
-    );
-  }
-
-  if (!hasGlossaryEntities) {
-    return (
-      <div className="min-h-screen p-6 space-y-6">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link to="/model">Data Model</Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>Build Models</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate("/model")}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
-          <h1 className="text-2xl font-bold">Build Models</h1>
-        </div>
-        <Card className="max-w-2xl mx-auto">
-          <CardContent className="flex flex-col items-center justify-center py-12 space-y-4">
-            <Database className="h-16 w-16 text-muted-foreground/50" />
-            <div className="text-center space-y-2">
-              <h3 className="text-lg font-semibold">No Glossary Entities Available</h3>
-              <p className="text-muted-foreground max-w-md">
-                To build models, you need to create a glossary namespace, subject area, and entity first.
-              </p>
-            </div>
-            <div className="flex gap-3 pt-4">
-              <Button onClick={() => navigate("/metadata/namespace")}>
-                Create Namespace
-              </Button>
-              <Button variant="outline" onClick={() => navigate("/model")}>
-                Back to Models
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen p-6 space-y-6">
