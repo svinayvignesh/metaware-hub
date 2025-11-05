@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@apollo/client/react/hooks";
 import { ChevronDown } from "lucide-react";
 import { GET_NAMESPACES, GET_SUBJECTAREAS, type GetNamespacesResponse, type GetSubjectAreasResponse } from "@/graphql/queries";
@@ -20,6 +20,13 @@ export function SubSidebar({ namespaceType, onSubjectAreaSelect, selectedSubject
     () => (namespacesData?.meta_namespace ?? []).filter(ns => ns.type.toLowerCase() === namespaceType.toLowerCase()),
     [namespacesData, namespaceType]
   );
+
+  // Expand the first namespace by default
+  useEffect(() => {
+    if (namespaces.length > 0 && expandedNamespaces.size === 0) {
+      setExpandedNamespaces(new Set([namespaces[0].id]));
+    }
+  }, [namespaces]);
 
   const subjectAreasByNs = useMemo(() => {
     const all = subjectAreasData?.meta_subjectarea ?? [];
