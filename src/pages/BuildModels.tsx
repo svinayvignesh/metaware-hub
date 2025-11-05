@@ -188,6 +188,24 @@ export default function BuildModels() {
       });
 
       const payload = {
+        target_en_core: {
+          ns: `${selectedEntity.subjectarea.namespace.name}_publish`,
+          sa: selectedEntity.subjectarea.name,
+          en: selectedEntity.name,
+          ns_type: "model",
+          ns_id: selectedEntity.subjectarea.namespace.id,
+          sa_id: selectedEntity.sa_id,
+          en_id: selectedEntity.id
+        },
+        glossary_en_core: {
+          ns: selectedEntity.subjectarea.namespace.name,
+          sa: selectedEntity.subjectarea.name,
+          en: selectedEntity.name,
+          ns_type: "glossary",
+          ns_id: selectedEntity.subjectarea.namespace.id,
+          sa_id: selectedEntity.sa_id,
+          en_id: selectedEntity.id
+        },
         config_request: {
           glossary_entity_fqn: `${selectedEntity.subjectarea.namespace.name}.${selectedEntity.subjectarea.name}.${selectedEntity.name}`,
           target_runtime: "duckdb",
