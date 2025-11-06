@@ -571,6 +571,8 @@ export const DataTable = ({
         .dt-container {
           display: flex;
           flex-direction: column;
+          position: relative;
+          height: 100%;
           flex: 1;
           gap: 1rem;
         }
