@@ -35,6 +35,7 @@ export function MappingTable({ glossaryEntity, sourceEntity, existingRuleset }: 
   const [sourceMetaFields, setSourceMetaFields] = useState<MetaField[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [openPopoverId, setOpenPopoverId] = useState<string | null>(null);
 
   const [fetchSourceMeta, { loading: sourceMetaLoading }] = useLazyQuery(
     GET_META_FOR_ENTITY,
@@ -273,29 +274,33 @@ export function MappingTable({ glossaryEntity, sourceEntity, existingRuleset }: 
                             placeholder="Type expression or select"
                             className="flex-1"
                           />
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button variant="outline" size="icon" className="shrink-0">
-                                <ChevronDown className="icon-sm" />
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-64 p-2" align="end">
-                              <div className="stack-xs">
-                                {sourceMetaFields.map((meta) => (
-                                  <Button
-                                    key={meta.id}
-                                    variant="ghost"
-                                    className="w-full justify-start"
-                                    onClick={() => {
-                                      handleSourceMetaChange(row.id, meta.alias);
-                                    }}
-                                  >
-                                    {meta.alias}
-                                  </Button>
-                                ))}
-                              </div>
-                            </PopoverContent>
-                          </Popover>
+                        <Popover 
+                          open={openPopoverId === row.id} 
+                          onOpenChange={(open) => setOpenPopoverId(open ? row.id : null)}
+                        >
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" size="icon" className="shrink-0">
+                              <ChevronDown className="icon-sm" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-64 p-2" align="end">
+                            <div className="stack-xs">
+                              {sourceMetaFields.map((meta) => (
+                                <Button
+                                  key={meta.id}
+                                  variant="ghost"
+                                  className="w-full justify-start"
+                                  onClick={() => {
+                                    handleSourceMetaChange(row.id, meta.alias);
+                                    setOpenPopoverId(null);
+                                  }}
+                                >
+                                  {meta.alias}
+                                </Button>
+                              ))}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
                         </div>
                       )}
                     </td>
