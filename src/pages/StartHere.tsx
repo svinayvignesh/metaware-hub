@@ -10,11 +10,32 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
+const STORAGE_KEY = "starthere-expanded-steps";
+
 export default function StartHere() {
-  const [expandedSteps, setExpandedSteps] = useState<Set<number>>(new Set());
+  const [expandedSteps, setExpandedSteps] = useState<Set<number>>(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return new Set(parsed);
+      }
+    } catch (error) {
+      console.error("Failed to load expanded steps from localStorage:", error);
+    }
+    return new Set();
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(expandedSteps)));
+    } catch (error) {
+      console.error("Failed to save expanded steps to localStorage:", error);
+    }
+  }, [expandedSteps]);
 
   const toggleStep = useCallback((stepNumber: number) => {
     setExpandedSteps(prev => {
