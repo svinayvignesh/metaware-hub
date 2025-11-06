@@ -91,6 +91,19 @@ export function AddGlossaryMetaModal({
     });
   };
 
+  const handleSelectAll = () => {
+    if (selectedMetas.size === metaFields.length) {
+      // If all are selected, deselect all
+      setSelectedMetas(new Set());
+    } else {
+      // Otherwise, select all
+      setSelectedMetas(new Set(metaFields.map(meta => meta.id)));
+    }
+  };
+
+  const allSelected = metaFields.length > 0 && selectedMetas.size === metaFields.length;
+  const someSelected = selectedMetas.size > 0 && selectedMetas.size < metaFields.length;
+
   const handleSave = () => {
     const newlySelected = metaFields.filter(
       (meta) => selectedMetas.has(meta.id) && !alreadySelectedIds.has(meta.id)
@@ -185,6 +198,18 @@ export function AddGlossaryMetaModal({
           color: hsl(var(--muted-foreground));
           margin-top: 0.25rem;
         }
+
+        .glossary-modal-select-all {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.75rem;
+          border-radius: 0.5rem;
+          border: 1px solid hsl(var(--border));
+          background-color: hsl(var(--muted) / 0.3);
+          margin-bottom: 0.75rem;
+          font-weight: 500;
+        }
       `}</style>
 
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -203,6 +228,14 @@ export function AddGlossaryMetaModal({
             </div>
           ) : (
             <ScrollArea className="glossary-modal-scroll">
+              <div className="glossary-modal-select-all">
+                <Checkbox
+                  checked={allSelected}
+                  onCheckedChange={handleSelectAll}
+                  className={someSelected && !allSelected ? "data-[state=checked]:bg-primary/50" : ""}
+                />
+                <span>Select All ({metaFields.length} items)</span>
+              </div>
               <div className="glossary-modal-list">
                 {metaFields.map((meta) => (
                   <div
