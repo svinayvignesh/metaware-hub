@@ -24,8 +24,11 @@ export default function StartHere() {
     <div className="stack-lg">
       <div className="stack-sm">
         <h1 className="text-4xl font-bold text-foreground">Welcome to MetaWare</h1>
+        <p className="text-xl text-muted-foreground font-medium">
+          Your solution for standardizing business data
+        </p>
         <p className="text-subheading max-w-3xl">
-          Your comprehensive metadata management platform. Follow these essential steps to transform your raw data into a powerful business intelligence foundation.
+          Follow these essential steps to transform your raw data into a powerful business intelligence foundation.
         </p>
       </div>
 
@@ -42,7 +45,7 @@ export default function StartHere() {
               <div className="stack-sm">
                 <CardTitle className="text-heading-md">Load and Connect Source Data</CardTitle>
                 <CardDescription className="text-base">
-                  Ingest raw data from vendor files, spreadsheets, internal databases, or APIs. MetaWare automatically captures source metadata, data lineage, and maintains a historical audit of all changes—with intelligent auto-detection during the loading process.
+                  Create appropriate Namespace, Subject Area & Entities to organize your data structure.
                 </CardDescription>
               </div>
             </div>
@@ -63,77 +66,35 @@ export default function StartHere() {
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-4 stack-md">
-              <Card className="bg-muted/50">
-                <CardHeader>
-                  <CardTitle className="text-lg flex-start gap-sm">
-                    <FileUp className="icon-md icon-primary" />
-                    Option 1: Manual Definition & Registration
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex-start gap-3">
-                    <CheckCircle2 className="icon-md text-success mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Define Source Metadata</p>
-                      <p className="text-muted">Navigate to <strong>Metadata → Sources</strong> to manually define your data source structure, including tables, columns, and data types.</p>
-                    </div>
+              <div className="space-y-3">
+                <div className="flex-start gap-3">
+                  <CheckCircle2 className="icon-md text-success mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium">Navigate to Meta</p>
+                    <p className="text-muted">Select your entity, then click on <strong>meta file upload</strong>.</p>
                   </div>
-                  <div className="flex-start gap-3">
-                    <CheckCircle2 className="icon-md text-success mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Register the Source</p>
-                      <p className="text-muted">Complete registration by specifying connection details and validation rules for your data source.</p>
-                    </div>
+                </div>
+                <div className="flex-start gap-3">
+                  <CheckCircle2 className="icon-md text-success mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium">Upload Your File</p>
+                    <p className="text-muted">Upload your file and select <strong>create meta and load data</strong>.</p>
                   </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-muted/50">
-                <CardHeader>
-                  <CardTitle className="text-lg flex-start gap-sm">
-                    <Sparkles className="icon-md text-tertiary" />
-                    Option 2: Auto-Detection & Smart Loading
-                  </CardTitle>
-                  <CardDescription>Recommended for faster setup</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex-start gap-3">
-                    <CheckCircle2 className="icon-md text-success mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Auto-Detect Metadata</p>
-                      <p className="text-muted">Go to <strong>Staging</strong> and upload your files. MetaWare's intelligent parser automatically detects schemas, data types, and relationships.</p>
-                    </div>
+                </div>
+                <div className="flex-start gap-3">
+                  <CheckCircle2 className="icon-md text-success mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium">View in Staging</p>
+                    <p className="text-muted">Once Meta and data have been loaded, the entities can be viewed under <strong>Staging</strong>.</p>
                   </div>
-                  <div className="flex-start gap-3">
-                    <CheckCircle2 className="icon-md text-success mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Review & Load Data</p>
-                      <p className="text-muted">Verify the auto-detected structure and load data directly into MetaWare's data lake for immediate analysis.</p>
-                    </div>
+                </div>
+                <div className="flex-start gap-3">
+                  <CheckCircle2 className="icon-md text-success mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium">Apply Data Quality Rules</p>
+                    <p className="text-muted">Data Quality rules can be applied on these new columns by clicking on the column name in the staging data table for that entity.</p>
                   </div>
-                  <div className="flex-start gap-3">
-                    <CheckCircle2 className="icon-md text-success mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Register & Track</p>
-                      <p className="text-muted">Automatically register the source with lineage tracking and change history enabled from day one.</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <div className="flex-start gap-sm pt-2">
-                <Badge variant="secondary" className="gap-1">
-                  <History className="icon-xs" />
-                  Historical Audit
-                </Badge>
-                <Badge variant="secondary" className="gap-1">
-                  <GitBranch className="icon-xs" />
-                  Lineage Tracking
-                </Badge>
-                <Badge variant="secondary" className="gap-1">
-                  <Database className="icon-xs" />
-                  Multi-Source Support
-                </Badge>
+                </div>
               </div>
             </CollapsibleContent>
           </Collapsible>
@@ -151,7 +112,7 @@ export default function StartHere() {
               <div className="space-y-2">
                 <CardTitle className="text-2xl">Define Your Business Blueprint</CardTitle>
                 <CardDescription className="text-base">
-                  Create a comprehensive blueprint of your data landscape—starting with business metadata. This includes business terms, reference data, relationships, hierarchies, and underlying business rules. Link glossary entries to sources, models, and reports to establish a single source of truth that powers data integration, business models, reporting, and analytics.
+                  Create glossary entities and generate standardized metadata to establish your business vocabulary and mapping.
                 </CardDescription>
               </div>
             </div>
@@ -172,117 +133,35 @@ export default function StartHere() {
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-4 space-y-4">
-              <Card className="bg-muted/50">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <FileText className="h-5 w-5 text-primary" />
-                    Define Business Terms & Metadata
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Create Glossary Entries</p>
-                      <p className="text-sm text-muted-foreground">Navigate to <strong>Glossary</strong> and define business terms, including definitions, owners, relationships, and hierarchies.</p>
-                    </div>
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium">Create Glossary Entities</p>
+                    <p className="text-sm text-muted-foreground">Create glossary entities accordingly, then click on <strong>Generate Standardized Meta</strong> to automatically generate standardized meta values for the entity.</p>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Set Business Rules</p>
-                      <p className="text-sm text-muted-foreground">Define validation rules, calculations, and business logic that govern how your data should behave.</p>
-                    </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium">Edit and Save Meta</p>
+                    <p className="text-sm text-muted-foreground">These can be edited and saved according to user requirements.</p>
                   </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-muted/50">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-tertiary" />
-                    Auto-Detect & Suggest Glossary Terms
-                  </CardTitle>
-                  <CardDescription>AI-powered suggestions based on your data</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Analyze Source Data</p>
-                      <p className="text-sm text-muted-foreground">Let MetaWare analyze your loaded sources to identify potential business terms and concepts automatically.</p>
-                    </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium">Map Source Associations</p>
+                    <p className="text-sm text-muted-foreground">Once the glossary meta has been saved, we move on to the <strong>source associations</strong> tab where we map the standardized glossary meta values to the raw staging entity columns.</p>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Review Suggestions</p>
-                      <p className="text-sm text-muted-foreground">Accept, modify, or reject AI-suggested glossary terms to rapidly build your business vocabulary.</p>
-                    </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium">View Relationships</p>
+                    <p className="text-sm text-muted-foreground">Once the mapping has been done, we can view the connections graphically in <strong>Glossary Relationship Graph</strong>.</p>
                   </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-muted/50">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Search className="h-5 w-5 text-info" />
-                    Search Existing Glossary
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Leverage Existing Terms</p>
-                      <p className="text-sm text-muted-foreground">Use the powerful search in <strong>Glossary</strong> to find and reuse existing business terms across projects.</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-muted/50">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Link2 className="h-5 w-5 text-warning" />
-                    Associate Glossary with Sources & Models
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Link Business Terms to Technical Assets</p>
-                      <p className="text-sm text-muted-foreground">Create associations between glossary terms and your data sources, entities, models, and reports for complete traceability.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Establish Data Lineage</p>
-                      <p className="text-sm text-muted-foreground">Build end-to-end lineage from source systems through business concepts to final reports and dashboards.</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <div className="flex gap-2 pt-2 flex-wrap">
-                <Badge variant="secondary" className="gap-1">
-                  <FileText className="h-3 w-3" />
-                  Business Glossary
-                </Badge>
-                <Badge variant="secondary" className="gap-1">
-                  <GitBranch className="h-3 w-3" />
-                  Relationships
-                </Badge>
-                <Badge variant="secondary" className="gap-1">
-                  <Workflow className="h-3 w-3" />
-                  Business Rules
-                </Badge>
-                <Badge variant="secondary" className="gap-1">
-                  <Link2 className="h-3 w-3" />
-                  Source Mapping
-                </Badge>
+                </div>
               </div>
             </CollapsibleContent>
           </Collapsible>
@@ -300,7 +179,7 @@ export default function StartHere() {
               <div className="space-y-2">
                 <CardTitle className="text-2xl">Publish Models & Extracts</CardTitle>
                 <CardDescription className="text-base">
-                  Transform your business blueprint into production-ready outputs. Publish business-ready models—whether domain-specific models, project models, vendor extracts, report datasets, or inter-departmental data feeds. Deploy with confidence knowing your data is governed, documented, and traceable.
+                  Finally, here we transform our business blueprints into awesome production ready outputs.
                 </CardDescription>
               </div>
             </div>
@@ -321,94 +200,35 @@ export default function StartHere() {
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-4 space-y-4">
-              <Card className="bg-muted/50">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Boxes className="h-5 w-5 text-primary" />
-                    Create or Configure Business Models
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Design Your Model</p>
-                      <p className="text-sm text-muted-foreground">Navigate to <strong>Build Models</strong> to create domain models, data marts, or conceptual models using your business blueprint.</p>
-                    </div>
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium">Navigate to Publish</p>
+                    <p className="text-sm text-muted-foreground">Go to <strong>Publish</strong>, then click on <strong>Build Models</strong>.</p>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Apply Business Rules</p>
-                      <p className="text-sm text-muted-foreground">Incorporate business rules, validations, and transformations defined in your glossary.</p>
-                    </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium">Select Business Glossary</p>
+                    <p className="text-sm text-muted-foreground">There, select a Business Glossary (Blueprint) Meta Data from the cascading dropdown and set your project code - default model.</p>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Map Source to Target</p>
-                      <p className="text-sm text-muted-foreground">Define clear mappings from your source systems to target model structures with full lineage tracking.</p>
-                    </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium">Build Artifacts</p>
+                    <p className="text-sm text-muted-foreground">Select the meta for the model and click on <strong>Build Artifacts</strong>.</p>
                   </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-muted/50">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <FileOutput className="h-5 w-5 text-success" />
-                    Publish as Model or Extract
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Publish Domain Models</p>
-                      <p className="text-sm text-muted-foreground">Deploy comprehensive domain models for use across multiple projects and analytics platforms.</p>
-                    </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium">Load Data</p>
+                    <p className="text-sm text-muted-foreground">On Success, move on to Step 2 - Load Data and Click on <strong>Load Data</strong> to see the Publish Model.</p>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Generate Vendor Extracts</p>
-                      <p className="text-sm text-muted-foreground">Create vendor-specific data extracts with precise formatting and validation rules.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Export Report Datasets</p>
-                      <p className="text-sm text-muted-foreground">Publish curated datasets optimized for BI tools and reporting platforms.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Share Inter-Departmental Feeds</p>
-                      <p className="text-sm text-muted-foreground">Enable secure, governed data sharing between departments with automated updates.</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <div className="flex gap-2 pt-2 flex-wrap">
-                <Badge variant="secondary" className="gap-1">
-                  <Boxes className="h-3 w-3" />
-                  Domain Models
-                </Badge>
-                <Badge variant="secondary" className="gap-1">
-                  <FileOutput className="h-3 w-3" />
-                  Data Extracts
-                </Badge>
-                <Badge variant="secondary" className="gap-1">
-                  <Database className="h-3 w-3" />
-                  Report Datasets
-                </Badge>
-                <Badge variant="secondary" className="gap-1">
-                  <GitBranch className="h-3 w-3" />
-                  Full Lineage
-                </Badge>
+                </div>
               </div>
             </CollapsibleContent>
           </Collapsible>

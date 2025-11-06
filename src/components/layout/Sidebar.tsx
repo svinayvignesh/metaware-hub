@@ -59,7 +59,7 @@ const navItems: NavItem[] = [
     icon: BookOpen,
   },
   {
-    title: "Model",
+    title: "Publish",
     href: "/model",
     icon: Layers,
   },
