@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { GlossaryEntityDropdown } from "@/components/glossary/GlossaryEntityDropdown";
 import { type Entity } from "@/graphql/queries/entity";
@@ -24,11 +23,6 @@ import {
   GET_META_FOR_ENTITY,
   type MetaField,
 } from "@/graphql/queries/meta";
-import {
-  GET_RULESETS_BY_ENTITY,
-  type RulesetWithSource,
-  type GetRulesetsByEntityResponse,
-} from "@/graphql/queries/ruleset";
 import { API_CONFIG } from "@/config/api";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage, BreadcrumbLink, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Link } from "react-router-dom";
@@ -43,7 +37,6 @@ export default function BuildModels() {
   const [metaFields, setMetaFields] = useState<MetaField[]>([]);
   const [selectedMetas, setSelectedMetas] = useState<Set<string>>(new Set<string>());
   const [existingModel, setExistingModel] = useState<ConceptualModel | null>(null);
-  const [rulesets, setRulesets] = useState<RulesetWithSource[]>([]);
   const [loading, setLoading] = useState(false);
   const [step1Response, setStep1Response] = useState<any>(null);
   const [step2Response, setStep2Response] = useState<any>(null);
@@ -91,36 +84,17 @@ export default function BuildModels() {
     }
   }, [conceptualModelData, metaFields]);
 
-  const [fetchRulesets, { data: rulesetsData }] = useLazyQuery<GetRulesetsByEntityResponse>(
-    GET_RULESETS_BY_ENTITY
-  );
-
-  useEffect(() => {
-    if (rulesetsData?.meta_ruleset) {
-      setRulesets(rulesetsData.meta_ruleset);
-    }
-  }, [rulesetsData]);
-
   const handleEntitySelect = (entity: Entity) => {
     setSelectedEntity(entity);
     setMetaFields([]);
     setSelectedMetas(new Set<string>());
     setExistingModel(null);
-    setRulesets([]);
 
     // Fetch meta fields for the selected entity
     fetchMeta({ variables: { enid: entity.id } });
 
     // Check if there's an existing conceptual model for this entity
     fetchConceptualModel({ variables: { glossaryEntityId: entity.id } });
-
-    // Fetch rulesets for source expressions
-    fetchRulesets({
-      variables: {
-        targetEnId: entity.id,
-        type: "glossary_association",
-      },
-    });
   };
 
   const handleMetaToggle = (alias: string) => {
@@ -154,35 +128,8 @@ export default function BuildModels() {
       return;
     }
 
-    if (rulesets.length === 0) {
-      toast({
-        title: "Validation Error",
-        description: "No source associations found. Please create mappings in the Glossary first.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setLoading(true);
     try {
-      // Get the first source entity from rulesets (or you could let user select)
-      const firstRuleset = rulesets[0];
-      const sourceEntity = firstRuleset.source?.source_entity;
-
-      if (!sourceEntity) {
-        throw new Error("Source entity information not found in rulesets");
-      }
-
-      // Build a map of meta name to source expression from rulesets
-      const sourceExpressionMap = new Map<string, string>();
-      rulesets.forEach(ruleset => {
-        ruleset.rules.forEach(rule => {
-          if (rule.meta?.name) {
-            sourceExpressionMap.set(rule.meta.name, rule.rule_expression);
-          }
-        });
-      });
-
       const publishColumns = Array.from(selectedMetas).map(metaName => {
         const metaField = metaFields.find(f => f.alias === metaName);
         return {
@@ -193,10 +140,9 @@ export default function BuildModels() {
       });
 
       const ruleRequests = Array.from(selectedMetas).map(metaName => {
-        const sourceExpression = sourceExpressionMap.get(metaName) || metaName;
         return {
           meta: metaName,
-          rule_expression: sourceExpression,
+          rule_expression: metaName,
           name: `${metaName}_rule`,
           description: `${metaName}_rule`,
           language: "sql",
@@ -228,9 +174,9 @@ export default function BuildModels() {
         },
         source_request: {
           type: "DIRECT",
-          source_ns: sourceEntity.subjectarea?.namespace?.name,
-          source_sa: sourceEntity.subjectarea?.name,
-          source_en: sourceEntity.name
+          source_ns: selectedEntity.subjectarea?.namespace?.name,
+          source_sa: selectedEntity.subjectarea?.name,
+          source_en: selectedEntity.name
         },
         ruleset_request: {
           name: `${selectedEntity.name}_publish_ruleset`,
