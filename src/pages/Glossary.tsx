@@ -6,7 +6,7 @@ import { DataTable } from "@/components/table/DataTable";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, X, Database, Loader2, Upload, Sparkles } from "lucide-react";
+import { Search, X, Database, Loader2, Upload, Sparkles, Wand2 } from "lucide-react";
 import { GET_META_FOR_ENTITY, type MetaField } from "@/graphql/queries/meta";
 import { GET_RULESETS_BY_ENTITY, type RulesetWithSource } from "@/graphql/queries/ruleset";
 import { GET_SUBJECTAREAS, type GetSubjectAreasResponse } from "@/graphql/queries";
@@ -15,6 +15,7 @@ import { MappingTable } from "@/components/glossary/MappingTable";
 import { RelationshipGraph } from "@/components/glossary/RelationshipGraph";
 import { ImportConfigModal } from "@/components/glossary/ImportConfigModal";
 import { GenerateBlueprintModal } from "@/components/glossary/GenerateBlueprintModal";
+import { CustomBlueprintModal } from "@/components/glossary/CustomBlueprintModal";
 import { StandardizedMetaEditor } from "@/components/glossary/StandardizedMetaEditor";
 import { MappingEditorModal } from "@/components/glossary/MappingEditorModal";
 import { type Entity } from "@/graphql/queries/entity";
@@ -33,6 +34,7 @@ export default function Glossary() {
   const [existingRuleset, setExistingRuleset] = useState<RulesetWithSource | null>(null);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [blueprintModalOpen, setBlueprintModalOpen] = useState(false);
+  const [customBlueprintModalOpen, setCustomBlueprintModalOpen] = useState(false);
   const [standardizedMeta, setStandardizedMeta] = useState<any[]>([]);
   const [mappings, setMappings] = useState<any[]>([]);
   const [draftMetaFields, setDraftMetaFields] = useState<any[]>([]);
@@ -497,10 +499,16 @@ export default function Glossary() {
                     <div className="text-center stack-md">
                       <Database className="icon-xl mx-auto icon-muted opacity-50" />
                       <p className="text-muted">No metadata found</p>
-                      <Button onClick={() => setBlueprintModalOpen(true)} >
-                        <Sparkles className="icon-sm mr-2" />
-                        Generate Standardized Blueprint
-                      </Button>
+                      <div className="flex gap-3 justify-center">
+                        <Button onClick={() => setBlueprintModalOpen(true)} >
+                          <Sparkles className="icon-sm mr-2" />
+                          Generate Standardized Blueprint
+                        </Button>
+                        <Button variant="outline" onClick={() => setCustomBlueprintModalOpen(true)}>
+                          <Wand2 className="icon-sm mr-2" />
+                          Generate Custom Blueprint
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -548,6 +556,13 @@ export default function Glossary() {
               open={blueprintModalOpen}
               onOpenChange={setBlueprintModalOpen}
               namespaceId={selectedEntity.subjectarea?.namespace?.id || ""}
+              glossaryEntity={selectedEntity}
+              onSuccess={handleBlueprintGenerated}
+            />
+
+            <CustomBlueprintModal
+              open={customBlueprintModalOpen}
+              onOpenChange={setCustomBlueprintModalOpen}
               glossaryEntity={selectedEntity}
               onSuccess={handleBlueprintGenerated}
             />

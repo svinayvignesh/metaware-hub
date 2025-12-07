@@ -186,6 +186,20 @@ export const glossaryAPI = {
       }),
     });
   },
+
+  generateCustomBlueprint: async (params: {
+    topic: string;
+    num_fields: number;
+    example_data: string;
+    target_ns: string;
+    target_sa: string;
+    target_en: string;
+  }) => {
+    return apiRequest('/mwn/generate_custom_blueprint', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  },
 };
 
 /**
