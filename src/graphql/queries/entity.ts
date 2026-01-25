@@ -48,6 +48,7 @@ export const GET_ENTITIES = gql`
       description
       is_delta
       name
+      alias
       primary_grain
       secondary_grain
       tertiary_grain
@@ -56,9 +57,11 @@ export const GET_ENTITIES = gql`
       sa_id
       subjectarea {
         name
+        alias
         namespace {
           id
           name
+          alias
           type
         }
       }
@@ -79,6 +82,8 @@ export interface EntityNamespace {
   id: string;
   /** Name of the namespace */
   name: string;
+  /** Alias of the namespace */
+  alias?: string;
   /** Type of the namespace */
   type: string;
 }
@@ -89,6 +94,8 @@ export interface EntityNamespace {
 export interface EntitySubjectArea {
   /** Name of the subject area */
   name: string;
+  /** Alias of the subject area */
+  alias?: string;
   /** Nested namespace information */
   namespace: EntityNamespace;
 }
@@ -105,6 +112,8 @@ export interface Entity {
   is_delta: boolean;
   /** Human-readable name of the entity */
   name: string;
+  /** Alias of the entity */
+  alias?: string;
   /** Primary level of granularity */
   primary_grain?: string;
   /** Secondary level of granularity */

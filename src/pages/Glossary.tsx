@@ -423,7 +423,7 @@ export default function Glossary() {
         {!selectedEntity ? (
           <div className="h-full overflow-y-auto">
             {/* Header */}
-            <div className="px-4 pb-4 pt-1">
+            <div className="px-4 pb-4 pt-2">
               <div>
                 <div className="backdrop-blur-xl bg-card/80 border border-border/50 rounded-2xl shadow-2xl shadow-primary/5 px-6 py-3">
                   <div className="flex items-center justify-between">
@@ -469,7 +469,7 @@ export default function Glossary() {
         ) : (
           <div className="page-container flex flex-col">
             {/* Modern Header */}
-            <div className="px-4 pb-4 pt-1">
+            <div className="px-4 pb-4 pt-2">
               <div className="backdrop-blur-xl bg-card/80 border border-border/50 rounded-2xl shadow-2xl shadow-primary/5 px-6 py-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-5">

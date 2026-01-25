@@ -8,9 +8,10 @@ import { useMDConnectionContext } from "@/contexts/MDConnectionContext";
 import { queryMDTable } from "@/hooks/useMDConnection";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, X, Database, Loader2, BarChart3, Server, ArrowLeft } from "lucide-react";
+import { Search, X, Database, Loader2, BarChart3, Server, ArrowLeft, Code } from "lucide-react";
 import { RuleEditor } from "@/components/rules/RuleEditor";
 import { DQDetails } from "@/components/dq/DQDetails";
+import { SourceTransformation } from "@/components/transformation/SourceTransformation";
 import { API_CONFIG } from "@/config/api";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage, BreadcrumbLink, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Link, useNavigate } from "react-router-dom";
@@ -31,6 +32,7 @@ export default function Staging() {
   const [selectedColumn, setSelectedColumn] = useState<string>("");
   const [tableNotFound, setTableNotFound] = useState(false);
   const [showDQDetails, setShowDQDetails] = useState(false);
+  const [showSourceTransformation, setShowSourceTransformation] = useState(false);
   const [dqExecutionId, setDqExecutionId] = useState<string | null>(null);
   const [loadingDQ, setLoadingDQ] = useState(false);
   const { toast } = useToast();
@@ -238,7 +240,7 @@ export default function Staging() {
         {!selectedEntity ? (
           <div className="h-full overflow-y-auto">
             {/* Header */}
-            <div className="px-4 pb-4 pt-1">
+            <div className="px-4 pb-4 pt-2">
               <div>
                 <div className="backdrop-blur-xl bg-card/80 border border-border/50 rounded-2xl shadow-2xl shadow-primary/5 px-6 py-3">
                   <div className="flex items-center justify-between">
@@ -311,7 +313,7 @@ export default function Staging() {
         ) : (
           <div className="h-full flex flex-col">
             {/* Modern Header */}
-            <div className="px-4 pb-4 pt-1">
+            <div className="px-4 pb-4 pt-2">
               <div className="backdrop-blur-xl bg-card/80 border border-border/50 rounded-2xl shadow-2xl shadow-primary/5 px-6 py-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-5">
@@ -321,70 +323,112 @@ export default function Staging() {
                     <div>
                       {/* Breadcrumb Navigation */}
                       <div className="flex items-center gap-2 mb-1">
-                        <button
-                          onClick={() => setSelectedEntity(null)}
-                          className="text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          <ArrowLeft className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedEntity(null);
-                            setSelectedSubjectAreaId(null);
-                          }}
-                          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          {selectedEntity.subjectarea?.namespace?.name || 'Unknown'}
-                        </button>
-                        <span className="text-xs text-muted-foreground">•</span>
-                        <button
-                          onClick={() => {
-                            setSelectedSubjectAreaId(selectedEntity.sa_id);
-                            setSelectedEntity(null);
-                          }}
-                          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          {selectedEntity.subjectarea.name}
-                        </button>
+                        {(showDQDetails || showSourceTransformation) ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setShowDQDetails(false);
+                              setShowSourceTransformation(false);
+                            }}
+                            className="h-auto p-0 text-muted-foreground hover:text-foreground"
+                          >
+                            <ArrowLeft className="w-4 h-4 mr-1" />
+                            Back to Table
+                          </Button>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => setSelectedEntity(null)}
+                              className="text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                              <ArrowLeft className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setSelectedEntity(null);
+                                setSelectedSubjectAreaId(null);
+                              }}
+                              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                              {selectedEntity.subjectarea?.namespace?.name || 'Unknown'}
+                            </button>
+                            <span className="text-xs text-muted-foreground">•</span>
+                            <button
+                              onClick={() => {
+                                setSelectedSubjectAreaId(selectedEntity.sa_id);
+                                setSelectedEntity(null);
+                              }}
+                              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                              {selectedEntity.subjectarea.name}
+                            </button>
+                          </>
+                        )}
                       </div>
                       <h1 className="text-xl font-bold tracking-tight">{selectedEntity.name}</h1>
                     </div>
                   </div>
 
-                  {/* Action Button */}
-                  {!showDQDetails && (
-                    <Button
-                      onClick={handleDQDetailsClick}
-                      disabled={loadingDQ}
-                      className="rounded-xl bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground shadow-lg shadow-primary/20"
-                    >
-                      {loadingDQ ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Loading...
-                        </>
-                      ) : (
-                        <>
-                          <BarChart3 className="mr-2 h-4 w-4" />
-                          DQ Details
-                        </>
-                      )}
-                    </Button>
-                  )}
+                  {/* Right Side - Action Buttons or Active View Title */}
+                  <div>
+                    {showDQDetails ? (
+                      <div className="flex items-center gap-2">
+                        <BarChart3 className="h-5 w-5 text-primary" />
+                        <h2 className="text-lg font-semibold">DQ Details</h2>
+                      </div>
+                    ) : showSourceTransformation ? (
+                      <div className="flex items-center gap-2">
+                        <Code className="h-5 w-5 text-primary" />
+                        <h2 className="text-lg font-semibold">Source Transformation</h2>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={handleDQDetailsClick}
+                          disabled={loadingDQ}
+                          className="rounded-xl bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground shadow-lg shadow-primary/20"
+                        >
+                          {loadingDQ ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Loading...
+                            </>
+                          ) : (
+                            <>
+                              <BarChart3 className="mr-2 h-4 w-4" />
+                              DQ Details
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          onClick={() => setShowSourceTransformation(true)}
+                          variant="outline"
+                          className="rounded-xl"
+                        >
+                          <Code className="mr-2 h-4 w-4" />
+                          Source Transformation
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Content */}
-            <div className="flex-1 px-4">
+            <div className="flex-1 px-4 pt-3 overflow-y-auto min-h-0">
               {showDQDetails && dqExecutionId && entityContext ? (
-                <div className="flex-1">
-                  <DQDetails
-                    executionId={dqExecutionId}
-                    entityContext={entityContext}
-                    onBack={() => setShowDQDetails(false)}
-                  />
-                </div>
+                <DQDetails
+                  executionId={dqExecutionId}
+                  entityContext={entityContext}
+                  onBack={() => setShowDQDetails(false)}
+                />
+              ) : showSourceTransformation && entityContext ? (
+                <SourceTransformation
+                  entityContext={entityContext}
+                  onBack={() => setShowSourceTransformation(false)}
+                />
               ) : data.rows.length === 0 ? (
                 <div className="flex items-center justify-center flex-1">
                   <div className="text-center space-y-3 max-w-md">
