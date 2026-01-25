@@ -840,6 +840,7 @@ export const DataTable = ({
 
         .dt-select-trigger {
           height: 2rem;
+          min-width: 12rem;
         }
 
         .dt-select-content {
@@ -849,6 +850,7 @@ export const DataTable = ({
 
         .dt-input {
           height: 2rem;
+          min-width: 12rem;
         }
 
         .dt-group-row {

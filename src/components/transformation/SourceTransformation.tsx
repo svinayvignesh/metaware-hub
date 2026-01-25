@@ -457,6 +457,17 @@ export const SourceTransformation: React.FC<SourceTransformationProps> = ({
                                                     </div>
                                                 </div>
 
+                                                {selectedStep.config.operation === "filter" && (
+                                                    <div>
+                                                        <Label>Filter Condition</Label>
+                                                        <Input
+                                                            placeholder="status = 'ACTIVE'"
+                                                            value={selectedStep.config.filterCondition || ""}
+                                                            onChange={(e) => updateConfig("filterCondition", e.target.value)}
+                                                        />
+                                                    </div>
+                                                )}
+
                                                 {selectedStep.config.operation === "aggregate" && (
                                                     <div>
                                                         <Label>Group By Columns</Label>

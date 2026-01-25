@@ -271,17 +271,18 @@ export const DQDetails: React.FC<DQDetailsProps> = ({
                                 </div>
                             </CardHeader>
                             <CardContent>
-                                {selectedRule && selectedProfile ? (
+                                {selectedRule ? (
                                     <Tabs defaultValue="values" className="w-full">
-                                        <TabsList className="grid w-full grid-cols-3">
+                                        <TabsList className="grid w-full grid-cols-4">
                                             <TabsTrigger value="values">Values</TabsTrigger>
                                             <TabsTrigger value="patterns">Patterns</TabsTrigger>
                                             <TabsTrigger value="statistics">Statistics</TabsTrigger>
+                                            <TabsTrigger value="details">Rule Details</TabsTrigger>
                                         </TabsList>
 
                                         <TabsContent value="values" className="mt-4">
                                             <ScrollArea className="h-[280px]">
-                                                {topValues.length > 0 ? (
+                                                {selectedProfile && topValues.length > 0 ? (
                                                     <Table>
                                                         <TableHeader>
                                                             <TableRow>
@@ -318,7 +319,7 @@ export const DQDetails: React.FC<DQDetailsProps> = ({
                                                     </Table>
                                                 ) : (
                                                     <p className="text-sm text-muted-foreground text-center py-8">
-                                                        No value distribution data available
+                                                        {selectedProfile ? "No value distribution data available" : "No profile data available"}
                                                     </p>
                                                 )}
                                             </ScrollArea>
@@ -326,7 +327,7 @@ export const DQDetails: React.FC<DQDetailsProps> = ({
 
                                         <TabsContent value="patterns" className="mt-4">
                                             <ScrollArea className="h-[280px]">
-                                                {patterns.length > 0 ? (
+                                                {selectedProfile && patterns.length > 0 ? (
                                                     <Table>
                                                         <TableHeader>
                                                             <TableRow>
@@ -357,90 +358,171 @@ export const DQDetails: React.FC<DQDetailsProps> = ({
                                                     </Table>
                                                 ) : (
                                                     <p className="text-sm text-muted-foreground text-center py-8">
-                                                        No pattern data available
+                                                        {selectedProfile ? "No pattern data available" : "No profile data available"}
                                                     </p>
                                                 )}
                                             </ScrollArea>
                                         </TabsContent>
 
                                         <TabsContent value="statistics" className="mt-4">
-                                            <div className="grid grid-cols-3 gap-4">
-                                                <Card>
-                                                    <CardHeader className="pb-3">
-                                                        <CardTitle className="text-sm text-muted-foreground">
-                                                            Total Rows
-                                                        </CardTitle>
-                                                    </CardHeader>
-                                                    <CardContent>
-                                                        <div className="text-2xl font-bold">
-                                                            {(selectedProfile.totalRows || 0).toLocaleString()}
-                                                        </div>
-                                                    </CardContent>
-                                                </Card>
-                                                <Card>
-                                                    <CardHeader className="pb-3">
-                                                        <CardTitle className="text-sm text-muted-foreground">
-                                                            Null Count
-                                                        </CardTitle>
-                                                    </CardHeader>
-                                                    <CardContent>
-                                                        <div className="text-2xl font-bold text-yellow-600">
-                                                            {selectedProfile.nullCount || 0}
-                                                        </div>
-                                                        <p className="text-xs text-muted-foreground mt-1">
-                                                            {((selectedProfile.nullPercentage || 0)).toFixed(2)}%
-                                                        </p>
-                                                    </CardContent>
-                                                </Card>
-                                                <Card>
-                                                    <CardHeader className="pb-3">
-                                                        <CardTitle className="text-sm text-muted-foreground">
-                                                            Unique Values
-                                                        </CardTitle>
-                                                    </CardHeader>
-                                                    <CardContent>
-                                                        <div className="text-2xl font-bold text-blue-600">
-                                                            {selectedProfile.uniqueValues || 0}
-                                                        </div>
-                                                    </CardContent>
-                                                </Card>
-                                                <Card>
-                                                    <CardHeader className="pb-3">
-                                                        <CardTitle className="text-sm text-muted-foreground">
-                                                            Min Length
-                                                        </CardTitle>
-                                                    </CardHeader>
-                                                    <CardContent>
-                                                        <div className="text-2xl font-bold">
-                                                            {selectedProfile.minLength || "-"}
-                                                        </div>
-                                                    </CardContent>
-                                                </Card>
-                                                <Card>
-                                                    <CardHeader className="pb-3">
-                                                        <CardTitle className="text-sm text-muted-foreground">
-                                                            Max Length
-                                                        </CardTitle>
-                                                    </CardHeader>
-                                                    <CardContent>
-                                                        <div className="text-2xl font-bold">
-                                                            {selectedProfile.maxLength || "-"}
-                                                        </div>
-                                                    </CardContent>
-                                                </Card>
-                                                <Card>
-                                                    <CardHeader className="pb-3">
-                                                        <CardTitle className="text-sm text-muted-foreground">
-                                                            Avg Length
-                                                        </CardTitle>
-                                                    </CardHeader>
-                                                    <CardContent>
-                                                        <div className="text-2xl font-bold">
-                                                            {selectedProfile.avgLength?.toFixed(2) || "-"}
-                                                        </div>
-                                                    </CardContent>
-                                                </Card>
-                                            </div>
+                                            {selectedProfile ? (
+                                                <div className="grid grid-cols-3 gap-4">
+                                                    <Card>
+                                                        <CardHeader className="pb-3">
+                                                            <CardTitle className="text-sm text-muted-foreground">
+                                                                Total Rows
+                                                            </CardTitle>
+                                                        </CardHeader>
+                                                        <CardContent>
+                                                            <div className="text-2xl font-bold">
+                                                                {(selectedProfile.totalRows || 0).toLocaleString()}
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
+                                                    <Card>
+                                                        <CardHeader className="pb-3">
+                                                            <CardTitle className="text-sm text-muted-foreground">
+                                                                Null Count
+                                                            </CardTitle>
+                                                        </CardHeader>
+                                                        <CardContent>
+                                                            <div className="text-2xl font-bold text-yellow-600">
+                                                                {selectedProfile.nullCount || 0}
+                                                            </div>
+                                                            <p className="text-xs text-muted-foreground mt-1">
+                                                                {((selectedProfile.nullPercentage || 0)).toFixed(2)}%
+                                                            </p>
+                                                        </CardContent>
+                                                    </Card>
+                                                    <Card>
+                                                        <CardHeader className="pb-3">
+                                                            <CardTitle className="text-sm text-muted-foreground">
+                                                                Unique Values
+                                                            </CardTitle>
+                                                        </CardHeader>
+                                                        <CardContent>
+                                                            <div className="text-2xl font-bold text-blue-600">
+                                                                {selectedProfile.uniqueValues || 0}
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
+                                                    <Card>
+                                                        <CardHeader className="pb-3">
+                                                            <CardTitle className="text-sm text-muted-foreground">
+                                                                Min Length
+                                                            </CardTitle>
+                                                        </CardHeader>
+                                                        <CardContent>
+                                                            <div className="text-2xl font-bold">
+                                                                {selectedProfile.minLength || "-"}
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
+                                                    <Card>
+                                                        <CardHeader className="pb-3">
+                                                            <CardTitle className="text-sm text-muted-foreground">
+                                                                Max Length
+                                                            </CardTitle>
+                                                        </CardHeader>
+                                                        <CardContent>
+                                                            <div className="text-2xl font-bold">
+                                                                {selectedProfile.maxLength || "-"}
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
+                                                    <Card>
+                                                        <CardHeader className="pb-3">
+                                                            <CardTitle className="text-sm text-muted-foreground">
+                                                                Avg Length
+                                                            </CardTitle>
+                                                        </CardHeader>
+                                                        <CardContent>
+                                                            <div className="text-2xl font-bold">
+                                                                {selectedProfile.avgLength?.toFixed(2) || "-"}
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
+                                                </div>
+                                            ) : (
+                                                <p className="text-sm text-muted-foreground text-center py-8">
+                                                    No profile statistics available
+                                                </p>
+                                            )}
+                                        </TabsContent>
+
+                                        <TabsContent value="details" className="mt-4">
+                                            <ScrollArea className="h-[280px]">
+                                                <div className="space-y-4">
+                                                    {(() => {
+                                                        const result = data?.dq_result?.find(r => r.id === selectedRule.id);
+                                                        if (!result) return <p className="text-muted-foreground">No details available</p>;
+
+                                                        return (
+                                                            <>
+                                                                <div className="grid grid-cols-2 gap-4">
+                                                                    <Card className="bg-muted/30">
+                                                                        <CardHeader className="pb-2">
+                                                                            <CardTitle className="text-xs uppercase text-muted-foreground">Expectation Type</CardTitle>
+                                                                        </CardHeader>
+                                                                        <CardContent>
+                                                                            <p className="font-mono text-sm">{result.expectationType || "N/A"}</p>
+                                                                        </CardContent>
+                                                                    </Card>
+                                                                    <Card className="bg-muted/30">
+                                                                        <CardHeader className="pb-2">
+                                                                            <CardTitle className="text-xs uppercase text-muted-foreground">Predicate SQL</CardTitle>
+                                                                        </CardHeader>
+                                                                        <CardContent>
+                                                                            <p className="font-mono text-sm break-all">{result.predicateSql || "N/A"}</p>
+                                                                        </CardContent>
+                                                                    </Card>
+                                                                </div>
+
+                                                                <div className="grid grid-cols-2 gap-4">
+                                                                    <Card className="bg-green-500/10 border-green-200">
+                                                                        <CardHeader className="pb-2">
+                                                                            <CardTitle className="text-xs uppercase text-green-700">Expected Value</CardTitle>
+                                                                        </CardHeader>
+                                                                        <CardContent>
+                                                                            <p className="font-mono text-sm">{result.expectedValue || "N/A"}</p>
+                                                                        </CardContent>
+                                                                    </Card>
+                                                                    <Card className="bg-red-500/10 border-red-200">
+                                                                        <CardHeader className="pb-2">
+                                                                            <CardTitle className="text-xs uppercase text-red-700">Observed Value</CardTitle>
+                                                                        </CardHeader>
+                                                                        <CardContent>
+                                                                            <p className="font-mono text-sm">{result.observedValue || "N/A"}</p>
+                                                                        </CardContent>
+                                                                    </Card>
+                                                                </div>
+
+                                                                {result.errorMessage && (
+                                                                    <Card className="bg-destructive/10 border-destructive/20">
+                                                                        <CardHeader className="pb-2">
+                                                                            <CardTitle className="text-xs uppercase text-destructive">Error Message</CardTitle>
+                                                                        </CardHeader>
+                                                                        <CardContent>
+                                                                            <p className="font-mono text-sm text-destructive">{result.errorMessage}</p>
+                                                                        </CardContent>
+                                                                    </Card>
+                                                                )}
+
+                                                                <Card>
+                                                                    <CardHeader className="pb-2">
+                                                                        <CardTitle className="text-xs uppercase text-muted-foreground">Result Details (JSON)</CardTitle>
+                                                                    </CardHeader>
+                                                                    <CardContent>
+                                                                        <pre className="text-xs bg-muted p-2 rounded overflow-auto max-h-[100px]">
+                                                                            {result.resultDetails || "No additional details"}
+                                                                        </pre>
+                                                                    </CardContent>
+                                                                </Card>
+                                                            </>
+                                                        );
+                                                    })()}
+                                                </div>
+                                            </ScrollArea>
                                         </TabsContent>
                                     </Tabs>
                                 ) : (
