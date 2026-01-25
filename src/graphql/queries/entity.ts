@@ -45,6 +45,7 @@ export const GET_ENTITIES = gql`
   query GET_ENTITIES {
     meta_entity(grain: "", id: "", name: "", type: "") {
       id
+      alias
       description
       is_delta
       name
@@ -56,9 +57,11 @@ export const GET_ENTITIES = gql`
       sa_id
       subjectarea {
         name
+        alias
         namespace {
           id
           name
+          alias
           type
         }
       }
@@ -79,6 +82,8 @@ export interface EntityNamespace {
   id: string;
   /** Name of the namespace */
   name: string;
+  /** Alias of the namespace */
+  alias?: string;
   /** Type of the namespace */
   type: string;
 }
@@ -89,6 +94,8 @@ export interface EntityNamespace {
 export interface EntitySubjectArea {
   /** Name of the subject area */
   name: string;
+  /** Alias of the subject area */
+  alias?: string;
   /** Nested namespace information */
   namespace: EntityNamespace;
 }
@@ -99,6 +106,8 @@ export interface EntitySubjectArea {
 export interface Entity {
   /** Unique identifier for the entity */
   id: string;
+  /** Alias of the entity */
+  alias?: string;
   /** Detailed description of the entity */
   description?: string;
   /** Boolean indicating if entity supports delta processing */

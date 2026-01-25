@@ -212,7 +212,7 @@ export default function BuildModels() {
     try {
       const requestPayload = {
         publish_config_request: {
-          glossary_entity_fqn: `${selectedEntity.subjectarea?.namespace?.name}.${selectedEntity.subjectarea?.name}.${selectedEntity.name}`,
+          glossary_entity_fqn: `${selectedEntity.subjectarea?.namespace?.alias}.${selectedEntity.subjectarea?.alias}.${selectedEntity.alias}`,
           target_namespace: targetNamespace,
           target_schema: targetSchema,
           target_name: targetEntity,

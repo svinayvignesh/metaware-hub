@@ -149,9 +149,9 @@ export function GlossaryAssociations({ glossaryEntity, metaFields, showGraph, on
         try {
             const payload = {
                 entity_core: {
-                    ns: glossaryEntity.subjectarea?.namespace?.name,
-                    sa: glossaryEntity.subjectarea?.name,
-                    en: glossaryEntity.name,
+                    ns: glossaryEntity.subjectarea?.namespace?.alias,
+                    sa: glossaryEntity.subjectarea?.alias,
+                    en: glossaryEntity.alias,
                     ns_type: "glossary", // assuming namespace type is glossary derived from context
                     ns_id: glossaryEntity.subjectarea?.namespace?.id,
                     sa_id: glossaryEntity.sa_id,
