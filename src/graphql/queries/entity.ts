@@ -45,10 +45,10 @@ export const GET_ENTITIES = gql`
   query GET_ENTITIES {
     meta_entity(grain: "", id: "", name: "", type: "") {
       id
-      alias
       description
       is_delta
       name
+      alias
       primary_grain
       secondary_grain
       tertiary_grain
@@ -106,14 +106,14 @@ export interface EntitySubjectArea {
 export interface Entity {
   /** Unique identifier for the entity */
   id: string;
-  /** Alias of the entity */
-  alias?: string;
   /** Detailed description of the entity */
   description?: string;
   /** Boolean indicating if entity supports delta processing */
   is_delta: boolean;
   /** Human-readable name of the entity */
   name: string;
+  /** Alias of the entity */
+  alias?: string;
   /** Primary level of granularity */
   primary_grain?: string;
   /** Secondary level of granularity */
