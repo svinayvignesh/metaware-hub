@@ -187,7 +187,7 @@ export default function BuildModels() {
   const generateRuleRequests = () => {
     return selectedColumns.map(col => ({
       name: `${col.target}_rule`,
-      alias: null,
+      alias: `${col.target.replace(/_/g,'')}`,
       description: col.description,
       rule_expression: col.ruleExpression,
       meta: col.glossary,
