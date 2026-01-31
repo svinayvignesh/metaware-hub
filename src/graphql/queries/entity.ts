@@ -48,7 +48,6 @@ export const GET_ENTITIES = gql`
       description
       is_delta
       name
-      alias
       primary_grain
       secondary_grain
       tertiary_grain
@@ -57,11 +56,9 @@ export const GET_ENTITIES = gql`
       sa_id
       subjectarea {
         name
-        alias
         namespace {
           id
           name
-          alias
           type
         }
       }
