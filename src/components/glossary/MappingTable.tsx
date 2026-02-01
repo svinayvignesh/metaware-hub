@@ -285,7 +285,7 @@ export function MappingTable({ glossaryEntity, sourceEntity, existingRuleset }: 
                                   <ChevronDown className="icon-sm" />
                                 </Button>
                               </PopoverTrigger>
-                              <PopoverContent className="w-64 p-2" align="end">
+                              <PopoverContent className="w-64 p-2 max-h-80 overflow-y-auto" align="end">
                                 <div className="stack-xs">
                                   {sourceMetaFields.map((meta) => (
                                     <Button

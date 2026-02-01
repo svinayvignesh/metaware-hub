@@ -454,7 +454,7 @@ export default function Entity() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-5">
                 <div className="relative">
-                  <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary via-primary to-accent flex items-center justify-center shadow-lg shadow-primary/30">
+                  <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-rose-500 via-rose-600 to-rose-400 flex items-center justify-center shadow-lg shadow-rose-500/30">
                     <TableIcon className="w-6 h-6 text-primary-foreground" />
                   </div>
                 </div>

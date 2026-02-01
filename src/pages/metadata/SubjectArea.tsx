@@ -333,7 +333,7 @@ export default function SubjectArea() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-5">
                 <div className="relative">
-                  <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary via-primary to-accent flex items-center justify-center shadow-lg shadow-primary/30">
+                  <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-400 flex items-center justify-center shadow-lg shadow-indigo-500/30">
                     <Grid3x3 className="w-6 h-6 text-primary-foreground" />
                   </div>
                 </div>

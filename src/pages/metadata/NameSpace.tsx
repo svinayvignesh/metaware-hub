@@ -348,7 +348,7 @@ export default function NameSpace() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-5">
                 <div className="relative">
-                  <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary via-primary to-accent flex items-center justify-center shadow-lg shadow-primary/30">
+                  <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-teal-500 via-teal-600 to-teal-400 flex items-center justify-center shadow-lg shadow-teal-500/30">
                     <Database className="w-6 h-6 text-primary-foreground" />
                   </div>
                 </div>

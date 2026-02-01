@@ -117,12 +117,18 @@ export function EntityGrid({ subjectAreaId, namespaceType, searchQuery, onEntity
                   {entity.type}
                 </Badge>
               </div>
-              <h3 className="font-semibold text-sm mb-2 truncate" title={entity.name}>
-                {entity.name}
-              </h3>
-              <p className="text-xs text-muted mb-2 truncate" title={entity.subjectarea?.name}>
-                {entity.subjectarea?.name}
-              </p>
+              <div className="flex items-center gap-1.5 mb-2">
+                <Badge variant="entity" className="text-[10px] px-1.5 py-0 shrink-0">EN</Badge>
+                <h3 className="font-semibold text-sm truncate" title={entity.name}>{entity.name}</h3>
+              </div>
+              <div className="flex items-center gap-1.5 mb-1">
+                <Badge variant="namespace" className="text-[10px] px-1.5 py-0 shrink-0">NS</Badge>
+                <p className="text-xs text-muted truncate" title={entity.subjectarea?.namespace?.name}>{entity.subjectarea?.namespace?.name}</p>
+              </div>
+              <div className="flex items-center gap-1.5 mb-2">
+                <Badge variant="subjectarea" className="text-[10px] px-1.5 py-0 shrink-0">SA</Badge>
+                <p className="text-xs text-muted truncate" title={entity.subjectarea?.name}>{entity.subjectarea?.name}</p>
+              </div>
               {entity.description && (
                 <p className="text-xs text-muted line-clamp-2" title={entity.description}>
                   {entity.description}

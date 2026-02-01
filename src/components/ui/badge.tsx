@@ -16,6 +16,9 @@ const badgeVariants = cva(
         glossary: "border-transparent bg-blue-500/20 text-blue-700 dark:text-blue-400 hover:bg-blue-500/30",
         model: "border-transparent bg-purple-500/20 text-purple-700 dark:text-purple-400 hover:bg-purple-500/30",
         reference: "border-transparent bg-green-500/20 text-green-700 dark:text-green-400 hover:bg-green-500/30",
+        namespace: "border-transparent bg-teal-500/20 text-teal-700 dark:text-teal-400 hover:bg-teal-500/30",
+        subjectarea: "border-transparent bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-500/30",
+        entity: "border-transparent bg-rose-500/20 text-rose-700 dark:text-rose-400 hover:bg-rose-500/30",
       },
     },
     defaultVariants: {

@@ -152,7 +152,10 @@ export function GlossaryAssociations({ glossaryEntity, metaFields, showGraph, on
                     ns: glossaryEntity.subjectarea?.namespace?.alias,
                     sa: glossaryEntity.subjectarea?.alias,
                     en: glossaryEntity.alias,
-                    ns_type: "glossary", // assuming namespace type is glossary derived from context
+                    ns: glossaryEntity.subjectarea?.namespace?.name,
+                    sa: glossaryEntity.subjectarea?.name,
+                    en: glossaryEntity.name,
+                    ns_type: "glossary",
                     ns_id: glossaryEntity.subjectarea?.namespace?.id,
                     sa_id: glossaryEntity.sa_id,
                     en_id: glossaryEntity.id,

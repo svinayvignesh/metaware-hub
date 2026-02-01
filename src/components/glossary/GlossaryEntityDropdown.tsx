@@ -138,7 +138,7 @@ export function GlossaryEntityDropdown({
           <ChevronRight className="ml-2 icon-sm shrink-0 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-[300px]" align="start">
+      <DropdownMenuContent className="w-[300px] max-h-80 overflow-y-auto" align="start">
         {loading ? (
           <div className="card-padding-sm stack-sm">
             <Skeleton className="h-8 w-full" />
@@ -158,7 +158,7 @@ export function GlossaryEntityDropdown({
                 </Badge>
                 <span className="text-xs text-muted-foreground">({namespaces.length})</span>
               </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent>
+              <DropdownMenuSubContent className="max-h-80 overflow-y-auto">
                 {namespaces.map((namespace: Namespace) => {
                   const subjectAreas = subjectAreasByNamespace[namespace.id] || [];
 
@@ -170,7 +170,7 @@ export function GlossaryEntityDropdown({
                         <Database className="icon-sm shrink-0" />
                         <span>{namespace.name}</span>
                       </DropdownMenuSubTrigger>
-                      <DropdownMenuSubContent>
+                      <DropdownMenuSubContent className="max-h-80 overflow-y-auto">
                         {subjectAreas.map((sa: SubjectArea) => {
                           const entities = entitiesBySubjectArea[sa.id] || [];
 
@@ -181,7 +181,7 @@ export function GlossaryEntityDropdown({
                               <DropdownMenuSubTrigger className="flex-start gap-sm">
                                 <span>{sa.name}</span>
                               </DropdownMenuSubTrigger>
-                              <DropdownMenuSubContent>
+                              <DropdownMenuSubContent className="max-h-80 overflow-y-auto">
                                 {entities.map((entity: Entity) => (
                                   <DropdownMenuItem
                                     key={entity.id}
