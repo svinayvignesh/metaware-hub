@@ -212,7 +212,7 @@ export default function BuildModels() {
     try {
       const requestPayload = {
         publish_config_request: {
-          glossary_entity_fqn: `${selectedEntity.subjectarea?.namespace?.alias}.${selectedEntity.subjectarea?.alias}.${selectedEntity.alias}`,
+          glossary_entity_fqn: `${selectedEntity.subjectarea?.namespace?.name}.${selectedEntity.subjectarea?.name}.${selectedEntity.name}`,
           target_namespace: targetNamespace,
           target_schema: targetSchema,
           target_name: targetEntity,
@@ -308,11 +308,10 @@ export default function BuildModels() {
         connection_name: connectionName,
         load_strategy: strategy,
         materialize_as: materializeAs,
-        runtime_options: {
-          type: selectedConnection?.type || "db",
-          subtype: selectedConnection?.subtype || "DuckDB / MotherDuck",
+        loader_cfg: {
           ...(batchSize && { batch_size: parseInt(batchSize) }),
           ...(parallelism && { parallelism: parseInt(parallelism) }),
+          ...(commitInterval && { commit_interval: parseInt(commitInterval) }),
           dry_run: dryRun
         },
         loader_config_name: `${selectedEntity?.name || 'Entity'} Publish Load`,
