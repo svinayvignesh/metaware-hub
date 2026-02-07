@@ -698,6 +698,40 @@
     @apply fixed left-0 top-14 bottom-0;
   }
 
+  /* Glass morphism */
+  .glass {
+    @apply backdrop-blur-xl bg-background/80;
+  }
+
+  /* Card hover effect */
+  .card-hover {
+    @apply transition-all duration-200 hover:shadow-md hover:border-primary/20;
+  }
+
+  /* Glow button */
+  .btn-glow {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/30;
+  }
+
+  /* Gradient primary background */
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  /* Enhanced input */
+  .input-enhanced {
+    @apply border-input bg-background transition-colors focus-visible:ring-1 focus-visible:ring-ring;
+  }
+
+  /* Float animation */
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
   /* Page Layout */
   .page-container {
     @apply h-full overflow-hidden;

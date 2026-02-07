@@ -55,6 +55,7 @@ export const GET_ENTITIES = gql`
       type
       sa_id
       subjectarea {
+        id
         name
         namespace {
           id
@@ -89,6 +90,8 @@ export interface EntityNamespace {
  * Nested subject area information within entity
  */
 export interface EntitySubjectArea {
+  /** Unique identifier for the subject area */
+  id: string;
   /** Name of the subject area */
   name: string;
   /** Alias of the subject area */

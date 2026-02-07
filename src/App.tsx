@@ -18,6 +18,7 @@ import Model from "./pages/Model";
 import BuildModels from "./pages/BuildModels";
 import Glossary from "./pages/Glossary";
 import Admin from "./pages/Admin";
+import SourceConfiguration from "./pages/SourceConfiguration";
 import DuckDBDemo from "./pages/DuckDBDemo";
 import NotFound from "./pages/NotFound";
 
@@ -41,6 +42,7 @@ const App = () => (
                 <Route path="/metadata/subject-area" element={<SubjectArea />} />
                 <Route path="/metadata/entity" element={<Entity />} />
                 <Route path="/metadata/meta" element={<Meta />} />
+                <Route path="/source-config" element={<SourceConfiguration />} />
                 <Route path="/staging" element={<Staging />} />
                 <Route path="/model" element={<Model />} />
                 <Route path="/build-models" element={<BuildModels />} />

@@ -79,3 +79,12 @@ export {
   type GetGlossaryRelationsResponse,
   type GetGlossaryRelationsVariables,
 } from './glossaryrelation';
+
+// Orchestration-related queries and types
+export {
+  GET_ORCHESTRATION,
+  type OrchestrationAsset,
+  type OrchestrationTask,
+  type OrchestrationEntity,
+  type GetOrchestrationResponse,
+} from './orchestration';

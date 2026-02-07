@@ -205,6 +205,63 @@ export const glossaryAPI = {
 /**
  * Ruleset API Operations
  */
+/**
+ * Orchestration API Operations
+ */
+export const orchestrationAPI = {
+  configure: async (payload: {
+    entity_id: string;
+    entity_fqn: string;
+    asset_name: string;
+    asset_group: string;
+    asset_type: string;
+    task_key: string;
+    execution_config: {
+      connection_name: string;
+      file_format: string;
+      delimiter: string;
+      encoding: string;
+      header: boolean;
+      infer_schema: boolean;
+      load_strategy: string;
+      batch_size: number;
+    };
+    triggers: Array<{
+      trigger_type: 'file_sensor' | 'schedule';
+      file_sensor?: { watch_path: string; file_pattern: string };
+      schedule?: { cron_schedule: string; timezone: string };
+    }>;
+    discover_dependencies: boolean;
+    regenerate_code: boolean;
+  }) => {
+    return apiRequest<any>('/mwn/configure_orchestration', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  /**
+   * Delete orchestration objects (data_asset, asset_task, task_dependency)
+   */
+  deleteOrchestration: async (payload: {
+    object_type: 'data_asset' | 'asset_task' | 'task_dependency';
+    ids: string[];
+    cascade?: boolean;
+  }) => {
+    return apiRequest<{
+      status_code: number;
+      status: string;
+      return_data: Array<{ id: string; status: string; error?: string }>;
+    }>('/mwn/delete_orchestration', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+};
+
+/**
+ * Ruleset API Operations
+ */
 export const rulesetAPI = {
   create: async (payload: any) => {
     return apiRequest('/mwn/create_ruleset', {

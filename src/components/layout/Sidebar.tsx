@@ -11,6 +11,7 @@ import {
   ChevronRight,
   ChevronLeft,
   Upload,
+  Settings2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -38,6 +39,7 @@ const navItems: NavItem[] = [
       { title: "Meta", href: "/metadata/meta" },
     ],
   },
+  { title: "Source Config", href: "/source-config", icon: Settings2 },
   { title: "Staging", href: "/staging", icon: Archive },
   { title: "Glossary", href: "/glossary", icon: BookOpen },
   { title: "Publish", href: "/model", icon: Layers },
