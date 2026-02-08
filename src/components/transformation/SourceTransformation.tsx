@@ -27,14 +27,13 @@ import {
     Play,
     Settings,
     Sparkles,
-    ArrowLeft,
     Loader2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { API_CONFIG } from "@/config/api";
+import { rulesetAPI } from "@/services/api";
 import { GET_META_FOR_ENTITY, type MetaField } from "@/graphql/queries/meta";
+import { GET_RULESETS_BY_ENTITY, type RulesetWithSource, type Ruleset as RulesetType, type Rule as RuleType } from "@/graphql/queries/ruleset";
 
-type TransformType = "SQL" | "Python";
 type TransformOperation = "filter" | "aggregate" | "join" | "union" | "normalize" | "custom";
 
 interface ColumnMapping {
@@ -50,13 +49,11 @@ interface TransformConfig {
     filterCondition?: string;
     joinType?: string;
     joinCondition?: string;
-    pythonCode?: string;
 }
 
 interface TransformStep {
     id: string;
     name: string;
-    type: TransformType;
     mappings: ColumnMapping[];
     config: TransformConfig;
     icon: any;
@@ -88,12 +85,10 @@ export const SourceTransformation: React.FC<SourceTransformationProps> = ({
     onBack,
 }) => {
     const { toast } = useToast();
-    const [transformType, setTransformType] = useState<TransformType>("SQL");
     const [steps, setSteps] = useState<TransformStep[]>([
         {
             id: "1",
             name: "Transform Step 1",
-            type: "SQL",
             icon: Code,
             mappings: [],
             config: {
@@ -107,6 +102,58 @@ export const SourceTransformation: React.FC<SourceTransformationProps> = ({
     const [sourceMetaFields, setSourceMetaFields] = useState<MetaField[]>([]);
     const [openPopoverId, setOpenPopoverId] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
+    const [loadingPipeline, setLoadingPipeline] = useState(!!entityContext.en_id);
+    const [existingRulesetId, setExistingRulesetId] = useState<string | null>(null);
+
+    // Helper: extract clean target column name from rule
+    // Priority: meta.name (original column) > strip step suffix from name > alias
+    const extractTargetColumn = (rule: RuleType, stepName: string): string => {
+        if (rule.meta?.name) return rule.meta.name;
+        // rule.name is like "marriot_transaction_id_Step Name" - strip suffix
+        if (rule.name && stepName) {
+            const suffix = `_${stepName}`;
+            if (rule.name.endsWith(suffix)) {
+                return rule.name.slice(0, -suffix.length);
+            }
+        }
+        return rule.alias || rule.name;
+    };
+
+    // Helper: hydrate TransformStep[] from child rulesets
+    const hydrateSteps = (childRulesets: RulesetType[]): TransformStep[] => {
+        return childRulesets.map((child: RulesetType, idx: number) => {
+            const mappings: ColumnMapping[] = (child.rules || []).map(
+                (rule: RuleType, rIdx: number) => ({
+                    id: `loaded-${idx}-${rIdx}`,
+                    expression: rule.rule_expression,
+                    targetColumn: extractTargetColumn(rule, child.name),
+                })
+            );
+            // Map server transform type to client operation
+            const transformType = child.transform?.type;
+            const operation: TransformOperation =
+                transformType === "filter" ? "filter"
+                : transformType === "aggregator" ? "aggregate"
+                : "custom";
+            const icon = operationIcons[operation] || Code;
+            // Extract transform config (group_by, filter_expression)
+            const transformConfig = child.transform?.transform_config || {};
+            const config: TransformConfig = { operation };
+            if (operation === "aggregate" && transformConfig.group_by) {
+                config.groupBy = transformConfig.group_by.split(",").map((s: string) => s.trim());
+            }
+            if (operation === "filter" && transformConfig.filter_expression) {
+                config.filterCondition = transformConfig.filter_expression;
+            }
+            return {
+                id: `step-${idx}`,
+                name: child.name,
+                mappings,
+                config,
+                icon,
+            };
+        });
+    };
 
     const [fetchSourceMeta, { loading: sourceMetaLoading }] = useLazyQuery(
         GET_META_FOR_ENTITY,
@@ -127,11 +174,47 @@ export const SourceTransformation: React.FC<SourceTransformationProps> = ({
         }
     );
 
+    const [fetchExistingRulesets] = useLazyQuery(GET_RULESETS_BY_ENTITY, {
+        fetchPolicy: "network-only",
+        onCompleted: (data) => {
+            if (data?.meta_ruleset && data.meta_ruleset.length > 0) {
+                // Find a pipeline-type ruleset (has child_rulesets)
+                const pipeline = data.meta_ruleset.find(
+                    (rs: RulesetWithSource) =>
+                        rs.subtype === "pipeline" && rs.child_rulesets && rs.child_rulesets.length > 0
+                );
+                if (pipeline) {
+                    setExistingRulesetId(pipeline.id);
+                    const hydratedSteps = hydrateSteps(pipeline.child_rulesets!);
+                    if (hydratedSteps.length > 0) {
+                        setSteps(hydratedSteps);
+                        setSelectedStepId(hydratedSteps[0].id);
+                    }
+                }
+            }
+            setLoadingPipeline(false);
+        },
+        onError: (error) => {
+            console.error("Error fetching existing rulesets:", error);
+            toast({
+                title: "Warning",
+                description: "Could not load existing pipeline. You can still create a new one.",
+            });
+            setLoadingPipeline(false);
+        },
+    });
+
     useEffect(() => {
         if (entityContext.en_id) {
+            setLoadingPipeline(true);
             fetchSourceMeta({ variables: { enid: entityContext.en_id } });
+            fetchExistingRulesets({
+                variables: { targetEnId: entityContext.en_id, type: "source_transform" },
+            });
+        } else {
+            setLoadingPipeline(false);
         }
-    }, [entityContext.en_id, fetchSourceMeta]);
+    }, [entityContext.en_id, fetchSourceMeta, fetchExistingRulesets]);
 
     const selectedStep = steps.find(s => s.id === selectedStepId);
 
@@ -139,7 +222,6 @@ export const SourceTransformation: React.FC<SourceTransformationProps> = ({
         const newStep: TransformStep = {
             id: Date.now().toString(),
             name: `Transform Step ${steps.length + 1}`,
-            type: transformType,
             icon: Code,
             mappings: [],
             config: { operation: "custom" }
@@ -210,11 +292,12 @@ export const SourceTransformation: React.FC<SourceTransformationProps> = ({
     };
 
     const updateConfig = (field: string, value: any) => {
-        const updated = steps.map(s =>
-            s.id === selectedStepId
-                ? { ...s, config: { ...s.config, [field]: value } }
-                : s
-        );
+        const updated = steps.map(s => {
+            if (s.id !== selectedStepId) return s;
+            const newConfig = { ...s.config, [field]: value };
+            const icon = field === "operation" ? (operationIcons[value as TransformOperation] || Code) : s.icon;
+            return { ...s, config: newConfig, icon };
+        });
         setSteps(updated);
     };
 
@@ -272,11 +355,15 @@ export const SourceTransformation: React.FC<SourceTransformationProps> = ({
                     })),
                     transform_request: {
                         strategy: "sql",
-                        type: step.config.operation === "aggregate" ? "aggregator" : "passive",
+                        type: step.config.operation === "aggregate" ? "aggregator"
+                            : step.config.operation === "filter" ? "filter"
+                            : "passive",
                         name: step.name,
                         status: "Active",
                         transform_config: step.config.operation === "aggregate" && step.config.groupBy
-                            ? { group_by: step.config.groupBy.join(", ") }
+                            ? { group_by: step.config.groupBy.filter(Boolean).join(", ") }
+                            : step.config.operation === "filter" && step.config.filterCondition
+                            ? { filter_expression: step.config.filterCondition }
                             : {},
                     },
                 },
@@ -308,24 +395,7 @@ export const SourceTransformation: React.FC<SourceTransformationProps> = ({
                 },
             };
 
-            console.log("🚀 Creating ruleset with payload:", payload);
-
-            const response = await fetch(`${API_CONFIG.REST_ENDPOINT}/mwn/create_ruleset`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(payload),
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error("❌ Create ruleset API error:", errorText);
-                throw new Error(`Failed to create ruleset: ${response.status}`);
-            }
-
-            const result = await response.json();
-            console.log("✅ Ruleset created:", result);
+            await rulesetAPI.create(payload);
 
             toast({
                 title: "Success",
@@ -346,6 +416,17 @@ export const SourceTransformation: React.FC<SourceTransformationProps> = ({
         }
     };
 
+    if (loadingPipeline) {
+        return (
+            <div className="h-full flex items-center justify-center">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Loading existing pipeline...
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="h-full flex flex-col overflow-hidden">
             <div className="space-y-6 overflow-y-auto p-4">
@@ -355,6 +436,9 @@ export const SourceTransformation: React.FC<SourceTransformationProps> = ({
                         <h2 className="text-xl font-semibold flex items-center gap-2">
                             <Play className="w-5 h-5 text-primary" />
                             Transformation Pipeline
+                            {existingRulesetId && (
+                                <Badge variant="secondary" className="text-xs">Existing</Badge>
+                            )}
                         </h2>
                         <Button onClick={addStep} size="sm">
                             <Plus className="w-4 h-4 mr-2" />
@@ -378,7 +462,7 @@ export const SourceTransformation: React.FC<SourceTransformationProps> = ({
                                                 <step.icon className="w-4 h-4 text-primary" />
                                             </div>
                                             <Badge variant="outline" className="text-xs">
-                                                {step.type}
+                                                {step.config.operation}
                                             </Badge>
                                         </div>
                                         {steps.length > 1 && (

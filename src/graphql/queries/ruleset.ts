@@ -98,6 +98,7 @@ export const GET_RULESETS_BY_ENTITY = gql`
     meta_ruleset(targetEnId: $targetEnId, type: $type) {
       id
       type
+      subtype
       name
       target_en_id
       view_name
@@ -136,6 +137,35 @@ export const GET_RULESETS_BY_ENTITY = gql`
           }
         }
       }
+      child_rulesets {
+        id
+        type
+        subtype
+        name
+        view_name
+        transform {
+          id
+          type
+          strategy
+          name
+          transform_config
+        }
+        rules {
+          id
+          type
+          subtype
+          name
+          alias
+          rule_expression
+          rule_status
+          language
+          meta_id
+          meta {
+            id
+            name
+          }
+        }
+      }
     }
   }
 `;
@@ -143,6 +173,14 @@ export const GET_RULESETS_BY_ENTITY = gql`
 /**
  * TypeScript interfaces for type safety
  */
+
+export interface TransformInfo {
+  id: string;
+  type: string;
+  strategy?: string;
+  name?: string;
+  transform_config?: Record<string, any>;
+}
 
 export interface Rule {
   id?: string;
@@ -174,12 +212,14 @@ export interface Rule {
 export interface Ruleset {
   id: string;
   type: string;
+  subtype?: string;
   name: string;
   description?: string;
   view_name?: string;
   target_en_id: string;
   source_id?: string;
   transform_id?: string;
+  transform?: TransformInfo;
   rules: Rule[];
 }
 
@@ -215,6 +255,7 @@ export interface Source {
 
 export interface RulesetWithSource extends Ruleset {
   source?: Source;
+  child_rulesets?: Ruleset[];
 }
 
 export interface GetMappingRulesResponse {

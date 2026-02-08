@@ -52,10 +52,15 @@ export {
 // Ruleset-related queries and types
 export {
   GET_META_RULESETS,
+  GET_RULESETS_BY_ENTITY,
   type Rule,
   type Ruleset,
+  type RulesetWithSource,
+  type Source,
   type GetMetaRulesetsResponse,
   type GetMetaRulesetsVariables,
+  type GetRulesetsByEntityResponse,
+  type GetRulesetsByEntityVariables,
 } from './ruleset';
 
 // Conceptual Model-related queries and types
