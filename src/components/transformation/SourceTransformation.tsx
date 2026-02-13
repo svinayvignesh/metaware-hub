@@ -104,6 +104,7 @@ export const SourceTransformation: React.FC<SourceTransformationProps> = ({
     const [saving, setSaving] = useState(false);
     const [loadingPipeline, setLoadingPipeline] = useState(!!entityContext.en_id);
     const [existingRulesetId, setExistingRulesetId] = useState<string | null>(null);
+    const [entityName, setEntityName] = useState<string>("");
 
     // Helper: extract clean target column name from rule
     // Priority: meta.name (original column) > strip step suffix from name > alias
@@ -392,6 +393,7 @@ export const SourceTransformation: React.FC<SourceTransformationProps> = ({
                     source_ns: entityContext.ns,
                     source_sa: entityContext.sa,
                     source_en: entityContext.en,
+                    ...(entityName.trim() && { entity_name: entityName.trim() }),
                 },
             };
 
@@ -430,6 +432,22 @@ export const SourceTransformation: React.FC<SourceTransformationProps> = ({
     return (
         <div className="h-full flex flex-col overflow-hidden">
             <div className="space-y-6 overflow-y-auto p-4">
+                {/* Entity Name */}
+                <Card className="p-4">
+                    <div className="flex items-center gap-4">
+                        <Label htmlFor="entity-name" className="text-sm font-medium whitespace-nowrap">
+                            Entity Name
+                        </Label>
+                        <Input
+                            id="entity-name"
+                            value={entityName}
+                            onChange={(e) => setEntityName(e.target.value)}
+                            placeholder="Enter entity name (e.g., lines) — defaults to view name if empty"
+                            className="max-w-md"
+                        />
+                    </div>
+                </Card>
+
                 {/* Transformation Flow */}
                 <Card className="p-6">
                     <div className="flex items-center justify-between mb-4">

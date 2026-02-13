@@ -8,10 +8,11 @@ import { useMDConnectionContext } from "@/contexts/MDConnectionContext";
 import { queryMDTable } from "@/hooks/useMDConnection";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, X, Database, Loader2, BarChart3, Server, ArrowLeft, Code } from "lucide-react";
+import { Search, X, Database, Loader2, BarChart3, Server, ArrowLeft, Code, Link2 } from "lucide-react";
 import { RuleEditor } from "@/components/rules/RuleEditor";
 import { DQDetails } from "@/components/dq/DQDetails";
 import { SourceTransformation } from "@/components/transformation/SourceTransformation";
+import { GlossaryLinkPanel } from "@/components/glossary/GlossaryLinkPanel";
 import { API_CONFIG } from "@/config/api";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage, BreadcrumbLink, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Link, useNavigate } from "react-router-dom";
@@ -33,6 +34,7 @@ export default function Staging() {
   const [tableNotFound, setTableNotFound] = useState(false);
   const [showDQDetails, setShowDQDetails] = useState(false);
   const [showSourceTransformation, setShowSourceTransformation] = useState(false);
+  const [showGlossaryLink, setShowGlossaryLink] = useState(false);
   const [dqExecutionId, setDqExecutionId] = useState<string | null>(null);
   const [loadingDQ, setLoadingDQ] = useState(false);
   const { toast } = useToast();
@@ -102,7 +104,7 @@ export default function Staging() {
     try {
       const namespace = selectedEntity.subjectarea?.namespace?.name;
       const subjectarea = selectedEntity.subjectarea?.name;
-      const entityName = selectedEntity.name;
+      const entityName = selectedEntity.alias || selectedEntity.name;
 
       const result = await queryMDTable(connection, namespace, subjectarea, entityName);
 
@@ -382,6 +384,11 @@ export default function Staging() {
                         <Code className="h-5 w-5 text-primary" />
                         <h2 className="text-lg font-semibold">Source Transformation</h2>
                       </div>
+                    ) : showGlossaryLink ? (
+                      <div className="flex items-center gap-2">
+                        <Link2 className="h-5 w-5 text-primary" />
+                        <h2 className="text-lg font-semibold">Link to Glossary</h2>
+                      </div>
                     ) : (
                       <div className="flex gap-2">
                         <Button
@@ -409,6 +416,14 @@ export default function Staging() {
                           <Code className="mr-2 h-4 w-4" />
                           Source Transformation
                         </Button>
+                        <Button
+                          onClick={() => setShowGlossaryLink(true)}
+                          variant="outline"
+                          className="rounded-xl"
+                        >
+                          <Link2 className="mr-2 h-4 w-4" />
+                          Link to Glossary
+                        </Button>
                       </div>
                     )}
                   </div>
@@ -428,6 +443,11 @@ export default function Staging() {
                 <SourceTransformation
                   entityContext={entityContext}
                   onBack={() => setShowSourceTransformation(false)}
+                />
+              ) : showGlossaryLink && entityContext ? (
+                <GlossaryLinkPanel
+                  entityContext={entityContext}
+                  onBack={() => setShowGlossaryLink(false)}
                 />
               ) : data.rows.length === 0 ? (
                 <div className="flex items-center justify-center flex-1">

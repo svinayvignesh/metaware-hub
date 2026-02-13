@@ -48,6 +48,7 @@ export const GET_ENTITIES = gql`
       description
       is_delta
       name
+      alias
       primary_grain
       secondary_grain
       tertiary_grain

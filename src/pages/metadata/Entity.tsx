@@ -57,6 +57,7 @@ const getTypeBadgeVariant = (type: string): "staging" | "glossary" | "model" | "
  */
 const entityColumns: Column[] = [
   { key: 'name', title: 'Entity Name', type: 'text', required: true },
+  { key: 'alias', title: 'Alias', type: 'text' },
   { key: 'type', title: 'Type', type: 'text', required: true },
   { key: 'subtype', title: 'Subtype', type: 'text' },
   { key: 'description', title: 'Description', type: 'text' },
@@ -112,6 +113,7 @@ export default function Entity() {
       return {
         id: entity.id,
         name: entity.name,
+        alias: entity.alias || '',
         type: entity.type,
         subtype: entity.subtype || '',
         description: entity.description || '',
@@ -320,6 +322,7 @@ export default function Entity() {
               type: item.type || '',
               subtype: item.subtype || '',
               name: item.name || '',
+              alias: item.alias || null,
               description: item.description || '',
               is_delta: Boolean(item.is_delta_bool),
               runtime: item.runtime || '',
@@ -342,6 +345,7 @@ export default function Entity() {
 
             if (originalRow) {
               if (item.name !== originalRow.name ||
+                item.alias !== originalRow.alias ||
                 item.type !== originalRow.type ||
                 item.subtype !== originalRow.subtype ||
                 item.description !== originalRow.description ||
@@ -363,6 +367,7 @@ export default function Entity() {
               type: item.type || '',
               subtype: item.subtype || '',
               name: item.name || '',
+              alias: item.alias || null,
               description: item.description || '',
               is_delta: Boolean(item.is_delta_bool),
               runtime: item.runtime || '',

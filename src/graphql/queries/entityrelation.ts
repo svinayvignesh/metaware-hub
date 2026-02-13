@@ -19,6 +19,15 @@ export const GET_ENTITY_RELATIONS = gql`
         subtype
         tertiary_grain
         type
+        subjectarea {
+          id
+          name
+          namespace {
+            id
+            name
+            type
+          }
+        }
         metas {
           alias
           default
@@ -67,6 +76,15 @@ export interface RelatedEntity {
   subtype: string | null;
   tertiary_grain: string | null;
   type: string;
+  subjectarea?: {
+    id: string;
+    name: string;
+    namespace: {
+      id: string;
+      name: string;
+      type: string;
+    };
+  };
   metas?: EntityMeta[];
 }
 
@@ -84,4 +102,55 @@ export interface GetEntityRelationsResponse {
 
 export interface GetEntityRelationsVariables {
   targetEnId?: string;
+}
+
+export const GET_ENTITY_RELATIONS_BY_RELATED = gql`
+  query GetEntityRelationsByRelated($relatedEnId: String, $relationType: String) {
+    entity_relation(relatedEnId: $relatedEnId, relationType: $relationType) {
+      id
+      target_en_id
+      related_en_id
+      relation_type
+      target_entity {
+        id
+        name
+        subjectarea {
+          name
+          namespace {
+            name
+            type
+          }
+        }
+      }
+    }
+  }
+`;
+
+export interface TargetEntity {
+  id: string;
+  name: string;
+  subjectarea: {
+    name: string;
+    namespace: {
+      name: string;
+      type: string;
+    };
+  };
+}
+
+export interface EntityRelationByRelated {
+  id: string;
+  target_en_id: string;
+  related_en_id: string;
+  relation_type: string;
+  target_entity: TargetEntity[];
+}
+
+export interface GetEntityRelationsByRelatedResponse {
+  entity_relation: EntityRelationByRelated[];
+}
+
+export interface GetEntityRelationsByRelatedVariables {
+  relatedEnId?: string;
+  relationType?: string;
 }

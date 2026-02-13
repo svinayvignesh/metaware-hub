@@ -8,7 +8,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { GET_ENTITIES, type Entity } from "@/graphql/queries/entity";
+import { type Entity } from "@/graphql/queries/entity";
+import {
+  GET_ENTITY_RELATIONS,
+  type GetEntityRelationsResponse,
+  type GetEntityRelationsVariables,
+} from "@/graphql/queries/entityrelation";
 
 interface SourceAssociationSelectProps {
   glossaryEntity: Entity;
@@ -21,20 +26,23 @@ export function SourceAssociationSelect({
   value,
   onSelect,
 }: SourceAssociationSelectProps) {
-  const { data, loading } = useQuery(GET_ENTITIES);
+  const { data, loading } = useQuery<GetEntityRelationsResponse, GetEntityRelationsVariables>(
+    GET_ENTITY_RELATIONS,
+    {
+      variables: { targetEnId: glossaryEntity.id },
+      skip: !glossaryEntity?.id,
+    }
+  );
 
   const sourceAssociations = useMemo(() => {
-    if (!data?.meta_entity || !glossaryEntity) return [];
+    if (!data?.entity_relation) return [];
 
-    const glossaryEntityName = glossaryEntity.name;
-    if (!glossaryEntityName) return [];
-
-    return data.meta_entity.filter(
-      (entity: Entity) =>
-        entity.subjectarea?.namespace?.type === "staging" &&
-        entity.primary_grain === glossaryEntityName
-    );
-  }, [data, glossaryEntity]);
+    // Each relation has related_entity (the staging entities linked to this glossary entity)
+    return data.entity_relation
+      .filter((rel) => rel.relation_type === "GLOSSARY-SOURCE")
+      .flatMap((rel) => rel.related_entity || [])
+      .filter((entity) => entity && entity.id);
+  }, [data]);
 
   if (loading) {
     return (
@@ -60,7 +68,7 @@ export function SourceAssociationSelect({
         value={value}
         onValueChange={(val) => {
           const selected = sourceAssociations.find((e) => e.id === val);
-          if (selected) onSelect(selected);
+          if (selected) onSelect(selected as Entity);
         }}
       >
         <SelectTrigger className="w-full rounded-xl">

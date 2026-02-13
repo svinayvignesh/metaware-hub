@@ -20,13 +20,6 @@ import { useState, useEffect } from "react";
 import { useQuery } from '@apollo/client/react/hooks';
 import { Upload, FileCode } from "lucide-react";
 import { DataTable, Column, TableData } from "@/components/table/DataTable";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -386,17 +379,24 @@ export default function Meta() {
                   <Upload className="h-6 w-6 text-primary" />
                 </div>
                 <div className="flex-1 space-y-2">
-                  <h3 className="text-lg font-semibold">Quick Start: Upload CSV</h3>
+                  <h3 className="text-lg font-semibold">
+                    {selectedEntityData?.subtype === 'view' ? 'Quick Start: Create Meta' : 'Quick Start: Upload CSV'}
+                  </h3>
                   <p className="text-sm text-muted-foreground">
-                    Upload a CSV file to automatically detect and create meta fields for {selectedEntityData?.name || 'this entity'}
+                    {selectedEntityData?.subtype === 'view'
+                      ? `Derive meta fields from a source entity or upload a CSV for ${selectedEntityData?.name || 'this entity'}`
+                      : `Upload a CSV file to automatically detect and create meta fields for ${selectedEntityData?.name || 'this entity'}`
+                    }
                   </p>
-                  <Button
-                    onClick={() => setUploadModalOpen(true)}
-                    className="mt-3 rounded-xl bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground shadow-lg shadow-primary/20"
-                  >
-                    <Upload className="mr-2 h-4 w-4" />
-                    Upload CSV File
-                  </Button>
+                  <div className="flex items-center gap-3 mt-3">
+                    <Button
+                      onClick={() => setUploadModalOpen(true)}
+                      className="rounded-xl bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground shadow-lg shadow-primary/20"
+                    >
+                      <Upload className="mr-2 h-4 w-4" />
+                      Upload CSV File
+                    </Button>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -414,6 +414,7 @@ export default function Meta() {
             entityDescription={selectedEntityData.description || ''}
             namespaceType={selectedEntityData.subjectarea?.namespace?.type || 'unknown'}
             primaryGrain={selectedEntityData.primary_grain || ''}
+            subtype={selectedEntityData.subtype || ''}
             onSuccess={handleUploadSuccess}
           />
         )}

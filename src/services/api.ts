@@ -270,3 +270,21 @@ export const rulesetAPI = {
     });
   },
 };
+
+/**
+ * Entity Relation API Operations
+ */
+export const entityRelationAPI = {
+  create: async (payload: { target_en_id: string; related_en_id: string; relation_type: string; metadata_?: any }) => {
+    return apiRequest('/mwn/entity_relation', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  delete: async (relationId: string) => {
+    return apiRequest(`/mwn/entity_relation/${relationId}`, {
+      method: 'DELETE',
+    });
+  },
+};

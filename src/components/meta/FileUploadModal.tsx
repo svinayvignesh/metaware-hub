@@ -27,6 +27,7 @@ interface FileUploadModalProps {
   entityDescription: string;
   namespaceType: string;
   primaryGrain: string;
+  subtype?: string;
   onSuccess: (draftRows?: any[]) => void;
 }
 
@@ -39,6 +40,7 @@ export function FileUploadModal({
   entityDescription,
   namespaceType,
   primaryGrain,
+  subtype,
   onSuccess,
 }: FileUploadModalProps) {
   const navigate = useNavigate();
@@ -104,6 +106,7 @@ export function FileUploadModal({
         create_meta: String(createMeta),
         load_data: String(loadData),
         primary_grain: primaryGrain || '.',
+        subtype: subtype || '.',
       });
 
       const response = await fetch(
