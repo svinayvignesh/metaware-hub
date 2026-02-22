@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { ArrowLeft, Plus, Trash2, Link2, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { entityRelationAPI } from "@/services/api";
+import { entityRelationAPI, glossaryAssociationAPI } from "@/services/api";
 import { GET_ENTITIES, type GetEntitiesResponse } from "@/graphql/queries";
 import {
   GET_ENTITY_RELATIONS_BY_RELATED,
@@ -89,13 +89,26 @@ export const GlossaryLinkPanel: React.FC<GlossaryLinkPanelProps> = ({
   };
 
   const handleDelete = async (relationId: string) => {
+    // Find the relation to get glossary entity info for unified delete
+    const relation = existingRelations.find((r) => r.id === relationId);
+    const targetEntity = relation?.target_entity?.[0];
+
     setDeletingId(relationId);
     try {
-      await entityRelationAPI.delete(relationId);
-      toast({ title: "Glossary link removed" });
+      if (targetEntity?.subjectarea?.namespace?.name && targetEntity?.subjectarea?.name && targetEntity?.name) {
+        // Unified delete: removes DuckDB view + ruleset + entity relation
+        await glossaryAssociationAPI.delete(
+          { ns: targetEntity.subjectarea.namespace.name, sa: targetEntity.subjectarea.name, en: targetEntity.name },
+          { ns: entityContext.ns, sa: entityContext.sa, en: entityContext.en }
+        );
+      } else {
+        // Fallback: only delete the entity relation if we can't resolve the glossary entity
+        await entityRelationAPI.delete(relationId);
+      }
+      toast({ title: "Glossary association removed" });
       await refetchRelations();
     } catch (err: any) {
-      toast({ title: "Failed to remove link", description: err.message, variant: "destructive" });
+      toast({ title: "Failed to remove association", description: err.message, variant: "destructive" });
     } finally {
       setDeletingId(null);
     }

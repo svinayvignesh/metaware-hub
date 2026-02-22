@@ -56,6 +56,7 @@ import { MetaField } from "@/graphql/queries/meta";
 import { GlossaryTermCascadingSelect } from "./GlossaryTermCascadingSelect";
 import { GlossaryModelGraph } from "./GlossaryModelGraph";
 import { API_CONFIG } from "@/config/api";
+import { glossaryRelationAPI } from "@/services/api";
 
 // Static Relation Types
 const relationTypes = [
@@ -203,8 +204,14 @@ export function GlossaryAssociations({ glossaryEntity, metaFields, showGraph, on
     };
 
     const handleDeleteRelation = async (relationId: string) => {
-        // Mock delete for now as per previous instruction
-        toast.error("Delete API not specified in requirements");
+        try {
+            await glossaryRelationAPI.delete(relationId);
+            toast.success("Relation deleted");
+            await refetchRelations();
+        } catch (error) {
+            console.error("Error deleting relation:", error);
+            toast.error(error instanceof Error ? error.message : "Failed to delete relation");
+        }
     };
 
     // Helper to get badges for a term

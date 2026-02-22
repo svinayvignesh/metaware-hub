@@ -57,13 +57,12 @@ const getTypeBadgeVariant = (type: string): "staging" | "glossary" | "model" | "
  */
 const entityColumns: Column[] = [
   { key: 'name', title: 'Entity Name', type: 'text', required: true },
-  { key: 'alias', title: 'Alias', type: 'text' },
-  { key: 'type', title: 'Type', type: 'text', required: true },
-  { key: 'subtype', title: 'Subtype', type: 'text' },
-  { key: 'description', title: 'Description', type: 'text' },
   { key: 'namespace_display', title: 'NameSpace', type: 'text', required: true },
   { key: 'subjectarea_display', title: 'Subject Area', type: 'text', required: true },
-  { key: 'is_delta', title: 'Delta Enabled', type: 'text' },
+  { key: 'description', title: 'Description', type: 'text' },
+  { key: 'alias', title: 'Alias', type: 'text' },
+  { key: 'type', title: 'Type', type: 'text' },
+  { key: 'subtype', title: 'Subtype', type: 'text' },
   { key: 'primary_grain', title: 'Primary Grain', type: 'text' },
   { key: 'secondary_grain', title: 'Secondary Grain', type: 'text' },
   { key: 'tertiary_grain', title: 'Tertiary Grain', type: 'text' },

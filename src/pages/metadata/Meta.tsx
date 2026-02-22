@@ -53,17 +53,17 @@ import { Link, useNavigate } from "react-router-dom";
  * Defines the structure and display properties for each column
  */
 const metaColumns: Column[] = [
-  { key: 'name', title: 'name', type: 'text' },
-  { key: 'alias', title: 'alias', type: 'text' },
-  { key: 'description', title: 'description', type: 'text' },
-  { key: 'type', title: 'type', type: 'text' },
-  { key: 'subtype', title: 'subtype', type: 'text' },
-  { key: 'is_primary_grain', title: 'is_primary_grain', type: 'checkbox' },
-  { key: 'is_secondary_grain', title: 'is_secondary_grain', type: 'checkbox' },
-  { key: 'is_tertiary_grain', title: 'is_tertiary_grain', type: 'checkbox' },
-  { key: 'default', title: 'default', type: 'text' },
-  { key: 'nullable', title: 'nullable', type: 'checkbox' },
-  { key: 'order', title: 'order', type: 'number' },
+  { key: 'name', title: 'Name', type: 'text', required: true },
+  { key: 'type', title: 'Type', type: 'text', required: true },
+  { key: 'order', title: 'Order', type: 'number', required: true },
+  { key: 'alias', title: 'Alias', type: 'text' },
+  { key: 'description', title: 'Description', type: 'text' },
+  { key: 'subtype', title: 'Subtype', type: 'text' },
+  { key: 'is_primary_grain', title: 'Primary Grain', type: 'checkbox' },
+  { key: 'is_secondary_grain', title: 'Secondary Grain', type: 'checkbox' },
+  { key: 'is_tertiary_grain', title: 'Tertiary Grain', type: 'checkbox' },
+  { key: 'default', title: 'Default', type: 'text' },
+  { key: 'nullable', title: 'Nullable', type: 'checkbox' },
 ];
 
 /**

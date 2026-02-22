@@ -1144,6 +1144,7 @@ export const DataTable = ({
                             onClick={() => col.onHeaderClick?.(col.key)}
                           >
                             {col.title}
+                            {col.required && <span className="text-destructive ml-0.5">*</span>}
                           </span>
                           <Button
                             variant="ghost"

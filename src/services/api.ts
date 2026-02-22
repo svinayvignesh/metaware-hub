@@ -288,3 +288,29 @@ export const entityRelationAPI = {
     });
   },
 };
+
+/**
+ * Glossary Association API Operations
+ */
+export const glossaryAssociationAPI = {
+  delete: async (glossaryEnCore: { ns: string; sa: string; en: string }, sourceEnCore: { ns: string; sa: string; en: string }) => {
+    return apiRequest('/mwn/delete_glossary_association', {
+      method: 'POST',
+      body: JSON.stringify({
+        glossary_en_core: glossaryEnCore,
+        source_en_core: sourceEnCore,
+      }),
+    });
+  },
+};
+
+/**
+ * Glossary Relation API Operations (LINK, EXACT, RELATED, SUBSET between glossary entities)
+ */
+export const glossaryRelationAPI = {
+  delete: async (relationId: string) => {
+    return apiRequest(`/mwn/glossary_relation/${relationId}`, {
+      method: 'DELETE',
+    });
+  },
+};
