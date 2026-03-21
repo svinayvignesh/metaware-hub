@@ -155,6 +155,41 @@ export const metaAPI = {
     return response.json();
   },
 
+  /** Auto-detect schema from external database table (no file upload) */
+  autoDetectStagingDb: async (params: {
+    ns: string;
+    sa: string;
+    en: string;
+    ns_type: string;
+    source_kind: string;
+    connection_name: string;
+    source_database: string;
+    source_schema: string;
+    source_table: string;
+    create_meta: boolean;
+    primary_grain: string;
+    subtype: string;
+  }) => {
+    const queryParams = new URLSearchParams({
+      ns: params.ns,
+      sa: params.sa,
+      en: params.en,
+      ns_type: params.ns_type,
+      source_kind: params.source_kind,
+      connection_name: params.connection_name,
+      source_database: params.source_database,
+      source_schema: params.source_schema,
+      source_table: params.source_table,
+      create_meta: String(params.create_meta),
+      primary_grain: params.primary_grain,
+      subtype: params.subtype,
+    });
+
+    return apiRequest<any>(`/mwn/auto_detect_staging_db?${queryParams}`, {
+      method: 'POST',
+    });
+  },
+
   importConfiguration: async (file: File, sheetName: string) => {
     const formData = new FormData();
     formData.append('file', file);
@@ -169,6 +204,81 @@ export const metaAPI = {
     }
 
     return response.json();
+  },
+};
+
+/**
+ * Connection Profile type
+ */
+export interface ConnectionProfile {
+  name: string;
+  type: string;          // "db.postgres", "db.duckdb", etc.
+  connection_properties: Record<string, any>;
+  description?: string;
+  status: string;        // "active", "inactive"
+}
+
+/**
+ * Connection Profile API Operations
+ */
+export const connectionProfileAPI = {
+  /** List all connection profiles, optionally filtered by type */
+  list: async (type?: string) => {
+    const query = type ? `?type=${encodeURIComponent(type)}` : '';
+    return apiRequest<{
+      status_code: number;
+      return_data: ConnectionProfile[];
+    }>(`/mwn/connection_profiles${query}`);
+  },
+
+  /** Create a new connection profile */
+  create: async (profile: {
+    name: string;
+    type: string;
+    connection_properties: Record<string, any>;
+    description?: string;
+  }) => {
+    return apiRequest('/mwn/connection_profiles', {
+      method: 'POST',
+      body: JSON.stringify(profile),
+    });
+  },
+
+  /** Delete a connection profile */
+  delete: async (name: string) => {
+    return apiRequest(`/mwn/connection_profiles/${encodeURIComponent(name)}`, {
+      method: 'DELETE',
+    });
+  },
+
+  /** Test connectivity of a connection profile */
+  test: async (name: string) => {
+    return apiRequest<{
+      status_code: number;
+      return_data: { status: 'connected' | 'failed'; message: string };
+    }>(`/mwn/connection_profiles/${encodeURIComponent(name)}/test`, {
+      method: 'POST',
+    });
+  },
+
+  /** List schemas available in the external database */
+  listSchemas: async (name: string) => {
+    return apiRequest<{
+      status_code: number;
+      return_data: string[];
+    }>(`/mwn/connection_profiles/${encodeURIComponent(name)}/schemas`, {
+      method: 'POST',
+    });
+  },
+
+  /** List tables in a specific schema of the external database */
+  listTables: async (name: string, schema: string) => {
+    return apiRequest<{
+      status_code: number;
+      return_data: string[];
+    }>(`/mwn/connection_profiles/${encodeURIComponent(name)}/tables?schema=${encodeURIComponent(schema)}`, {
+      method: 'POST',
+    });
   },
 };
 

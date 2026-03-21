@@ -45,28 +45,31 @@ export function RuleEditor({ open, onClose, columnName, entityContext }: RuleEdi
   const [editingRule, setEditingRule] = useState<Rule | null>(null);
   const [isApplying, setIsApplying] = useState(false);
 
-  const [fetchRulesets, { loading: loadingRulesets }] = useLazyQuery(GET_META_RULESETS, {
+  const [fetchRulesets, { loading: loadingRulesets, data: rulesetsData, error: rulesetsError }] = useLazyQuery(GET_META_RULESETS, {
     fetchPolicy: "network-only",
-    onCompleted: (data) => {
-      console.log("Rulesets query response:", data);
-      if (data?.meta_ruleset && data.meta_ruleset.length > 0) {
-        const allRules = data.meta_ruleset.flatMap((rs: Ruleset) => rs.rules || []);
-        // Filter rules for this specific column
-        const columnRules = allRules.filter((rule: Rule) => rule.meta?.alias === columnName || rule.meta?.name === columnName);
-        setExistingRules(columnRules);
-      } else {
-        setExistingRules([]);
-      }
-    },
-    onError: (error) => {
-      console.error("Error fetching rulesets:", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch existing rules",
-        variant: "destructive",
-      });
-    },
   });
+
+  useEffect(() => {
+    if (!rulesetsData) return;
+    console.log("Rulesets query response:", rulesetsData);
+    if (rulesetsData.meta_ruleset && rulesetsData.meta_ruleset.length > 0) {
+      const allRules = rulesetsData.meta_ruleset.flatMap((rs: Ruleset) => rs.rules || []);
+      const columnRules = allRules.filter((rule: Rule) => rule.meta?.alias === columnName || rule.meta?.name === columnName);
+      setExistingRules(columnRules);
+    } else {
+      setExistingRules([]);
+    }
+  }, [rulesetsData, columnName]);
+
+  useEffect(() => {
+    if (!rulesetsError) return;
+    console.error("Error fetching rulesets:", rulesetsError);
+    toast({
+      title: "Error",
+      description: "Failed to fetch existing rules",
+      variant: "destructive",
+    });
+  }, [rulesetsError]);
 
   useEffect(() => {
     if (open && entityContext.en_id) {

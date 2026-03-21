@@ -82,7 +82,9 @@ export default function Staging() {
   }, [searchParams, entitiesData]);
 
   useEffect(() => {
-    if (ready && connection && selectedEntity) {
+    if (selectedEntity?.subtype === 'external_view') {
+      fetchData();
+    } else if (ready && connection && selectedEntity) {
       fetchData();
     }
   }, [ready, connection, selectedEntity]);
@@ -97,7 +99,7 @@ export default function Staging() {
   }, [selectedSubjectAreaId, searchParams]);
 
   const fetchData = async () => {
-    if (!connection || !selectedEntity || !selectedEntity.subjectarea || !selectedEntity.subjectarea.namespace) return;
+    if (!selectedEntity || !selectedEntity.subjectarea || !selectedEntity.subjectarea.namespace) return;
 
     setLoading(true);
     setTableNotFound(false);
@@ -106,21 +108,58 @@ export default function Staging() {
       const subjectarea = selectedEntity.subjectarea?.name;
       const entityName = selectedEntity.alias || selectedEntity.name;
 
-      const result = await queryMDTable(connection, namespace, subjectarea, entityName);
-
-      // Add unique IDs to rows if they don't have them
-      const rowsWithIds = result.rows.map((row, index) => ({
-        ...row,
-        id: row.id || `row_${index}`
-      }));
-
-      setData({ ...result, rows: rowsWithIds });
+      if (selectedEntity.subtype === 'external_view') {
+        // DuckDB WASM cannot make TCP connections to external databases — route to backend instead
+        const response = await fetch(
+          `${API_CONFIG.REST_ENDPOINT}/mwn/entity_data_preview?ns=${encodeURIComponent(namespace)}&sa=${encodeURIComponent(subjectarea)}&en=${encodeURIComponent(selectedEntity.name)}`
+        );
+        if (!response.ok) {
+          const errorBody = await response.json().catch(() => null);
+          const errorDetail = errorBody?.detail || await response.text();
+          throw new Error(`Preview failed (${response.status}): ${errorDetail}`);
+        }
+        const result = await response.json();
+        const { columns, rows } = result.return_data;
+        const rowsWithIds = rows.map((row: any, index: number) => ({
+          ...row,
+          id: row.id || `row_${index}`
+        }));
+        setData({ columns, rows: rowsWithIds });
+      } else {
+        if (!connection) {
+          toast({
+            title: "No database connection",
+            description: "Could not connect to MotherDuck. Check your token and try again.",
+            variant: "destructive",
+          });
+          setData({ columns: [], rows: [] });
+          return;
+        }
+        const result = await queryMDTable(connection, namespace, subjectarea, entityName);
+        const rowsWithIds = result.rows.map((row, index) => ({
+          ...row,
+          id: row.id || `row_${index}`
+        }));
+        setData({ ...result, rows: rowsWithIds });
+      }
     } catch (error) {
       console.error("Error fetching entity data:", error);
 
-      // Check if the error is due to table not existing
       const errorMessage = error instanceof Error ? error.message : String(error);
-      if (errorMessage.includes('Table with name') && errorMessage.includes('does not exist')) {
+
+      toast({
+        title: "Failed to load data",
+        description: errorMessage.length > 200 ? errorMessage.slice(0, 200) + "…" : errorMessage,
+        variant: "destructive",
+      });
+
+      // Check if the error is due to table/catalog/schema not existing
+      const isNotFound =
+        (errorMessage.includes('Table with name') && errorMessage.includes('does not exist')) ||
+        (errorMessage.includes('Catalog') && errorMessage.includes('does not exist')) ||
+        (errorMessage.includes('Schema') && errorMessage.includes('does not exist')) ||
+        errorMessage.includes('Binder Error');
+      if (isNotFound) {
         setTableNotFound(true);
       }
 
@@ -298,7 +337,7 @@ export default function Staging() {
               />
             </div>
           </div>
-        ) : !ready ? (
+        ) : (!ready && selectedEntity?.subtype !== 'external_view') ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center space-y-2">
               <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
@@ -449,7 +488,7 @@ export default function Staging() {
                   entityContext={entityContext}
                   onBack={() => setShowGlossaryLink(false)}
                 />
-              ) : data.rows.length === 0 ? (
+              ) : data.columns.length === 0 && data.rows.length === 0 ? (
                 <div className="flex items-center justify-center flex-1">
                   <div className="text-center space-y-3 max-w-md">
                     <Database className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />

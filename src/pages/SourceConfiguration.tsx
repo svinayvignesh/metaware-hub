@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import {
@@ -22,7 +22,8 @@ import { useToast } from "@/hooks/use-toast";
 import GlossaryEntitySelector, { type SelectedEntity } from "@/components/glossary/GlossaryEntitySelector";
 import SourceCard from "@/components/source/SourceCard";
 import SchedulingPanel, { type DataAsset, type AssetTask, type TaskDependency } from "@/components/source/SchedulingPanel";
-import { orchestrationAPI } from "@/services/api";
+import ConnectionProfileModal from "@/components/source/ConnectionProfileModal";
+import { orchestrationAPI, connectionProfileAPI, metaAPI, type ConnectionProfile } from "@/services/api";
 import { GET_ORCHESTRATION, type GetOrchestrationResponse, type OrchestrationAsset } from "@/graphql/queries/orchestration";
 import { cn } from "@/lib/utils";
 
@@ -86,6 +87,20 @@ const SourceConfiguration = () => {
 
   // Connection profile
   const [connectionProfile, setConnectionProfile] = useState<string>("");
+  const [connectionProfiles, setConnectionProfiles] = useState<ConnectionProfile[]>([]);
+  const [isLoadingProfiles, setIsLoadingProfiles] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+
+  // External DB source configuration
+  // source_database is derived from connectionProfile name (connection profile name = database name)
+  const [sourceSchema, setSourceSchema] = useState<string>("");
+  const [sourceTable, setSourceTable] = useState<string>("");
+  const [availableSchemas, setAvailableSchemas] = useState<string[]>([]);
+  const [availableTables, setAvailableTables] = useState<string[]>([]);
+  const [isLoadingSchemas, setIsLoadingSchemas] = useState(false);
+  const [isLoadingTables, setIsLoadingTables] = useState(false);
+  const [isDetectingSchema, setIsDetectingSchema] = useState(false);
+  const [detectedMeta, setDetectedMeta] = useState<any[] | null>(null);
 
 
   // Runtime configuration
@@ -196,12 +211,65 @@ const SourceConfiguration = () => {
     });
   }, [orchestrationData]);
 
-  // Mock connection profiles
-  const connectionProfiles = [
-    { id: "motherduck_dev", name: "MotherDuck Dev", type: "db.duckdb", status: "connected" as const },
-    { id: "databricks_prod", name: "Databricks Production", type: "db.databricks", status: "connected" as const },
-    { id: "postgres_staging", name: "PostgreSQL Staging", type: "db.postgres", status: "disconnected" as const },
-  ];
+  // Fetch connection profiles when DB source kind selected
+  useEffect(() => {
+    if (selectedKind?.startsWith("db.")) {
+      setIsLoadingProfiles(true);
+      connectionProfileAPI.list(selectedKind)
+        .then(res => setConnectionProfiles(res.return_data || []))
+        .catch(() => toast({ title: "Error", description: "Failed to load connection profiles", variant: "destructive" }))
+        .finally(() => setIsLoadingProfiles(false));
+    } else {
+      setConnectionProfiles([]);
+    }
+  }, [selectedKind]);
+
+  // Fetch schemas when connection profile is selected (for DB sources)
+  useEffect(() => {
+    if (connectionProfile && selectedKind?.startsWith("db.")) {
+      setIsLoadingSchemas(true);
+      setAvailableSchemas([]);
+      setSourceSchema("");
+      setAvailableTables([]);
+      setSourceTable("");
+      setDetectedMeta(null);
+      connectionProfileAPI.listSchemas(connectionProfile)
+        .then(res => {
+          setAvailableSchemas(res.return_data || []);
+        })
+        .catch((err) => toast({
+          title: "Failed to load schemas",
+          description: err?.message || "Could not connect to the database",
+          variant: "destructive"
+        }))
+        .finally(() => setIsLoadingSchemas(false));
+    } else if (!connectionProfile) {
+      setAvailableSchemas([]);
+      setSourceSchema("");
+      setAvailableTables([]);
+      setSourceTable("");
+    }
+  }, [connectionProfile, selectedKind]);
+
+  // Fetch tables when schema is selected
+  useEffect(() => {
+    if (connectionProfile && sourceSchema) {
+      setIsLoadingTables(true);
+      setAvailableTables([]);
+      setSourceTable("");
+      setDetectedMeta(null);
+      connectionProfileAPI.listTables(connectionProfile, sourceSchema)
+        .then(res => {
+          setAvailableTables(res.return_data || []);
+        })
+        .catch((err) => toast({
+          title: "Failed to load tables",
+          description: err?.message || "Could not load tables for this schema",
+          variant: "destructive"
+        }))
+        .finally(() => setIsLoadingTables(false));
+    }
+  }, [connectionProfile, sourceSchema]);
 
   // Get all tasks for dependency selection
   const allTasks = existingSources.flatMap(s => s.tasks || []);
@@ -217,6 +285,48 @@ const SourceConfiguration = () => {
     { kind: "db.postgres" as SourceKind, name: "PostgreSQL", icon: Database, description: "PostgreSQL database", category: "database" },
   ];
 
+
+  // Auto-detect schema from external database
+  const handleAutoDetectDb = async () => {
+    if (!selectedEntity || !connectionProfile || !sourceSchema || !sourceTable) {
+      toast({ title: "Missing Fields", description: "Select entity, connection, schema, and table.", variant: "destructive" });
+      return;
+    }
+
+    setIsDetectingSchema(true);
+    try {
+      const result = await metaAPI.autoDetectStagingDb({
+        ns: selectedEntity.ns,
+        sa: selectedEntity.sa,
+        en: selectedEntity.en,
+        ns_type: "staging",
+        source_kind: selectedKind!,
+        connection_name: connectionProfile,
+        source_database: connectionProfile,
+        source_schema: sourceSchema,
+        source_table: sourceTable,
+        create_meta: true,
+        primary_grain: ".",
+        subtype: "external_view",
+      });
+
+      const metaFields = result.return_data?.[1] || [];
+      setDetectedMeta(metaFields);
+
+      toast({
+        title: "Schema Detected",
+        description: `${metaFields.length} columns detected from ${sourceSchema}.${sourceTable}. Entity created as external view.`,
+      });
+    } catch (err: any) {
+      toast({
+        title: "Detection Failed",
+        description: err.message || "Failed to detect schema from external database",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDetectingSchema(false);
+    }
+  };
 
   // Load staging handler - calls /mwn/configure_orchestration
   const handleLoadStaging = async () => {
@@ -247,6 +357,29 @@ const SourceConfiguration = () => {
           return trigger;
         });
 
+      const isDbSource = selectedKind?.startsWith("db.");
+
+      const execution_config = isDbSource
+        ? {
+            connection_name: connectionProfile || "default",
+            source_kind: selectedKind,
+            source_database: connectionProfile,
+            source_schema: sourceSchema,
+            source_table: sourceTable,
+            load_strategy: loaderConfig.strategy || "delete_and_insert",
+            batch_size: loaderConfig.batch_size || 1000,
+          }
+        : {
+            connection_name: connectionProfile || "default",
+            file_format: selectedKind?.split(".")[1] || "csv",
+            delimiter: parserConfig.delimiter || ",",
+            encoding: parserConfig.encoding || "utf-8",
+            header: parserConfig.header ?? true,
+            infer_schema: parserConfig.infer_schema ?? true,
+            load_strategy: loaderConfig.strategy || "delete_and_insert",
+            batch_size: loaderConfig.batch_size || 1000,
+          };
+
       const payload = {
         entity_id: selectedEntity.en_id,
         entity_fqn: `${selectedEntity.ns}.${selectedEntity.sa}.${selectedEntity.en}`,
@@ -254,16 +387,7 @@ const SourceConfiguration = () => {
         asset_group: selectedEntity.sa,
         asset_type: "staging",
         task_key: "load_staging",
-        execution_config: {
-          connection_name: connectionProfile || "default",
-          file_format: selectedKind?.split(".")[1] || "csv",
-          delimiter: parserConfig.delimiter || ",",
-          encoding: parserConfig.encoding || "utf-8",
-          header: parserConfig.header ?? true,
-          infer_schema: parserConfig.infer_schema ?? true,
-          load_strategy: loaderConfig.strategy || "delete_and_insert",
-          batch_size: loaderConfig.batch_size || 1000,
-        },
+        execution_config,
         triggers,
         discover_dependencies: true,
         regenerate_code: true,
@@ -584,7 +708,7 @@ const SourceConfiguration = () => {
                 </SheetContent>
               </Sheet>
 
-              {/* Load Staging Button */}
+              {/* Orchestrate Button */}
               <Button
                 onClick={handleLoadStaging}
                 disabled={isLoading || !selectedEntity}
@@ -595,7 +719,7 @@ const SourceConfiguration = () => {
                 ) : (
                   <Zap className="w-4 h-4" />
                 )}
-                Load Staging
+                Orchestrate
               </Button>
             </div>
           </div>
@@ -700,17 +824,15 @@ const SourceConfiguration = () => {
                       <Select value={connectionProfile} onValueChange={setConnectionProfile}>
                         <SelectTrigger className="input-enhanced">
                           <Link2 className="w-4 h-4 mr-2 text-muted-foreground" />
-                          <SelectValue placeholder="Select connection..." />
+                          <SelectValue placeholder={isLoadingProfiles ? "Loading..." : "Select connection..."} />
                         </SelectTrigger>
                         <SelectContent>
-                          {connectionProfiles
-                            .filter(p => p.type === selectedKind)
-                            .map(profile => (
-                              <SelectItem key={profile.id} value={profile.id}>
+                          {connectionProfiles.map(profile => (
+                              <SelectItem key={profile.name} value={profile.name}>
                                 <div className="flex items-center gap-2">
                                   <div className={cn(
                                     "w-2 h-2 rounded-full",
-                                    profile.status === "connected" ? "bg-green-500" : "bg-muted"
+                                    profile.status === "active" ? "bg-green-500" : "bg-muted"
                                   )} />
                                   <span>{profile.name}</span>
                                 </div>
@@ -718,6 +840,72 @@ const SourceConfiguration = () => {
                             ))}
                         </SelectContent>
                       </Select>
+                    </div>
+                  )}
+
+                  {/* External Database Source Table Mapping */}
+                  {selectedKind?.startsWith("db.") && connectionProfile && (
+                    <div className="pt-3 mt-3 border-t border-border/50 space-y-3">
+                      <Label className="text-xs text-muted-foreground mb-2 block">SOURCE TABLE MAPPING</Label>
+
+                      <div className="space-y-1">
+                        <Label className="text-xs">Schema</Label>
+                        <Select value={sourceSchema} onValueChange={setSourceSchema} disabled={isLoadingSchemas}>
+                          <SelectTrigger className="input-enhanced">
+                            {isLoadingSchemas
+                              ? <span className="flex items-center gap-2 text-muted-foreground"><Loader2 className="w-3 h-3 animate-spin" />Loading schemas...</span>
+                              : <SelectValue placeholder={availableSchemas.length ? "Select schema..." : "No schemas found"} />
+                            }
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableSchemas.map(schema => (
+                              <SelectItem key={schema} value={schema}>{schema}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label className="text-xs">Table</Label>
+                        <Select value={sourceTable} onValueChange={setSourceTable} disabled={isLoadingTables || !sourceSchema}>
+                          <SelectTrigger className="input-enhanced">
+                            {isLoadingTables
+                              ? <span className="flex items-center gap-2 text-muted-foreground"><Loader2 className="w-3 h-3 animate-spin" />Loading tables...</span>
+                              : <SelectValue placeholder={availableTables.length ? "Select table..." : (sourceSchema ? "No tables found" : "Select schema first")} />
+                            }
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableTables.map(table => (
+                              <SelectItem key={table} value={table}>{table}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <Button
+                        className="w-full gap-2"
+                        variant="outline"
+                        disabled={!sourceTable || !sourceSchema || !selectedEntity || isDetectingSchema}
+                        onClick={handleAutoDetectDb}
+                      >
+                        {isDetectingSchema ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Table className="w-4 h-4" />
+                        )}
+                        Detect Schema & Create Entity
+                      </Button>
+
+                      {detectedMeta && (
+                        <div className="rounded-md bg-green-50 dark:bg-green-950/20 p-3 text-sm">
+                          <p className="font-medium text-green-800 dark:text-green-200">
+                            {detectedMeta.length} columns detected
+                          </p>
+                          <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                            Entity created with subtype 'external_view'. Raw layer will be a VIEW over the external table.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -728,7 +916,7 @@ const SourceConfiguration = () => {
             <Card>
               <CardContent className="p-4">
                 <div className="flex gap-2">
-                  <Button variant="outline" className="flex-1 gap-2">
+                  <Button variant="outline" className="flex-1 gap-2" onClick={() => setProfileModalOpen(true)}>
                     <Link2 className="w-4 h-4" />
                     Manage Profiles
                   </Button>
@@ -829,13 +1017,17 @@ const SourceConfiguration = () => {
                         <div className="space-y-1">
                           <p className="text-xs text-muted-foreground">Connection</p>
                           <p className="font-medium text-sm">
-                            {connectionProfile ? connectionProfiles.find(p => p.id === connectionProfile)?.name : "\u2014"}
+                            {connectionProfile ? connectionProfiles.find(p => p.name === connectionProfile)?.name || connectionProfile : "\u2014"}
                           </p>
                         </div>
                         <div className="space-y-1">
-                          <p className="text-xs text-muted-foreground">Source Path</p>
+                          <p className="text-xs text-muted-foreground">
+                            {selectedKind?.startsWith("db.") ? "External Table" : "Source Path"}
+                          </p>
                           <p className="font-medium text-sm truncate font-mono">
-                            {newSourceTasks.find(t => t.trigger_type === "file_sensor")?.trigger_config?.watch_path || "\u2014"}
+                            {selectedKind?.startsWith("db.") && sourceTable
+                              ? `${sourceSchema}.${sourceTable}`
+                              : newSourceTasks.find(t => t.trigger_type === "file_sensor")?.trigger_config?.watch_path || "\u2014"}
                           </p>
                         </div>
                         <div className="space-y-1">
@@ -876,6 +1068,21 @@ const SourceConfiguration = () => {
           </div>
         </div>
       </div>
+
+      {/* Connection Profile Management Modal */}
+      <ConnectionProfileModal
+        open={profileModalOpen}
+        onOpenChange={setProfileModalOpen}
+        sourceKind={selectedKind || "db.postgres"}
+        onProfileCreated={() => {
+          // Refresh connection profiles list
+          if (selectedKind?.startsWith("db.")) {
+            connectionProfileAPI.list(selectedKind)
+              .then(res => setConnectionProfiles(res.return_data || []))
+              .catch(() => {});
+          }
+        }}
+      />
     </div>
   );
 };

@@ -37,10 +37,9 @@ interface SourceConfig {
 }
 
 interface ConnectionProfile {
-  id: string;
   name: string;
   type: string;
-  status: "connected" | "disconnected";
+  status: string;
 }
 
 interface SourceCardProps {
@@ -108,6 +107,12 @@ export default function SourceCard({
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-sm">{source.name}</span>
                 <Badge variant="outline" className="text-xs">{source.kind}</Badge>
+                {source.kind.startsWith("db.") && (
+                  <Badge variant="secondary" className="text-xs gap-1">
+                    <Database className="w-3 h-3" />
+                    External
+                  </Badge>
+                )}
                 <div className="flex items-center gap-1.5">
                   <div className={cn("w-2 h-2 rounded-full", status.bg)} />
                   <span className={cn("text-xs", status.color)}>{status.label}</span>
@@ -161,12 +166,12 @@ export default function SourceCard({
             </SelectTrigger>
             <SelectContent>
               {connectionProfiles.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
+                <SelectItem key={p.name} value={p.name}>
                   <div className="flex items-center gap-2">
                     <div
                       className={cn(
                         "w-2 h-2 rounded-full",
-                        p.status === "connected" ? "bg-green-500" : "bg-muted-foreground"
+                        p.status === "active" ? "bg-green-500" : "bg-muted-foreground"
                       )}
                     />
                     <span>{p.name}</span>

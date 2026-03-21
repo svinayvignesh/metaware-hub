@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from '@apollo/client/react/hooks';
-import { Upload, FileSpreadsheet } from "lucide-react";
+import { Upload, FileSpreadsheet, Database } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import { useNavigate } from "react-router-dom";
 import { FileUploadModal } from "@/components/meta/FileUploadModal";
@@ -615,29 +616,36 @@ export default function PrepareFiles() {
                         </SelectContent>
                       </Select>
 
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div>
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => setMetaUploadModalOpen(true)}
-                                disabled={!selectedEntity || hasExistingMeta}
-                              >
-                                <Upload className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            {!selectedEntity
-                              ? "Select an entity first"
-                              : hasExistingMeta
-                                ? "Meta already exists - File Upload Disabled"
-                                : "Upload CSV to auto-detect meta fields"}
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                      {selectedEntityData?.subtype === 'external_view' ? (
+                        <Badge variant="secondary" className="gap-1 h-9 px-3">
+                          <Database className="w-3 h-3" />
+                          External DB Source
+                        </Badge>
+                      ) : (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => setMetaUploadModalOpen(true)}
+                                  disabled={!selectedEntity || hasExistingMeta}
+                                >
+                                  <Upload className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {!selectedEntity
+                                ? "Select an entity first"
+                                : hasExistingMeta
+                                  ? "Meta already exists - File Upload Disabled"
+                                  : "Upload CSV to auto-detect meta fields"}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
                     </div>
                   </div>
 

@@ -111,6 +111,16 @@ export function useMDConnection(): UseMDConnectionReturn {
   };
 }
 
+/** Returns true for any "object not found" DuckDB error (table, schema, catalog). */
+function isObjectNotFoundError(message: string): boolean {
+  return (
+    (message.includes('Table with name') && message.includes('does not exist')) ||
+    (message.includes('Catalog') && message.includes('does not exist')) ||
+    (message.includes('Schema') && message.includes('does not exist')) ||
+    message.includes('Binder Error')
+  );
+}
+
 export async function queryMDTable(
   connection: MDConnection,
   namespace: string,
@@ -120,7 +130,7 @@ export async function queryMDTable(
   try {
     const query = `SELECT * FROM ${namespace}.${subjectarea}.${entity};`;
     const result = await connection.evaluateQuery(query);
-    
+
     // Check if result is materialized
     if (result.type !== 'materialized') {
       throw new Error('Expected materialized result');
@@ -130,6 +140,19 @@ export async function queryMDTable(
     const rows = Array.from(result.data.toRows());
 
     if (rows.length === 0) {
+      // Table exists but is empty — get column names from schema
+      try {
+        const descResult = await connection.evaluateQuery(
+          `DESCRIBE ${namespace}.${subjectarea}.${entity};`
+        );
+        if (descResult.type === 'materialized') {
+          const descRows = Array.from(descResult.data.toRows()) as any[];
+          const columns = descRows.map((r: any) => r.column_name ?? Object.values(r)[0] ?? '').filter(Boolean);
+          return { columns, rows: [] };
+        }
+      } catch {
+        // DESCRIBE failed — return with no columns
+      }
       return { columns: [], rows: [] };
     }
 
@@ -137,19 +160,17 @@ export async function queryMDTable(
     return { columns, rows };
   } catch (err) {
     console.error('Query error:', err);
-    
-    // Don't show toast for table not found errors - let the component handle it
+
+    // Don't show toast for not-found errors — let the component handle them
     const errorMessage = err instanceof Error ? err.message : 'Failed to execute query';
-    const isTableNotFound = errorMessage.includes('Table with name') && errorMessage.includes('does not exist');
-    
-    if (!isTableNotFound) {
+    if (!isObjectNotFoundError(errorMessage)) {
       toast({
         title: "Query Failed",
         description: errorMessage,
         variant: "destructive",
       });
     }
-    
+
     throw err;
   }
 }
